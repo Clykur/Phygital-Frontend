@@ -1,10 +1,9 @@
 import { motion } from "framer-motion";
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Clock, MapPin, Search } from "lucide-react";
-import dashBg from "@/assets/images/dash-bg.png";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Clock, MapPin, Search, ArrowRight } from "lucide-react";
+import studentHub from "@/assets/images/student-hub.png";
 
 const MOCK_BORROWS = [
   { id: 1, title: "Introduction to Algorithms", author: "Thomas H. Cormen", due: "2 days", hub: "Engineering Block A" },
@@ -16,58 +15,78 @@ const MOCK_RECOMMENDED = [
   { id: 4, title: "Design Patterns", author: "Erich Gamma", available: false }
 ];
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
 export default function Student() {
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-muted/20 relative">
-      <div className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay">
-        <img src={dashBg} alt="" className="w-full h-full object-cover" />
+    <div className="min-h-screen bg-background relative pt-24 pb-32">
+      {/* Blurred Background Image for depth */}
+      <div className="absolute top-0 left-0 w-full h-[50vh] overflow-hidden z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background z-10" />
+        <img src={studentHub} alt="" className="w-full h-full object-cover opacity-20 blur-xl mix-blend-overlay" />
       </div>
       
-      <div className="container px-4 md:px-6 py-12 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        
+        {/* Header Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 border-b border-border/50 pb-8">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-foreground">My Library</h1>
-            <p className="text-muted-foreground">Welcome back, Alex. You have 2 books due soon.</p>
+            <h1 className="text-4xl md:text-5xl font-serif font-medium text-foreground tracking-tight mb-3">My Desk</h1>
+            <p className="text-lg text-muted-foreground font-light">Welcome back, Alex. You have <span className="text-amber-600 font-medium">2 books</span> due soon.</p>
           </div>
-          <div className="flex gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="Search the network..." 
-                className="h-10 pl-9 pr-4 rounded-full border border-border bg-background/50 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary w-64"
-              />
-            </div>
+          <div className="relative w-full md:w-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search the network..." 
+              className="h-12 pl-12 pr-4 rounded-full border border-border/50 bg-card/50 backdrop-blur-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 w-full md:w-80 shadow-sm transition-all"
+            />
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Content Area */}
+          <div className="lg:col-span-8 space-y-10">
+            
             {/* Active Borrows */}
             <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" /> Active Borrows
-              </h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {MOCK_BORROWS.map((book) => (
-                  <motion.div key={book.id} whileHover={{ y: -2 }}>
-                    <Card className="bg-card/80 backdrop-blur-sm border-border shadow-sm hover:shadow-md transition-all">
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="w-10 h-12 bg-primary/10 rounded overflow-hidden flex items-center justify-center">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                          </div>
-                          <Badge variant="outline" className="text-orange-500 border-orange-500/20 bg-orange-500/5">
-                            Due in {book.due}
-                          </Badge>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-serif font-medium flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-amber-500" /> Active Borrows
+                </h2>
+                <Button variant="ghost" className="text-sm font-medium hover:text-amber-600 hover:bg-transparent">View All</Button>
+              </div>
+              
+              <div className="grid sm:grid-cols-2 gap-6">
+                {MOCK_BORROWS.map((book, i) => (
+                  <motion.div key={book.id} initial="hidden" animate="visible" variants={fadeInUp} transition={{ delay: i * 0.1 }}>
+                    <div className="glass-card bg-card/60 p-6 rounded-2xl flex flex-col h-full relative group">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+                         <BookOpen className="w-20 h-20" />
+                      </div>
+                      
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="w-12 h-14 bg-slate-900 rounded-sm flex items-center justify-center shadow-md">
+                          <BookOpen className="w-5 h-5 text-slate-50" />
                         </div>
-                        <h3 className="font-medium text-foreground line-clamp-1">{book.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{book.author}</p>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <MapPin className="w-3 h-3 mr-1" /> Return to: {book.hub}
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 px-3 py-1 font-medium">
+                          Due in {book.due}
+                        </Badge>
+                      </div>
+                      
+                      <h3 className="font-serif font-medium text-xl mb-1 line-clamp-1 relative z-10">{book.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-6 relative z-10">{book.author}</p>
+                      
+                      <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between relative z-10">
+                        <div className="flex items-center text-xs font-medium text-slate-500">
+                          <MapPin className="w-3 h-3 mr-1.5" /> {book.hub}
                         </div>
-                      </CardContent>
-                    </Card>
+                        <Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Return</Button>
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -75,68 +94,90 @@ export default function Student() {
 
             {/* Recommended */}
             <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-primary" /> Recommended for You
+              <h2 className="text-2xl font-serif font-medium mb-6 flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-amber-500" /> Recommended
               </h2>
-              <div className="space-y-3">
-                {MOCK_RECOMMENDED.map((book) => (
-                  <Card key={book.id} className="bg-card/80 backdrop-blur-sm border-border">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-foreground">{book.title}</h3>
-                        <p className="text-sm text-muted-foreground">{book.author}</p>
+              <div className="space-y-4">
+                {MOCK_RECOMMENDED.map((book, i) => (
+                  <motion.div key={book.id} initial="hidden" animate="visible" variants={fadeInUp} transition={{ delay: 0.2 + (i * 0.1) }}>
+                    <div className="glass-card bg-card/60 p-4 rounded-xl flex items-center justify-between hover:bg-card/80 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-12 bg-slate-200 dark:bg-slate-800 rounded-sm border border-border flex items-center justify-center">
+                           <BookOpen className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-foreground text-base">{book.title}</h3>
+                          <p className="text-sm text-muted-foreground">{book.author}</p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         {book.available ? (
-                          <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5">Available</Badge>
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">Available</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-muted-foreground border-border bg-muted/50">Checked Out</Badge>
+                          <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">Checked Out</Badge>
                         )}
-                        <Button size="sm" variant={book.available ? "default" : "outline"} disabled={!book.available}>
+                        <Button size="sm" className="rounded-full shadow-sm" variant={book.available ? "default" : "secondary"} disabled={!book.available}>
                           {book.available ? "Borrow" : "Waitlist"}
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </section>
           </div>
 
-          <div className="space-y-8">
-            {/* Status Card */}
-            <Card className="bg-primary text-primary-foreground border-none shadow-lg">
-              <CardContent className="p-6">
-                <h3 className="font-medium mb-1 text-primary-foreground/80">Membership Status</h3>
-                <p className="text-2xl font-serif font-bold mb-4">Premium</p>
-                <div className="space-y-2 text-sm text-primary-foreground/80">
-                  <div className="flex justify-between">
-                    <span>Books Borrowed</span>
-                    <span className="font-medium text-primary-foreground">12</span>
+          {/* Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* ID Card */}
+            <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+              <div className="rounded-2xl p-6 bg-slate-950 text-slate-50 relative overflow-hidden shadow-xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-8">
+                    <span className="font-serif italic text-amber-400">PSLN Member</span>
+                    <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center">
+                       <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-slate-400">
+                         <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5"/>
+                         <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5"/>
+                       </svg>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Money Saved</span>
-                    <span className="font-medium text-primary-foreground">₹4,500</span>
+                  
+                  <div className="mb-8">
+                    <p className="text-2xl font-medium tracking-tight mb-1">Alex Sharma</p>
+                    <p className="text-slate-400 text-sm font-mono tracking-widest">ID: 8842-1099</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 border-t border-slate-800 pt-4">
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Borrowed</p>
+                      <p className="text-lg font-medium">12</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Saved</p>
+                      <p className="text-lg font-medium text-amber-400">₹4,500</p>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </motion.div>
 
-            {/* Hub Status */}
-            <Card className="bg-card/80 backdrop-blur-sm border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" /> Nearest Hub
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-muted/50 border border-border mb-3">
-                  <p className="font-medium text-sm">Engineering Block A</p>
-                  <p className="text-xs text-muted-foreground">0.2 miles away • Open until 8 PM</p>
+            {/* Nearest Hub widget */}
+            <motion.div initial="hidden" animate="visible" variants={fadeInUp} transition={{ delay: 0.1 }}>
+              <div className="glass-card bg-card/60 p-6 rounded-2xl">
+                <h3 className="font-serif font-medium mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" /> Hub Location
+                </h3>
+                <div className="bg-muted/50 p-4 rounded-xl border border-border/50 mb-4">
+                  <p className="font-medium mb-1">Engineering Block A</p>
+                  <p className="text-sm text-muted-foreground">0.2 miles • Open till 8 PM</p>
                 </div>
-                <Button variant="outline" className="w-full text-xs h-8">View Map</Button>
-              </CardContent>
-            </Card>
+                <Button variant="outline" className="w-full rounded-full h-10 shadow-sm group">
+                  Open Maps <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -1,92 +1,92 @@
 import { motion } from "framer-motion";
-import aboutImg from "@/assets/images/about.png";
+import constellation from "@/assets/images/constellation.png";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+};
 
 export default function About() {
   return (
-    <div className="flex flex-col w-full bg-background">
+    <div className="flex flex-col w-full bg-background pt-24">
+      {/* Editorial Header */}
       <section className="py-20 md:py-32">
-        <div className="container px-4 md:px-6 max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight">
-              Knowledge Should Be <span className="text-primary italic">Accessible</span>, Not Owned.
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <span className="text-amber-600 font-serif italic text-xl mb-6 block">Our Story</span>
+            <h1 className="text-5xl md:text-7xl font-serif font-medium tracking-tight leading-[1.05] mb-8">
+              Rewriting the rules <br/> of academic access.
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              We started PSLN with a simple belief: the cost of textbooks shouldn't be a barrier to education. 
-              By networking existing college libraries and creating local physical hubs, we're building a sustainable, affordable future for students in India.
+            <p className="text-xl text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
+              We started PSLN with a simple belief: the cost of textbooks shouldn't be a barrier to education. We're building a sustainable, networked future for students in India.
             </p>
           </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="rounded-3xl overflow-hidden mb-20 shadow-2xl border border-border"
-          >
-            <img src={aboutImg} alt="Cozy reading nook" className="w-full h-auto aspect-video object-cover" />
-          </motion.div>
-
-          <div className="space-y-16">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="grid md:grid-cols-3 gap-8"
-            >
-              <div className="md:col-span-1">
-                <h2 className="text-2xl font-serif font-bold border-b-2 border-primary/20 pb-4 inline-block">Our Mission</h2>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  To eliminate the financial burden of academic resources by creating India's largest interconnected phygital library. We bridge the gap between underutilized college infrastructure and student needs.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="grid md:grid-cols-3 gap-8"
-            >
-              <div className="md:col-span-1">
-                <h2 className="text-2xl font-serif font-bold border-b-2 border-primary/20 pb-4 inline-block">Core Values</h2>
-              </div>
-              <div className="md:col-span-2 grid sm:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Access Over Ownership</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">You don't need to own a book to learn from it. We prioritize circulation and shared resources.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Sustainable Education</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">Reusing books reduces paper waste and environmental impact.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Frictionless Experience</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">From the app tap to physical pickup, every step must feel premium and effortless.</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Community Driven</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">Our P2P marketplace empowers students to help each other while recovering costs.</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
         </div>
       </section>
 
-      <section className="bg-card border-t border-border py-16">
-        <div className="container px-4 md:px-6 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-serif font-bold mb-4">Want to talk to us?</h2>
-          <p className="text-muted-foreground mb-8">Whether you're an investor, a college admin, or just curious about what we're building, we'd love to hear from you.</p>
-          <a href="mailto:hello@psln.network" className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
-            hello@psln.network
-          </a>
+      {/* Cinematic Full Bleed */}
+      <section className="w-full h-[60vh] relative overflow-hidden my-10">
+        <motion.div 
+           initial={{ scale: 1.1 }}
+           whileInView={{ scale: 1 }}
+           viewport={{ once: true }}
+           transition={{ duration: 1.5, ease: "easeOut" }}
+           className="w-full h-full"
+        >
+          <img src={constellation} alt="Network Constellation" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-slate-950/40 mix-blend-overlay" />
+        </motion.div>
+      </section>
+
+      {/* Narrative Flow */}
+      <section className="py-32">
+        <div className="max-w-5xl mx-auto px-6 lg:px-12">
+          
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="grid md:grid-cols-12 gap-12 mb-32">
+            <div className="md:col-span-4">
+              <h2 className="text-3xl font-serif font-medium border-b border-border/50 pb-4">The Mission</h2>
+            </div>
+            <div className="md:col-span-8">
+              <p className="text-2xl font-light leading-relaxed text-foreground">
+                To eliminate the financial burden of academic resources by creating India's largest interconnected phygital library. We bridge the gap between underutilized college infrastructure and urgent student needs.
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="grid md:grid-cols-12 gap-12">
+            <div className="md:col-span-4">
+              <h2 className="text-3xl font-serif font-medium border-b border-border/50 pb-4">Core Values</h2>
+            </div>
+            <div className="md:col-span-8 grid sm:grid-cols-2 gap-x-8 gap-y-12">
+              <div>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Access &gt; Ownership</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">You don't need to own a book to learn from it. We prioritize circulation and shared resources over private collections.</p>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Sustainable Education</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">Reusing books reduces paper waste and environmental impact. Every book borrowed is a tree saved.</p>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Frictionless Experience</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">From the app tap to physical pickup, every step must feel premium, effortless, and instantaneous.</p>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Community Driven</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">Our P2P marketplace empowers students to help each other while recovering their own costs safely.</p>
+              </div>
+            </div>
+          </motion.div>
+
         </div>
+      </section>
+
+      {/* Contact Banner */}
+      <section className="py-32 bg-slate-950 text-slate-50 text-center px-6 border-t border-slate-800">
+        <h2 className="text-4xl font-serif font-medium mb-6">Let's shape the future.</h2>
+        <p className="text-slate-400 font-light mb-10 max-w-lg mx-auto text-lg">Whether you're an investor, a college admin, or just curious about what we're building, we'd love to chat.</p>
+        <a href="mailto:hello@psln.network" className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-amber-500 text-slate-950 font-medium hover:bg-amber-400 transition-colors text-lg shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-105">
+          hello@psln.network
+        </a>
       </section>
     </div>
   );
