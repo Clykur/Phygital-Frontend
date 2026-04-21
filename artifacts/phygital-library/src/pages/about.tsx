@@ -1,5 +1,12 @@
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import constellation from "@/assets/images/constellation.png";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -7,8 +14,44 @@ const fadeInUp = {
 };
 
 export default function About() {
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Message sent! We'll get back to you shortly.");
+    setContactDialogOpen(false);
+  };
+
   return (
     <div className="flex flex-col w-full bg-background pt-24">
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">Get in touch</DialogTitle>
+            <DialogDescription>
+              We'll typically reply within a few hours.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleContactSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="contactName">Name</Label>
+              <Input id="contactName" placeholder="Your name" required className="bg-background" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contactEmail">Email Address</Label>
+              <Input id="contactEmail" type="email" placeholder="you@example.com" required className="bg-background" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea id="message" placeholder="How can we help?" rows={4} required className="bg-background resize-none" />
+            </div>
+            <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
+              Send Message
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Editorial Header */}
       <section className="py-20 md:py-32">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
@@ -84,9 +127,14 @@ export default function About() {
       <section className="py-32 bg-slate-950 text-slate-50 text-center px-6 border-t border-slate-800">
         <h2 className="text-4xl font-serif font-medium mb-6">Let's shape the future.</h2>
         <p className="text-slate-400 font-light mb-10 max-w-lg mx-auto text-lg">Whether you're an investor, a college admin, or just curious about what we're building, we'd love to chat.</p>
-        <a href="mailto:hello@psln.network" className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-amber-500 text-slate-950 font-medium hover:bg-amber-400 transition-colors text-lg shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-105">
-          hello@psln.network
-        </a>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a href="mailto:hello@psln.in" className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-amber-500 text-slate-950 font-medium hover:bg-amber-400 transition-colors text-lg shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-105 w-full sm:w-auto">
+            hello@psln.in
+          </a>
+          <Button onClick={() => setContactDialogOpen(true)} variant="outline" className="h-14 px-10 rounded-full border-slate-700 bg-transparent hover:bg-slate-800 text-slate-50 transition-colors text-lg hover:scale-105 w-full sm:w-auto">
+            Get in touch
+          </Button>
+        </div>
       </section>
     </div>
   );

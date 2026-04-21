@@ -3,33 +3,47 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export function Navbar() {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [role, setRole] = useState("student");
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 24);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navLinks = [
-    { name: "Network", path: "/" },
+    { name: "Home", path: "/" },
+    { name: "Discover", path: "/marketplace" },
     { name: "Students", path: "/student" },
     { name: "Colleges", path: "/colleges" },
-    { name: "Marketplace", path: "/marketplace" },
     { name: "About", path: "/about" },
   ];
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("We'll be in touch — welcome to the Network.");
+    setJoinDialogOpen(false);
+  };
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? "bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm py-3"
+          ? "bg-background/80 backdrop-blur-md border-b border-border/40 shadow-sm py-3"
           : "bg-transparent py-6"
       }`}
     >
@@ -39,9 +53,9 @@ export function Navbar() {
             {/* Custom Monogram */}
             <div className="relative w-8 h-8 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-foreground group-hover:text-amber-600 transition-colors">
-                <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
-                <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
-                <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
+                <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <span className="font-serif font-medium text-lg tracking-tight text-foreground">
@@ -51,71 +65,110 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                href={link.path}
-                className={`text-sm font-medium transition-colors relative group py-2 ${
-                  location === link.path ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {link.name}
-                <span className={`absolute bottom-0 left-0 h-[1px] bg-amber-500 transition-all duration-300 ${
-                  location === link.path ? "w-full" : "w-0 group-hover:w-1/2"
-                }`} />
-              </Link>
-            ))}
-          </nav>
-
-          <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" className="hidden lg:inline-flex hover:bg-transparent hover:text-amber-600 transition-colors">Sign In</Button>
-            <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-6 shadow-sm">
-              Join Network
-            </Button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Nav */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "100vh" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border overflow-hidden fixed top-full left-0 right-0"
-          >
-            <div className="px-6 py-8 flex flex-col gap-6">
-              {navLinks.map((link) => (
+            {navLinks.map((link) => {
+              const isActive = location === link.path || (link.path !== '/' && location.startsWith(link.path));
+              return (
                 <Link
                   key={link.path}
                   href={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`text-2xl font-serif tracking-tight p-2 ${
-                    location === link.path
-                      ? "text-amber-600"
-                      : "text-foreground"
+                  className={`text-sm font-medium transition-colors relative group py-2 ${
+                    isActive ? "text-amber-600" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.name}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute -bottom-1 left-0 right-0 h-1 bg-amber-500 rounded-t-full"
+                    />
+                  )}
                 </Link>
-              ))}
-              <div className="pt-8 border-t border-border/50 flex flex-col gap-4 mt-auto">
-                <Button variant="outline" className="w-full justify-center h-12 rounded-full border-border/50">Sign In</Button>
-                <Button className="w-full justify-center h-12 rounded-full bg-foreground text-background">Join Network</Button>
+              );
+            })}
+          </nav>
+
+          <div className="hidden md:flex items-center gap-4">
+            <Button variant="ghost" onClick={() => setJoinDialogOpen(true)} className="hidden lg:inline-flex hover:bg-transparent hover:text-amber-600 transition-colors">Sign In</Button>
+            <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-6 shadow-sm">
+                  Join Network
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md bg-card border-border">
+                <DialogHeader>
+                  <DialogTitle className="font-serif text-2xl">Join PSLN</DialogTitle>
+                  <DialogDescription>
+                    Enter your details to join the network or sign in to your account.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleJoinSubmit} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" placeholder="Alex Sharma" required className="bg-background" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input id="email" type="email" placeholder="alex@example.com" required className="bg-background" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">I am a...</Label>
+                    <Select value={role} onValueChange={setRole}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="college">College Administrator</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
+                    Continue
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <button className="md:hidden p-2 text-foreground">
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-background border-l-border/50 flex flex-col pt-12">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">Access site pages and actions.</SheetDescription>
+              <div className="flex flex-col gap-6">
+                {navLinks.map((link) => {
+                  const isActive = location === link.path || (link.path !== '/' && location.startsWith(link.path));
+                  return (
+                    <Link
+                      key={link.path}
+                      href={link.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`text-2xl font-serif tracking-tight p-2 flex items-center ${
+                        isActive
+                          ? "text-amber-600"
+                          : "text-foreground"
+                      }`}
+                    >
+                      {link.name}
+                      {isActive && <div className="w-2 h-2 ml-3 rounded-full bg-amber-500" />}
+                    </Link>
+                  );
+                })}
+                <div className="pt-8 border-t border-border/50 flex flex-col gap-4 mt-auto">
+                  <Button variant="outline" onClick={() => { setMobileMenuOpen(false); setJoinDialogOpen(true); }} className="w-full justify-center h-12 rounded-full border-border/50">Sign In</Button>
+                  <Button onClick={() => { setMobileMenuOpen(false); setJoinDialogOpen(true); }} className="w-full justify-center h-12 rounded-full bg-foreground text-background">Join Network</Button>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
     </header>
   );
 }

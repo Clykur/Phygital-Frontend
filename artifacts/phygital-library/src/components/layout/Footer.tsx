@@ -16,9 +16,9 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-3 mb-6 group inline-flex">
               <div className="relative w-8 h-8 flex items-center justify-center text-amber-500">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
-                  <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
-                  <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
-                  <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
+                  <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <span className="font-serif font-medium text-2xl tracking-tight">
@@ -36,7 +36,7 @@ export function Footer() {
               <ul className="space-y-4">
                 <li><Link href="/student" className="text-slate-300 hover:text-amber-400 transition-colors">For Students</Link></li>
                 <li><Link href="/colleges" className="text-slate-300 hover:text-amber-400 transition-colors">For Colleges</Link></li>
-                <li><Link href="/marketplace" className="text-slate-300 hover:text-amber-400 transition-colors">Marketplace</Link></li>
+                <li><Link href="/marketplace" className="text-slate-300 hover:text-amber-400 transition-colors">Discover</Link></li>
               </ul>
             </div>
             
@@ -45,7 +45,7 @@ export function Footer() {
               <ul className="space-y-4">
                 <li><Link href="/about" className="text-slate-300 hover:text-amber-400 transition-colors">About Us</Link></li>
                 <li><a href="#" className="text-slate-300 hover:text-amber-400 transition-colors">Careers</a></li>
-                <li><a href="#" className="text-slate-300 hover:text-amber-400 transition-colors">Contact</a></li>
+                <li><a href="mailto:hello@psln.in" className="text-slate-300 hover:text-amber-400 transition-colors">Contact</a></li>
               </ul>
             </div>
             

@@ -1,21 +1,21 @@
 import { motion, useScroll, useTransform, animate } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   BookOpen,
   MapPin,
   RefreshCw,
   Smartphone,
   Sparkles,
-  TrendingUp,
   Users,
-  Wallet,
   ArrowRight,
-  Library,
-  GraduationCap
 } from "lucide-react";
 import libraryDusk from "@/assets/images/library-dusk.png";
 import booksGlow from "@/assets/images/books-glow.png";
@@ -70,12 +70,67 @@ function Counter({ from, to, suffix = "", prefix = "", duration = 2 }: { from: n
 }
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [joinRole, setJoinRole] = useState("student");
+
+  const openJoin = (role: string) => {
+    setJoinRole(role);
+    setJoinDialogOpen(true);
+  };
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("We'll be in touch — welcome to the Network.");
+    setJoinDialogOpen(false);
+    if (joinRole === "student") {
+      setLocation("/student");
+    } else {
+      setLocation("/colleges");
+    }
+  };
 
   return (
     <div className="flex flex-col w-full bg-background selection:bg-amber-500/30">
+      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-2xl">Join PSLN</DialogTitle>
+            <DialogDescription>
+              Enter your details to join the network or sign in to your account.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleJoinSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input id="name" placeholder="Alex Sharma" required className="bg-background" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input id="email" type="email" placeholder="alex@example.com" required className="bg-background" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">I am a...</Label>
+              <Select value={joinRole} onValueChange={setJoinRole}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="college">College Administrator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
+              Continue
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
       
       {/* Editorial Hero */}
       <section className="relative min-h-[100dvh] flex items-center pt-24 overflow-hidden bg-slate-950 text-slate-50">
@@ -119,12 +174,12 @@ export default function Home() {
               </motion.p>
               
               <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="h-14 px-8 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 text-base font-medium transition-all hover:scale-105">
+                <Link href="/marketplace" className="h-14 px-8 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 text-base font-medium transition-all hover:scale-105 inline-flex items-center justify-center">
                   Explore Network <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all">
+                </Link>
+                <Link href="/colleges" className="h-14 px-8 rounded-full border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all inline-flex items-center justify-center">
                   For Colleges
-                </Button>
+                </Link>
               </motion.div>
             </motion.div>
 
@@ -405,10 +460,10 @@ export default function Home() {
               Ready to open <br /> <span className="italic text-amber-400">the next chapter?</span>
             </h2>
             <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12">
-              <Button size="lg" className="h-16 px-10 rounded-full bg-slate-50 text-slate-950 hover:bg-slate-200 text-lg font-medium shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-105">
+              <Button onClick={() => openJoin("student")} size="lg" className="h-16 px-10 rounded-full bg-slate-50 text-slate-950 hover:bg-slate-200 text-lg font-medium shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-105">
                 Join as Student
               </Button>
-              <Button size="lg" variant="outline" className="h-16 px-10 rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-lg transition-all hover:scale-105">
+              <Button onClick={() => openJoin("college")} size="lg" variant="outline" className="h-16 px-10 rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-lg transition-all hover:scale-105">
                 Partner as College
               </Button>
             </div>
