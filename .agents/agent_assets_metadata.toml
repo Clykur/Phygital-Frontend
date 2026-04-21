@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "_esOp9ntk8uZTet15QTLb"
+uri = "file://artifacts/phygital-library/src/assets/images/hero.png"
+type = "image"
+title = "Cinematic library hero image"
+
+[[generated]]
+id = "kVU6zfNhoN3v8eMPLF1D9"
+uri = "file://artifacts/phygital-library/src/assets/images/about.png"
+type = "image"
+title = "Cozy premium reading nook"
+
+[[generated]]
+id = "PV8x-GjGQoH75ytLfnR5k"
+uri = "file://artifacts/phygital-library/src/assets/images/college.png"
+type = "image"
+title = "High-end university library"
+
+[[generated]]
+id = "SzaSAqe3IlBPrXl0OaBhS"
+uri = "file://artifacts/phygital-library/src/assets/images/dash-bg.png"
+type = "image"
+title = "Abstract glowing gradient background"
