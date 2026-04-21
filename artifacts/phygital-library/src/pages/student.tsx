@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, MapPin, Search, ArrowRight } from "lucide-react";
+import { BookOpen, Clock, MapPin, Search, ArrowRight, Sparkles } from "lucide-react";
 import studentHub from "@/assets/images/student-hub.png";
 
 const MOCK_BORROWS = [
