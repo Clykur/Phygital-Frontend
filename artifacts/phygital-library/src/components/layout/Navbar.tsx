@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [role, setRole] = useState("student");
+
+  const isHome = location === "/";
+  const onDarkHero = isHome && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +47,9 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
           ? "bg-background/80 backdrop-blur-md border-b border-border/40 shadow-sm py-3"
-          : "bg-transparent py-6"
+          : onDarkHero
+            ? "bg-gradient-to-b from-slate-950/60 to-transparent backdrop-blur-[2px] py-6"
+            : "bg-transparent py-6"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -52,13 +57,13 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-3 group">
             {/* Custom Monogram */}
             <div className="relative w-8 h-8 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-foreground group-hover:text-amber-600 transition-colors">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`w-6 h-6 group-hover:text-amber-500 transition-colors ${onDarkHero ? "text-amber-400" : "text-foreground"}`}>
                 <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="font-serif font-medium text-lg tracking-tight text-foreground">
+            <span className={`font-serif font-medium text-lg tracking-tight ${onDarkHero ? "text-slate-50" : "text-foreground"}`}>
               PSLN
             </span>
           </Link>
@@ -72,7 +77,9 @@ export function Navbar() {
                   key={link.path}
                   href={link.path}
                   className={`text-sm font-medium transition-colors relative group py-2 ${
-                    isActive ? "text-amber-600" : "text-muted-foreground hover:text-foreground"
+                    isActive
+                      ? onDarkHero ? "text-amber-400" : "text-amber-600"
+                      : onDarkHero ? "text-slate-200 hover:text-white" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.name}
@@ -88,10 +95,10 @@ export function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" onClick={() => setJoinDialogOpen(true)} className="hidden lg:inline-flex hover:bg-transparent hover:text-amber-600 transition-colors">Sign In</Button>
+            <Button variant="ghost" onClick={() => setJoinDialogOpen(true)} className={`hidden lg:inline-flex hover:bg-transparent transition-colors ${onDarkHero ? "text-slate-200 hover:text-white" : "hover:text-amber-600"}`}>Sign In</Button>
             <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-6 shadow-sm">
+                <Button className={`rounded-full px-6 shadow-sm transition-colors ${onDarkHero ? "bg-amber-500 text-slate-950 hover:bg-amber-400" : "bg-foreground text-background hover:bg-foreground/90"}`}>
                   Join Network
                 </Button>
               </DialogTrigger>
@@ -134,7 +141,7 @@ export function Navbar() {
           {/* Mobile Menu Toggle */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <button className="md:hidden p-2 text-foreground">
+              <button className={`md:hidden p-2 ${onDarkHero ? "text-slate-50" : "text-foreground"}`}>
                 <Menu className="w-5 h-5" />
               </button>
             </SheetTrigger>

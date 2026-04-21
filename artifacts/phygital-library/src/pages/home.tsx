@@ -156,14 +156,7 @@ export default function Home() {
               initial="hidden" animate="visible" variants={staggerContainer}
               className="lg:col-span-8 flex flex-col items-start"
             >
-              <motion.div variants={fadeInUp} className="mb-8">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium tracking-wide uppercase">
-                  <Sparkles className="w-3 h-3" />
-                  The Next Generation Library
-                </span>
-              </motion.div>
-              
-              <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl md:text-7xl lg:text-[85px] font-serif font-medium leading-[1.05] tracking-tight mb-8">
+              <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl md:text-7xl lg:text-[85px] font-serif font-medium leading-[1.05] tracking-tight mb-8 mt-4">
                 Knowledge should <br className="hidden md:block" />
                 be <span className="italic font-light text-amber-400">accessible</span>, <br className="hidden md:block" />
                 not owned.
@@ -183,40 +176,29 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Glass Card Overlay */}
-            <motion.div 
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-              className="lg:col-span-4 hidden lg:block"
+            {/* Stat Pillars */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+              className="lg:col-span-4 hidden lg:flex flex-col gap-6"
             >
-              <div className="glass-card rounded-2xl p-6 bg-slate-900/40 border-slate-700/50 relative overflow-hidden transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
-                <div className="flex items-center gap-4 mb-6 border-b border-slate-700/50 pb-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-amber-400 uppercase tracking-wide font-medium mb-1">Nearest Hub</p>
-                    <p className="text-base font-serif text-slate-50">Engineering Block A</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center bg-slate-800/50 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-5 h-5 text-slate-400" />
-                      <span className="text-sm text-slate-200">Algorithms</span>
-                    </div>
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs">Ready</Badge>
-                  </div>
-                  <div className="flex justify-between items-center bg-slate-800/50 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-5 h-5 text-slate-400" />
-                      <span className="text-sm text-slate-200">Physics 101</span>
-                    </div>
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-xs">Reserved</Badge>
-                  </div>
-                </div>
+              <div className="relative rounded-2xl border border-amber-500/20 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
+                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-amber-500/20 blur-2xl" />
+                <p className="text-xs uppercase tracking-[0.2em] text-amber-400/80 mb-3">Trusted by</p>
+                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={50} suffix="+" /></p>
+                <p className="text-sm text-slate-400">Campuses across India</p>
+              </div>
+              <div className="relative rounded-2xl border border-slate-700/40 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-blue-500/20 blur-2xl" />
+                <p className="text-xs uppercase tracking-[0.2em] text-blue-300/80 mb-3">Books in circulation</p>
+                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={120} suffix="k" /></p>
+                <p className="text-sm text-slate-400">And growing every semester</p>
+              </div>
+              <div className="relative rounded-2xl border border-slate-700/40 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
+                <p className="text-xs uppercase tracking-[0.2em] text-emerald-400/80 mb-3">Average savings</p>
+                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={12} prefix="₹" suffix="k+" /></p>
+                <p className="text-sm text-slate-400">Per student, per year</p>
               </div>
             </motion.div>
           </div>
@@ -268,115 +250,147 @@ export default function Home() {
 
       <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
 
-      {/* The Solution — Network Diagram */}
+      {/* The Solution — Three Pillars */}
       <section className="py-32 relative bg-slate-950 text-slate-50 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 opacity-[0.12]">
           <img src={constellation} alt="" className="w-full h-full object-cover mix-blend-screen" />
         </div>
-        
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-[140px] pointer-events-none" />
+
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-          <motion.div 
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-20"
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-end"
           >
-            <h2 className="text-4xl md:text-5xl font-serif font-medium mb-6">The Phygital Solution</h2>
-            <p className="text-xl text-slate-400 font-light">Bridging the gap between digital discovery and physical access.</p>
+            <motion.div variants={fadeInUp} className="lg:col-span-7">
+              <p className="text-xs uppercase tracking-[0.25em] text-amber-400/80 mb-5">The Solution</p>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.05] tracking-tight">
+                One network. <span className="italic font-light text-amber-400">Three</span> pillars.
+              </h2>
+            </motion.div>
+            <motion.p variants={fadeInUp} className="lg:col-span-5 text-lg text-slate-400 font-light leading-relaxed lg:pl-8 lg:border-l border-slate-800">
+              We weave together a polished mobile app, real campus pickup points, and a shared inter-college library — so any book is always within reach.
+            </motion.p>
           </motion.div>
 
-          <div className="relative max-w-4xl mx-auto h-auto min-h-[400px] flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0">
-            {/* SVG Connecting Lines (Visible on MD+) */}
-            <svg className="absolute inset-0 w-full h-full hidden md:block pointer-events-none" style={{ zIndex: 0 }}>
-               <motion.path 
-                 d="M 150 200 C 300 200, 300 100, 450 100" 
-                 fill="none" 
-                 stroke="url(#gradient-line)" 
-                 strokeWidth="2"
-                 strokeDasharray="4 4"
-                 initial={{ pathLength: 0, opacity: 0 }}
-                 whileInView={{ pathLength: 1, opacity: 1 }}
-                 viewport={{ once: true, margin: "-100px" }}
-                 transition={{ duration: 1.5, ease: "easeInOut" }}
-               />
-               <motion.path 
-                 d="M 150 200 C 300 200, 300 300, 450 300" 
-                 fill="none" 
-                 stroke="url(#gradient-line)" 
-                 strokeWidth="2"
-                 strokeDasharray="4 4"
-                 initial={{ pathLength: 0, opacity: 0 }}
-                 whileInView={{ pathLength: 1, opacity: 1 }}
-                 viewport={{ once: true, margin: "-100px" }}
-                 transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
-               />
-               <defs>
-                 <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                   <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" />
-                   <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
-                   <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
-                 </linearGradient>
-               </defs>
-            </svg>
-
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="relative z-10 w-full md:w-64 text-center">
-              <div className="w-24 h-24 mx-auto bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(245,158,11,0.15)] backdrop-blur-md">
-                <Smartphone className="w-10 h-10 text-amber-400" />
-              </div>
-              <h3 className="text-xl font-serif font-medium mb-3">Digital App</h3>
-              <p className="text-slate-400 text-sm">Discover, reserve, and manage inventory from anywhere.</p>
-            </motion.div>
-
-            <div className="flex flex-col gap-12 w-full md:w-64 relative z-10">
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.2 }} className="text-center">
-                <div className="w-20 h-20 mx-auto bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
-                  <MapPin className="w-8 h-8 text-blue-400" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative">
+            {[
+              {
+                step: "01",
+                title: "Digital App",
+                desc: "Search, reserve, and manage your borrows from your phone — anywhere on campus, anytime.",
+                Icon: Smartphone,
+                accent: "amber",
+                tag: "iOS · Android · Web",
+              },
+              {
+                step: "02",
+                title: "Physical Hubs",
+                desc: "Compact, beautifully-lit pickup points inside every partner college. Scan a QR, walk out with your book.",
+                Icon: MapPin,
+                accent: "blue",
+                tag: "On-campus · 24×7",
+              },
+              {
+                step: "03",
+                title: "Shared Network",
+                desc: "Inventory pools across partner colleges. The catalog you have access to is bigger than any single library.",
+                Icon: RefreshCw,
+                accent: "emerald",
+                tag: "Inter-college routing",
+              },
+            ].map((p, i) => (
+              <motion.div
+                key={p.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.7, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="group relative"
+              >
+                <div className="relative h-full rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl p-8 lg:p-10 overflow-hidden transition-all duration-500 hover:border-slate-700 hover:-translate-y-1">
+                  <div
+                    className={`absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-40 transition-opacity duration-500 group-hover:opacity-70 ${
+                      p.accent === "amber" ? "bg-amber-500/30" : p.accent === "blue" ? "bg-blue-500/30" : "bg-emerald-500/30"
+                    }`}
+                  />
+                  <div className="relative flex items-start justify-between mb-10">
+                    <div
+                      className={`w-14 h-14 rounded-2xl border flex items-center justify-center backdrop-blur-md ${
+                        p.accent === "amber"
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                          : p.accent === "blue"
+                          ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                          : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      }`}
+                    >
+                      <p.Icon className="w-6 h-6" />
+                    </div>
+                    <span className="font-serif text-sm text-slate-500 tracking-widest">{p.step}</span>
+                  </div>
+                  <h3 className="relative font-serif text-2xl text-slate-50 mb-4">{p.title}</h3>
+                  <p className="relative text-slate-400 leading-relaxed mb-8">{p.desc}</p>
+                  <div className="relative pt-6 border-t border-slate-800">
+                    <span className="text-xs uppercase tracking-[0.2em] text-slate-500">{p.tag}</span>
+                  </div>
                 </div>
-                <h3 className="text-lg font-serif font-medium mb-2">Physical Hubs</h3>
-                <p className="text-slate-400 text-sm">Pickup points on campus.</p>
               </motion.div>
-              
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.4 }} className="text-center">
-                <div className="w-20 h-20 mx-auto bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
-                  <RefreshCw className="w-8 h-8 text-emerald-400" />
-                </div>
-                <h3 className="text-lg font-serif font-medium mb-2">Shared Network</h3>
-                <p className="text-slate-400 text-sm">Pooled college resources.</p>
-              </motion.div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works — Connected Flow */}
-      <section className="py-32 bg-muted/30 relative">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <motion.div 
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-            className="mb-20"
+      {/* How It Works — Editorial Flow */}
+      <section className="py-32 bg-background relative overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative">
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-end"
           >
-            <h2 className="text-4xl font-serif font-medium">How it flows.</h2>
+            <motion.div variants={fadeInUp} className="lg:col-span-7">
+              <p className="text-xs uppercase tracking-[0.25em] text-amber-600 mb-5">How It Works</p>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.05] tracking-tight">
+                A book in your hands, in <span className="italic font-light text-amber-600">four steps.</span>
+              </h2>
+            </motion.div>
+            <motion.p variants={fadeInUp} className="lg:col-span-5 text-lg text-muted-foreground font-light leading-relaxed lg:pl-8 lg:border-l border-border">
+              From a quiet evening search to walking up to a hub and scanning a QR — the whole journey takes minutes, not days.
+            </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-            {/* Horizontal Line */}
-            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-border via-primary/50 to-border -translate-y-1/2 z-0" />
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {[
-              { num: "01", title: "Search", desc: "Find the textbook you need on our app." },
-              { num: "02", title: "Reserve", desc: "Lock it in for the semester or buy it." },
-              { num: "03", title: "Route", desc: "Algorithm routes it to your nearest hub." },
-              { num: "04", title: "Pickup", desc: "Scan QR code to collect instantly." },
+              { num: "01", title: "Search", desc: "Find any textbook by title, author, or ISBN across the entire network.", Icon: Sparkles },
+              { num: "02", title: "Borrow or Buy", desc: "Reserve for a semester or purchase outright. Choose what fits your need.", Icon: BookOpen },
+              { num: "03", title: "Smart Routing", desc: "We route the book from the nearest hub holding the right copy, to you.", Icon: RefreshCw },
+              { num: "04", title: "Pickup at Hub", desc: "Walk in, scan the QR on the shelf, walk out. No queues, no librarian.", Icon: MapPin },
             ].map((step, i) => (
               <motion.div
-                key={i}
-                initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { delay: i * 0.15 } } }}
-                className="relative z-10"
+                key={step.num}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                className="group relative"
               >
-                <div className="glass-card bg-card/80 p-8 rounded-xl h-full flex flex-col">
-                  <span className="text-4xl font-serif font-light text-muted-foreground/30 mb-6">{step.num}</span>
-                  <h3 className="text-xl font-medium mb-3">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
+                <div className="relative h-full p-8 rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl shadow-[0_4px_30px_-12px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-20px_rgba(245,158,11,0.25)] hover:border-amber-500/30">
+                  <div className="flex items-center justify-between mb-10">
+                    <span className="font-serif text-5xl font-light text-amber-600/30 group-hover:text-amber-600/60 transition-colors">{step.num}</span>
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-500">
+                      <step.Icon className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <h3 className="font-serif text-xl text-foreground mb-3">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                 </div>
+                {i < 3 && (
+                  <div className="hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 z-10 items-center justify-center">
+                    <div className="w-8 h-[1px] bg-gradient-to-r from-amber-500/40 to-transparent" />
+                    <ArrowRight className="w-3 h-3 text-amber-500/60 -ml-1" />
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
