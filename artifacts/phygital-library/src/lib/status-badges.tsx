@@ -69,9 +69,10 @@ export function HubBookStatusBadge({
 
 export function p2pBadgeVariant(
   status: string,
-): "default" | "secondary" | "destructive" | "outline" {
+): "default" | "secondary" | "destructive" | "outline" | "success" {
   switch (status) {
     case "approved":
+      return "success";
     case "available":
       return "default";
     case "sold":
@@ -93,7 +94,7 @@ export function p2pBadgeVariant(
 export function P2pStatusBadge({ status, className }: { status: string; className?: string }) {
   return (
     <Badge variant={p2pBadgeVariant(status)} className={cn("text-[10px] uppercase", className)}>
-      {status.replace("_", " ")}
+      {status.toUpperCase().replace("_", " ")}
     </Badge>
   );
 }
@@ -114,7 +115,7 @@ export function p2pPipelineStatusLabel(s: string): string {
     case "expired":
       return "Expired";
     case "rejected":
-      return "Rejected";
+      return "rejected";
     default:
       return s.replace(/_/g, " ");
   }
@@ -126,6 +127,8 @@ function p2pPipelineChipTone(status: string): string {
       return "border-sky-500/35 bg-sky-500/10 text-sky-950 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-100";
     case "pending_dropoff":
       return "border-violet-500/35 bg-violet-500/10 text-violet-950 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-100";
+    case "approved":
+      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
     case "available":
       return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
     case "reserved":
@@ -154,7 +157,7 @@ export function P2pPipelineCoverStatusBadge({ status, className }: { status: str
       )}
       role="status"
     >
-      {p2pPipelineStatusLabel(status)}
+      {p2pPipelineStatusLabel(status).toUpperCase()}
     </span>
   );
 }

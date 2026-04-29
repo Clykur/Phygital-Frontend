@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { p2pShelfStatusRank } from "@/lib/catalog-sort";
 import { shelfFilterChipOnDarkClass } from "@/lib/status-badges";
 import { CatalogBookCard, addedLabel, catalogRefLabel } from "@/pages/library";
 import { Loader2, Shield } from "lucide-react";
+import { toast } from "sonner";
 
 type Hub = { id: string; name: string; kind?: string };
 
@@ -51,8 +52,9 @@ export default function HubDeskP2pListingsPage() {
   const { token, user, loading } = useAuth();
   const inShell = useStudentShell();
   const isSuperAdmin = user?.baseRole === "super_admin";
+  const qc = useQueryClient();
   const [hubId, setHubId] = useState<string>("all");
-  const [statusQ, setStatusQ] = useState<string>("all");
+  const [statusQ, setStatusQ] = useState<string>("pending_dropoff");
   const [q, setQ] = useState("");
 
   const topPad = inShell ? "" : "pt-24";
@@ -80,6 +82,26 @@ export default function HubDeskP2pListingsPage() {
     queryKey: ["hub", "desk-p2p-listings", listUrl, token],
     enabled: !!token && !!user?.hubStaffHubIds.length,
     queryFn: () => apiFetch<{ listings: P2pListingRow[] }>(listUrl, { token: token! }),
+  });
+
+  const updateStatusMutation = useMutation<
+    unknown,
+    ApiError,
+    { listingId: string; status: "approved" | "rejected" }
+  >({
+    mutationFn: (vars) =>
+      apiFetch(`/api/hub/p2p-submissions/${vars.listingId}/status`, {
+        token: token!,
+        method: "PUT",
+        body: JSON.stringify({ status: vars.status }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hub", "desk-p2p-listings"] });
+      toast.success("Submission status updated.");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
   });
 
   const rows = listQ.data?.listings ?? [];
@@ -222,13 +244,13 @@ export default function HubDeskP2pListingsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="listed">Listed (online)</SelectItem>
-                <SelectItem value="pending_dropoff">Pending drop-off</SelectItem>
-                <SelectItem value="available">Available at hub (approved)</SelectItem>
+                <SelectItem value="pending_dropoff">Needs Review (Pending Drop-off)</SelectItem>
+                <SelectItem value="approved">Approved (Pending On-shelf)</SelectItem>
+                <SelectItem value="all">All Pipeline</SelectItem>
+                <SelectItem value="listed">Listed (Online)</SelectItem>
+                <SelectItem value="available">Available at Hub</SelectItem>
                 <SelectItem value="reserved">Reserved</SelectItem>
                 <SelectItem value="sold">Sold</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
@@ -285,6 +307,7 @@ export default function HubDeskP2pListingsPage() {
           <div className="grid grid-cols-2 items-stretch gap-5 p-4 sm:gap-6 sm:p-6 md:grid-cols-3 lg:grid-cols-4">
             {filtered.map((l) => {
               const hubName = hubsQ.data?.hubs.find((h) => h.id === l.hubId)?.name ?? "Managed hub";
+              const canManage = l.status === "pending_dropoff";
               return (
                 <div key={l.id} className="flex min-w-0 flex-col gap-1.5">
                   <CatalogBookCard
@@ -298,20 +321,62 @@ export default function HubDeskP2pListingsPage() {
                     isSample={false}
                     pipelineListingStatus={l.status}
                     action={
-                      <div className="space-y-2 text-left text-xs text-white/90">
-                        <p className="font-medium leading-snug text-amber-200/95">Peer pipeline (no physical copy yet)</p>
-                        {l.type ? (
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className={shelfFilterChipOnDarkClass}>{l.type.replace(/_/g, " ")}</span>
+                      canManage ? (
+                        <div className="space-y-2 text-left">
+                          <p className="text-xs font-medium leading-snug text-amber-200/95">
+                            Action required
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              size="sm"
+                              className="h-auto rounded-md px-2.5 py-1 text-xs"
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  listingId: l.id,
+                                  status: "approved",
+                                })
+                              }
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-auto rounded-md px-2.5 py-1 text-xs"
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  listingId: l.id,
+                                  status: "rejected",
+                                })
+                              }
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              Reject
+                            </Button>
                           </div>
-                        ) : null}
-                        <p className="font-medium tabular-nums">
-                          ₹{l.borrowPrice.toLocaleString("en-IN")} borrow · ₹{l.price.toLocaleString("en-IN")} buy
-                        </p>
-                        <p className="font-mono text-[10px] text-white/55" title={l.id}>
-                          Listing {catalogRefLabel(l.id, null)}
-                        </p>
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 text-left text-xs text-white/90">
+                          <p className="font-medium leading-snug text-amber-200/95">
+                            Peer pipeline (no physical copy yet)
+                          </p>
+                          {l.type ? (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className={shelfFilterChipOnDarkClass}>
+                                {l.type.replace(/_/g, " ")}
+                              </span>
+                            </div>
+                          ) : null}
+                          <p className="font-medium tabular-nums">
+                            ₹{l.borrowPrice.toLocaleString("en-IN")} borrow · ₹
+                            {l.price.toLocaleString("en-IN")} buy
+                          </p>
+                          <p className="font-mono text-[10px] text-white/55" title={l.id}>
+                            Listing {catalogRefLabel(l.id, null)}
+                          </p>
+                        </div>
+                      )
                     }
                   />
                 </div>

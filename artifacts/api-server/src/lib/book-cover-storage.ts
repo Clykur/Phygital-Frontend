@@ -1,4 +1,4 @@
-export const PLACEHOLDER_BOOK_COVER_NAME = "book_placeholder.webp";
+export const PLACEHOLDER_BOOK_COVER_NAME = "Book_Placeholder.jpg";
 
 /**
  * Returns the public URL for the placeholder book cover image.
