@@ -27,6 +27,12 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Env (secrets)
+.env
+.env.local
+.env.production
+.env.*.local
+
 # misc
 /.sass-cache
 /connect.lock
@@ -47,3 +53,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# API local file uploads
+artifacts/api-server/upload-data/

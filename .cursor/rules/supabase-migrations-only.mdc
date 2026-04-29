@@ -1,0 +1,23 @@
+---
+description: Use Supabase migrations as DB source of truth
+alwaysApply: true
+---
+
+# Supabase-Only Database Workflow
+
+- Use Supabase migration flow for schema changes.
+- Prefer `supabase migration new <name>` and `supabase db push`.
+- Keep migration SQL under `supabase/migrations/` for tracked history.
+
+# Do Not Use Drizzle Apply Commands
+
+- Do not run `npm run db:push` for production/shared schema updates.
+- Do not rely on Drizzle-only migration state as the source of truth.
+- Avoid making DB changes that will not appear in Supabase migration history.
+
+# When a DB Change Is Requested
+
+1. Create/append a Supabase migration file.
+2. Apply with `supabase db push` (or equivalent Supabase workflow).
+3. Verify the target table/column via SQL query.
+4. Keep app code and schema references aligned with the applied migration.

@@ -1,452 +1,2269 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search, Filter, SlidersHorizontal, Heart, MapPin, BookOpen, MessageCircle } from "lucide-react";
-import { useState, useMemo } from "react";
-import cover1 from "@/assets/images/book-cover-1.png";
-import cover2 from "@/assets/images/book-cover-2.png";
-import cover3 from "@/assets/images/book-cover-3.png";
-import cover4 from "@/assets/images/book-cover-4.png";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useStudentShell } from "@/components/layout/StudentAppShell";
+import { useAuth } from "@/context/auth-context";
+import {
+  CATALOG_PAGE_SIZE,
+  hubStatusRank,
+  p2pShelfStatusRank,
+} from "@/lib/catalog-sort";
+import { hubKindLabel } from "@/lib/hub-display";
+import { ShelfPeerStatusBadge } from "@/lib/status-badges";
+import { apiFetch, apiPublicUrl, ApiError } from "@/lib/api";
+import { BookCoverImage } from "@/components/ui/book-cover-image";
+import { DEMO_MARKETPLACE_LISTINGS } from "@/lib/browse-demos";
+import { signInHref } from "@/lib/sign-in-return";
+import {
+  isHubAccount,
+  portalPathsForUser,
+  SUPER_ADMIN_INVENTORY_PATH,
+} from "@/lib/app-paths";
+import { ACTIONS, authorize, isPremiumOk } from "@/lib/rbac";
+import {
+  CatalogBookCard,
+  PeerListingCard,
+  RequestBookSection,
+  addedLabel,
+  catalogRefLabel,
+  type LibraryCatalogBook,
+} from "@/pages/library";
+import { PORTAL_PAGE_CONTAINER, STUDENT_CARD_CHROME, STUDENT_CARD_SURFACE } from "@/lib/student-ui";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertCircle,
+  BookMarked,
+  BookOpen,
+  ImagePlus,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Search,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "wouter";
+import {
+  CheckoutFlowDialog,
+  type CheckoutFlowItem,
+} from "@/components/checkout-flow-dialog";
 
-const MOCK_LISTINGS = [
-  { id: 1, title: "Calculus: Early Transcendentals", author: "James Stewart", condition: "Like New", price: 850, category: "Science", seller: "Rahul M.", location: "Engineering Block A", distance: "0.2 miles", cover: cover1 },
-  { id: 2, title: "Organic Chemistry", author: "Paula Y. Bruice", condition: "Good", price: 450, category: "Science", seller: "Priya S.", location: "Main Library", distance: "0.5 miles", cover: cover2 },
-  { id: 3, title: "Computer Networks", author: "Andrew S. Tanenbaum", condition: "Fair", price: 300, category: "Engineering", seller: "Amit K.", location: "CS Dept", distance: "0.3 miles", cover: cover3 },
-  { id: 4, title: "Microelectronic Circuits", author: "Adel S. Sedra", condition: "Like New", price: 900, category: "Engineering", seller: "Neha Gupta", location: "Engineering Block B", distance: "0.4 miles", cover: cover4 },
-  { id: 5, title: "Database System Concepts", author: "Abraham Silberschatz", condition: "Good", price: 500, category: "Engineering", seller: "Vikram R.", location: "Main Library", distance: "0.5 miles", cover: cover1 },
-  { id: 6, title: "Engineering Mechanics", author: "R.C. Hibbeler", condition: "Fair", price: 250, category: "Engineering", seller: "Sneha P.", location: "Mech Dept", distance: "0.6 miles", cover: cover2 },
-  { id: 7, title: "Data Structures", author: "Mark Allen Weiss", condition: "Good", price: 400, category: "Engineering", seller: "Rohan D.", location: "CS Dept", distance: "0.3 miles", cover: cover3 },
-  { id: 8, title: "Modern Physics", author: "Kenneth Krane", condition: "Like New", price: 750, category: "Science", seller: "Anjali M.", location: "Physics Block", distance: "0.8 miles", cover: cover4 },
-  { id: 9, title: "Principles of Economics", author: "N. Gregory Mankiw", condition: "Good", price: 600, category: "Business", seller: "Karan S.", location: "Business School", distance: "1.2 miles", cover: cover1 },
-  { id: 10, title: "Marketing Management", author: "Philip Kotler", condition: "Like New", price: 800, category: "Business", seller: "Riya J.", location: "Business School", distance: "1.2 miles", cover: cover2 },
-  { id: 11, title: "A History of Modern India", author: "Ishita Banerjee-Dube", condition: "Fair", price: 350, category: "Humanities", seller: "Arjun P.", location: "Arts Block", distance: "0.9 miles", cover: cover3 },
-  { id: 12, title: "Introduction to Psychology", author: "Clifford T. Morgan", condition: "Good", price: 450, category: "Humanities", seller: "Meera K.", location: "Arts Block", distance: "0.9 miles", cover: cover4 },
-  { id: 13, title: "Gray's Anatomy for Students", author: "Richard Drake", condition: "Good", price: 1200, category: "Medicine", seller: "Dr. Sharma", location: "Med School Library", distance: "2.1 miles", cover: cover1 },
-  { id: 14, title: "Robbins Basic Pathology", author: "Vinay Kumar", condition: "Like New", price: 1500, category: "Medicine", seller: "Suresh R.", location: "Med School Library", distance: "2.1 miles", cover: cover2 },
-  { id: 15, title: "Digital Design", author: "M. Morris Mano", condition: "Fair", price: 200, category: "Engineering", seller: "Nisha T.", location: "ECE Dept", distance: "0.4 miles", cover: cover3 },
-  { id: 16, title: "Fundamentals of Management", author: "Stephen P. Robbins", condition: "Like New", price: 700, category: "Business", seller: "Tarun V.", location: "Business School", distance: "1.2 miles", cover: cover4 },
-  { id: 17, title: "Financial Accounting", author: "Walter T. Harrison", condition: "Good", price: 550, category: "Business", seller: "Pooja M.", location: "Business School", distance: "1.2 miles", cover: cover1 },
-  { id: 18, title: "Software Engineering", author: "Ian Sommerville", condition: "Good", price: 650, category: "Engineering", seller: "Vishal B.", location: "CS Dept", distance: "0.3 miles", cover: cover2 },
-  { id: 19, title: "Concepts of Genetics", author: "William S. Klug", condition: "Fair", price: 400, category: "Science", seller: "Swati N.", location: "Bio Block", distance: "1.0 miles", cover: cover3 },
-  { id: 20, title: "Thinking, Fast and Slow", author: "Daniel Kahneman", condition: "Like New", price: 450, category: "Humanities", seller: "Rohit C.", location: "Arts Block", distance: "0.9 miles", cover: cover4 },
-];
+type P2pListing = {
+  id: string;
+  ownerId: string;
+  hubId?: string;
+  bookTitle: string;
+  coverImageUrl?: string | null;
+  price: number;
+  borrowPrice: number;
+  type?: string;
+  status: string;
+  dropoffHubId: string | null;
+  buyerId: string | null;
+  buyerBaseRole?: string | null;
+  borrowerUserId?: string | null;
+  borrowDueAt?: string | null;
+  createdAt?: string | null;
+};
 
-const CATEGORIES = ["All", "Engineering", "Science", "Humanities", "Business", "Medicine"];
-const CONDITIONS = ["All", "New", "Like New", "Good", "Fair"];
-const SORTS = [
-  { value: "newest", label: "Newest" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "popular", label: "Most Popular" }
-];
+type Hub = { id: string; name: string; kind?: string };
+type RequestRow = { id: string; bookTitle?: string | null; status: string; createdAt?: string };
+const RECENT_VIEWED_KEY = "student.recentViewedTitles";
+const RECENT_SEARCHES_KEY = "student.recentSearches";
 
-export default function Marketplace() {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [condition, setCondition] = useState("All");
-  const [priceRange, setPriceRange] = useState([2000]);
-  const [sort, setSort] = useState("newest");
-  
-  const [savedBooks, setSavedBooks] = useState<Set<number>>(new Set());
-  const [selectedBook, setSelectedBook] = useState<typeof MOCK_LISTINGS[0] | null>(null);
-  const [messageOpen, setMessageOpen] = useState(false);
-  const [messageText, setMessageText] = useState("");
+function isDemoListingId(id: string) {
+  return id.startsWith("demo-");
+}
 
-  const filteredListings = useMemo(() => {
-    let result = [...MOCK_LISTINGS];
-    
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
-    }
-    
-    if (category !== "All") {
-      result = result.filter(b => b.category === category);
-    }
-    
-    if (condition !== "All") {
-      result = result.filter(b => b.condition === condition);
-    }
-    
-    result = result.filter(b => b.price <= priceRange[0]);
-    
-    switch (sort) {
-      case "price-asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      // newest and popular keep default mock order for simplicity
-      default:
-        break;
-    }
-    
-    return result;
-  }, [search, category, condition, priceRange, sort]);
+/** Peer listings must have a positive price to be shown or created. */
+function isValidListingPrice(price: number) {
+  return Number.isFinite(price) && Number.isInteger(price) && price >= 1;
+}
 
-  const toggleSave = (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
-    setSavedBooks(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-        toast("Removed from saved list.");
-      } else {
-        next.add(id);
-        toast.success("Saved to your list.");
+function isValidBorrowFee(price: number) {
+  return Number.isFinite(price) && Number.isInteger(price) && price >= 0;
+}
+
+function MarketplacePeerCard({
+  listing: l,
+  onSelect,
+}: {
+  listing: P2pListing;
+  onSelect: (listing: P2pListing) => void;
+}) {
+  const priceOk = isValidListingPrice(l.price);
+  const borrowOk = isValidBorrowFee(l.borrowPrice);
+  const priceDisplay = priceOk ? `Buy ₹${l.price.toLocaleString("en-IN")}` : "—";
+  const borrowPriceDisplay = borrowOk ? `Borrow ₹${l.borrowPrice.toLocaleString("en-IN")}` : undefined;
+  return (
+    <PeerListingCard
+      title={l.bookTitle}
+      coverUrl={l.coverImageUrl ? apiPublicUrl(l.coverImageUrl) : l.coverImageUrl}
+      refDisplay={catalogRefLabel(l.id, null)}
+      addedText={addedLabel(l.createdAt ?? undefined)}
+      addedAtTitle={
+        l.createdAt ? new Date(l.createdAt).toLocaleString() : undefined
       }
-      return next;
-    });
-  };
+      fullIdForTitle={l.id}
+      isSample={isDemoListingId(l.id)}
+      listingStatus={l.status}
+      priceDisplay={priceDisplay}
+      borrowPriceDisplay={borrowPriceDisplay}
+      priceOk={priceOk}
+      onOpen={() => {
+        pushRecentViewedTitle(l.bookTitle);
+        onSelect(l);
+      }}
+    />
+  );
+}
 
-  const clearFilters = () => {
+function GridPagination({
+  page,
+  totalPages,
+  onPageChange,
+  label,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+  label: string;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <nav
+      className="mt-8 flex justify-end"
+      aria-label={label}
+    >
+      <div className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="rounded-md"
+          disabled={page <= 1}
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+        >
+          Previous
+        </Button>
+        <span className="min-w-[8.5rem] text-center text-xs text-muted-foreground tabular-nums">
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="rounded-md"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+        >
+          Next
+        </Button>
+      </div>
+    </nav>
+  );
+}
+
+function CopyLifecycleStrip({ status }: { status: string }) {
+  if (["sold", "unavailable", "transfer_pending", "in_transit"].includes(status)) {
+    return (
+      <p className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+        Lifecycle: {status.replace(/_/g, " ")}
+      </p>
+    );
+  }
+  const idx =
+    status === "available" ? 0 : status === "reserved" ? 1 : status === "checked_out" ? 2 : 0;
+  return (
+    <div
+      className="flex w-full flex-wrap items-center justify-start gap-1.5 text-left"
+      title="On shelf to set aside (reserved) to out on loan."
+    >
+      {["Available", "Set aside (reserved)", "Out (on loan)"].map((label, i) => (
+        <span key={label} className="flex items-center gap-1.5">
+          {i > 0 ? <span className="text-[8px] text-muted-foreground/50">{"->"}</span> : null}
+          <span
+            className={cn(
+              "max-w-[10rem] truncate rounded px-1 py-0.5 text-[9px] font-medium",
+              i < idx
+                ? "text-emerald-800/80 dark:text-emerald-200/80"
+                : i === idx
+                  ? "bg-amber-500/20 text-amber-950 dark:text-amber-100"
+                  : "text-muted-foreground/50",
+            )}
+          >
+            {label}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function peerStatusToLifecycle(status: string): "available" | "reserved" | "checked_out" {
+  if (status === "available") return "available";
+  if (status === "reserved" || status === "borrowed") return "checked_out";
+  return "reserved";
+}
+
+function unavailableReason(status: string) {
+  if (status === "checked_out" || status === "overdue") return "checked out";
+  if (status === "reserved") return "reserved";
+  return "not on shelf";
+}
+
+function listingStatusLabel(status: string) {
+  if (status === "listed") return "Draft";
+  if (status === "pending_dropoff") return "Pending drop-off";
+  if (status === "available") return "On shelf";
+  if (status === "sold") return "Sold";
+  return status.replace(/_/g, " ");
+}
+
+function listingNextStep(status: string) {
+  if (status === "listed") return "Choose drop-off hub to start.";
+  if (status === "pending_dropoff") return "Drop at hub desk to activate.";
+  if (status === "available") return "Wait for buyer or borrower.";
+  if (status === "sold") return "Completed. Edits are locked.";
+  return "Track status updates from this page.";
+}
+
+function pushRecentViewedTitle(title: string) {
+  if (typeof window === "undefined") return;
+  const clean = title.trim();
+  if (!clean) return;
+  try {
+    const raw = window.localStorage.getItem(RECENT_VIEWED_KEY);
+    const current = raw ? (JSON.parse(raw) as string[]) : [];
+    const next = [clean, ...current.filter((t) => t !== clean)].slice(0, 12);
+    window.localStorage.setItem(RECENT_VIEWED_KEY, JSON.stringify(next));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+type BrowseRow =
+  | { kind: "hub"; book: LibraryCatalogBook; key: string }
+  | { kind: "p2p"; listing: P2pListing; key: string };
+
+type MarketplaceProps = { studentMode?: "browse" | "sell" };
+
+export default function Marketplace(props?: MarketplaceProps) {
+  const { studentMode } = props ?? {};
+  const isBrowseMode = studentMode === "browse";
+  const { token, user } = useAuth();
+  const portalPaths = portalPathsForUser(user);
+  const hubDesk = !!user && isHubAccount(user);
+  const isSuperAdmin = user?.baseRole === "super_admin";
+  const hubDeskBrowse = hubDesk && isBrowseMode;
+  const inShell = useStudentShell();
+  /** Logged-in super admin should use All copies, not a separate hub+peer “Network catalog” grid. */
+  const superAdminShellBrowse = inShell && isSuperAdmin && isBrowseMode;
+  const studentShellBrowse = inShell && !hubDesk && isBrowseMode;
+  const studentShellFlat = inShell && !hubDesk;
+  const [location] = useLocation();
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [sourceFilter, setSourceFilter] = useState<"all" | "hub" | "peers">("all");
+  const [soldToFilter, setSoldToFilter] = useState<"all" | "peer" | "hub">("all");
+  const [selected, setSelected] = useState<P2pListing | null>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newPrice, setNewPrice] = useState("499");
+  const [newBorrowPrice, setNewBorrowPrice] = useState("79");
+  const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
+  const [newCoverPreview, setNewCoverPreview] = useState<string | null>(null);
+  const [newListHubId, setNewListHubId] = useState("");
+  const [dropHubId, setDropHubId] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editBorrowPrice, setEditBorrowPrice] = useState("");
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const [editClearCover, setEditClearCover] = useState(false);
+  const [browsePage, setBrowsePage] = useState(1);
+  const [peerGridPage, setPeerGridPage] = useState(1);
+  const [checkout, setCheckout] = useState<{
+    item: CheckoutFlowItem;
+    initialMode?: "borrow" | "buy";
+  } | null>(null);
+
+  useEffect(() => {
     setSearch("");
-    setCategory("All");
-    setCondition("All");
-    setPriceRange([2000]);
-    setSort("newest");
+    setBrowsePage(1);
+    setPeerGridPage(1);
+  }, [location, studentMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+      setRecentSearches(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      setRecentSearches([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const clean = search.trim();
+    if (!clean || clean.length < 2) return;
+    const next = [clean, ...recentSearches.filter((s) => s.toLowerCase() !== clean.toLowerCase())].slice(0, 6);
+    setRecentSearches(next);
+    try {
+      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+    // intentionally only persists when search changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const hubsQ = useQuery({
+    queryKey: ["catalog", "hubs"],
+    queryFn: () => apiFetch<{ hubs: Hub[] }>("/api/catalog/hubs", { token: token ?? undefined }),
+  });
+
+  const listingsQueryEnabled =
+    studentMode === "sell" ||
+    studentMode === undefined ||
+    (isBrowseMode && (sourceFilter === "all" || sourceFilter === "peers"));
+
+  const listingsQ = useQuery({
+    queryKey: ["p2p-listings"],
+    enabled: listingsQueryEnabled,
+    queryFn: () =>
+      apiFetch<{ listings: P2pListing[] }>("/api/p2p/listings", {
+        token: token ?? undefined,
+      }),
+  });
+
+  const hubBooksUrl = useMemo(() => {
+    const q = search.trim();
+    return q
+      ? `/api/catalog/books?q=${encodeURIComponent(q)}`
+      : "/api/catalog/books";
+  }, [search]);
+
+  const hubBooksEnabled =
+    isBrowseMode && (sourceFilter === "all" || sourceFilter === "hub");
+
+  const hubBooksQ = useQuery({
+    queryKey: ["catalog", "books", "browse-hub", hubBooksUrl],
+    enabled: hubBooksEnabled,
+    queryFn: () =>
+      apiFetch<{ books: LibraryCatalogBook[] }>(hubBooksUrl, {
+        token: token ?? undefined,
+      }),
+  });
+  const reqQ = useQuery({
+    queryKey: ["book-requests", "mine"],
+    enabled: !!token && !!user && isBrowseMode,
+    queryFn: () => apiFetch<{ requests: RequestRow[] }>("/api/book-requests/mine", { token: token! }),
+  });
+
+  const live = listingsQ.data?.listings ?? [];
+  const useDemoPreview =
+    listingsQueryEnabled &&
+    listingsQ.isSuccess &&
+    live.length === 0 &&
+    !listingsQ.isFetching &&
+    !(studentMode === "sell" && inShell);
+
+  const gridSource = useMemo((): P2pListing[] => {
+    const raw = !useDemoPreview
+      ? live.map((l) => ({
+          ...l,
+          borrowPrice: typeof l.borrowPrice === "number" ? l.borrowPrice : 0,
+        }))
+      : DEMO_MARKETPLACE_LISTINGS.map((d, i) => ({
+          id: `demo-${i}`,
+          ownerId: "__demo__",
+          bookTitle: d.bookTitle,
+          coverImageUrl: d.coverImageUrl,
+          price: d.price,
+          borrowPrice: d.borrowPrice,
+          status: "available",
+          hubId: "__demo_hub__",
+          dropoffHubId: "__demo_hub__",
+          buyerId: null,
+        }));
+    return raw.filter(
+      (listing) =>
+        isDemoListingId(listing.id) ||
+        (isValidListingPrice(listing.price) && isValidBorrowFee(listing.borrowPrice)),
+    );
+  }, [useDemoPreview, live]);
+
+  const gridSourcePeerVisible = useMemo(() => {
+    return gridSource.filter((l) => {
+      if (l.status !== "reserved") return true;
+      if (!user) return false;
+      return l.borrowerUserId === user.userId || l.ownerId === user.userId;
+    });
+  }, [gridSource, user]);
+
+  const ownerFiltered = useMemo(() => {
+    if (studentMode === "sell" && inShell) {
+      if (!user) return [];
+      const uid = user.userId.toLowerCase();
+      return gridSourcePeerVisible.filter(
+        (l) => String(l.ownerId).toLowerCase() === uid,
+      );
+    }
+    if (user && studentMode !== "sell") {
+      const uid = user.userId.toLowerCase();
+      return gridSourcePeerVisible.filter(
+        (l) => String(l.ownerId).toLowerCase() !== uid,
+      );
+    }
+    return gridSourcePeerVisible;
+  }, [gridSourcePeerVisible, studentMode, inShell, user]);
+
+  const hubBooksSorted = useMemo(() => {
+    const books = hubBooksQ.data?.books ?? [];
+    let list = [...books].sort((a, b) => {
+      const d = hubStatusRank(a.status) - hubStatusRank(b.status);
+      if (d !== 0) return d;
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    });
+    if (hubDesk && user?.hubStaffHubIds?.length) {
+      const own = new Set(user.hubStaffHubIds);
+      list = list.filter((b) => b.hubId != null && !own.has(b.hubId));
+    }
+    return list;
+  }, [hubBooksQ.data?.books, hubDesk, user?.hubStaffHubIds]);
+
+  const peerShelfOrdered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let rows = ownerFiltered;
+    if (studentMode === "sell" && inShell && soldToFilter !== "all") {
+      rows = rows.filter((l) => {
+        if (l.status !== "sold") return true;
+        const role = (l.buyerBaseRole ?? "").toLowerCase();
+        if (soldToFilter === "hub") return role === "hub";
+        return role !== "hub";
+      });
+    }
+    if (q) {
+      rows = rows.filter((l) =>
+        (l.bookTitle ?? "").toLowerCase().includes(q),
+      );
+    }
+    return [...rows].sort((a, b) => {
+      const d = p2pShelfStatusRank(a.status) - p2pShelfStatusRank(b.status);
+      if (d !== 0) return d;
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    });
+  }, [ownerFiltered, search, studentMode, inShell, soldToFilter]);
+
+  const browseRowsFull = useMemo((): BrowseRow[] => {
+    if (!isBrowseMode) return [];
+    const rows: BrowseRow[] = [];
+    if (sourceFilter === "all" || sourceFilter === "hub") {
+      for (const b of hubBooksSorted) {
+        rows.push({ kind: "hub", book: b, key: `hub-${b.id}` });
+      }
+    }
+    if (sourceFilter === "all" || sourceFilter === "peers") {
+      for (const l of peerShelfOrdered) {
+        rows.push({ kind: "p2p", listing: l, key: `p2p-${l.id}` });
+      }
+    }
+    return rows;
+  }, [isBrowseMode, sourceFilter, hubBooksSorted, peerShelfOrdered]);
+
+  const browseTotalPages = Math.max(1, Math.ceil(browseRowsFull.length / CATALOG_PAGE_SIZE));
+  const browseRows = useMemo(
+    () =>
+      browseRowsFull.slice(
+        (browsePage - 1) * CATALOG_PAGE_SIZE,
+        browsePage * CATALOG_PAGE_SIZE,
+      ),
+    [browseRowsFull, browsePage],
+  );
+
+  useEffect(() => {
+    if (!isBrowseMode || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const focus = params.get("focus");
+    const ref = params.get("ref");
+    if (focus !== "book" || !ref) return;
+    const idx = browseRowsFull.findIndex(
+      (row) => row.kind === "hub" && (row.book.id === ref || row.book.refId === ref),
+    );
+    if (idx < 0) return;
+    const page = Math.floor(idx / CATALOG_PAGE_SIZE) + 1;
+    if (page !== browsePage) setBrowsePage(page);
+  }, [isBrowseMode, browseRowsFull, browsePage]);
+
+  useEffect(() => {
+    if (!isBrowseMode || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const focus = params.get("focus");
+    const ref = params.get("ref");
+    if (focus !== "book" || !ref) return;
+    const el =
+      document.querySelector(`[data-book-id="${CSS.escape(ref)}"]`) ??
+      document.querySelector(`[data-book-ref-id="${CSS.escape(ref)}"]`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+    const t = window.setTimeout(() => {
+      el.classList.remove("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+    }, 2600);
+    return () => window.clearTimeout(t);
+  }, [isBrowseMode, browseRows]);
+
+  const searchSuggestions = useMemo(() => {
+    const hubTitles = (hubBooksQ.data?.books ?? []).map((b) => b.title?.trim()).filter(Boolean) as string[];
+    const peerTitles = (peerShelfOrdered ?? []).map((l) => l.bookTitle?.trim()).filter(Boolean) as string[];
+    return Array.from(new Set([...hubTitles, ...peerTitles])).slice(0, 12);
+  }, [hubBooksQ.data?.books, peerShelfOrdered]);
+
+  const recentRequestedTitles = useMemo(() => {
+    const rows = reqQ.data?.requests ?? [];
+    return Array.from(
+      new Set(
+        rows
+          .filter((r) => ["requested", "routed", "fulfilled", "ready"].includes(r.status))
+          .map((r) => r.bookTitle?.trim())
+          .filter(Boolean) as string[],
+      ),
+    ).slice(0, 6);
+  }, [reqQ.data?.requests]);
+
+  const popularAtHub = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const b of hubBooksSorted) {
+      counts.set(b.title, (counts.get(b.title) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([title]) => title);
+  }, [hubBooksSorted]);
+
+  const similarBooks = useMemo(() => {
+    const seed = search.trim().toLowerCase();
+    let recent: string[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem(RECENT_VIEWED_KEY);
+        recent = raw ? (JSON.parse(raw) as string[]) : [];
+      } catch {
+        recent = [];
+      }
+    }
+    if (!seed) return recent.slice(0, 6);
+    const matching = searchSuggestions.filter((t) => t.toLowerCase().includes(seed));
+    return Array.from(new Set([...matching, ...recent])).slice(0, 6);
+  }, [search, searchSuggestions]);
+
+  const peerGridTotalPages = Math.max(1, Math.ceil(peerShelfOrdered.length / CATALOG_PAGE_SIZE));
+  const peerGridRows = useMemo(
+    () =>
+      peerShelfOrdered.slice(
+        (peerGridPage - 1) * CATALOG_PAGE_SIZE,
+        peerGridPage * CATALOG_PAGE_SIZE,
+      ),
+    [peerShelfOrdered, peerGridPage],
+  );
+
+  useEffect(() => {
+    setBrowsePage(1);
+  }, [search, sourceFilter]);
+
+  useEffect(() => {
+    setPeerGridPage(1);
+  }, [search, studentMode]);
+
+  useEffect(() => {
+    setBrowsePage((p) => Math.min(Math.max(1, p), browseTotalPages));
+  }, [browseTotalPages]);
+
+  useEffect(() => {
+    setPeerGridPage((p) => Math.min(Math.max(1, p), peerGridTotalPages));
+  }, [peerGridTotalPages]);
+
+  const browseLoading =
+    isBrowseMode &&
+    ((hubBooksEnabled && hubBooksQ.isLoading) ||
+      (listingsQueryEnabled && listingsQ.isLoading));
+
+  const newListingPriceParsed = Number.parseInt(newPrice, 10);
+  const newListingPriceValid = isValidListingPrice(newListingPriceParsed);
+  const newListingBorrowParsed = Number.parseInt(newBorrowPrice, 10);
+  const newListingBorrowValid = isValidBorrowFee(newListingBorrowParsed);
+  const editListingPriceParsed = Number.parseInt(editPrice, 10);
+  const editListingPriceValid = isValidListingPrice(editListingPriceParsed);
+  const editListingBorrowParsed = Number.parseInt(editBorrowPrice, 10);
+  const editListingBorrowValid = isValidBorrowFee(editListingBorrowParsed);
+
+  const invalidateCheckoutQueries = () => {
+    void qc.invalidateQueries({ queryKey: ["catalog", "books"] });
+    void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
+    void qc.invalidateQueries({ queryKey: ["activity", "timeline"] });
+    void qc.invalidateQueries({ queryKey: ["hub", "books"] });
+    void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
+    void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
   };
 
-  const handleAction = (action: string) => {
-    toast.success(`Successfully ${action}! We've sent details to your email.`);
-    setSelectedBook(null);
-  };
+  const deskAcquireHubs = useMemo(() => {
+    if (!hubDesk || !user?.hubStaffHubIds.length || !hubsQ.data?.hubs.length) return null;
+    return user.hubStaffHubIds.map((hid) => ({
+      id: hid,
+      name: hubsQ.data!.hubs.find((h) => h.id === hid)?.name ?? `${hid.slice(0, 8)}…`,
+    }));
+  }, [hubDesk, user?.hubStaffHubIds, hubsQ.data?.hubs]);
 
-  const sendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Message sent to seller!");
-    setMessageOpen(false);
-    setMessageText("");
-  };
+  const createListing = useMutation({
+    mutationFn: async () => {
+      const price = Number.parseInt(newPrice, 10);
+      const borrowPrice = Number.parseInt(newBorrowPrice, 10);
+      if (!Number.isFinite(price) || price < 1) throw new Error("Invalid price");
+      if (!Number.isFinite(borrowPrice) || borrowPrice < 0) throw new Error("Invalid borrow price");
+      let coverImageUrl: string | undefined;
+      if (newCoverFile) {
+        const fd = new FormData();
+        fd.append("image", newCoverFile);
+        const up = await apiFetch<{ url: string }>("/api/uploads/book-cover", {
+          method: "POST",
+          token: token!,
+          body: fd,
+        });
+        coverImageUrl = up.url;
+      }
+      const hubId = newListHubId || hubsQ.data?.hubs[0]?.id;
+      if (!hubId) throw new Error("Pick a hub for this listing.");
+      await apiFetch("/api/p2p/listings", {
+        method: "POST",
+        token: token!,
+        body: JSON.stringify({
+          hubId,
+          bookTitle: newTitle.trim(),
+          type: "sell",
+          price,
+          borrowPrice,
+          ...(coverImageUrl ? { coverImageUrl } : {}),
+        }),
+      });
+    },
+    onSuccess: () => {
+      toast.success("Listed");
+      setListOpen(false);
+      setNewTitle("");
+      setNewBorrowPrice("79");
+      if (newCoverPreview) URL.revokeObjectURL(newCoverPreview);
+      setNewCoverPreview(null);
+      setNewCoverFile(null);
+      void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
+    },
+    onError: (e) =>
+      toast.error(e instanceof ApiError ? e.message : "Could not list — check Premium status."),
+  });
+
+  const submitDropoff = useMutation({
+    mutationFn: async ({ id, hubId }: { id: string; hubId: string }) => {
+      await apiFetch(`/api/p2p/listings/${id}/submit-dropoff`, {
+        method: "POST",
+        token: token!,
+        body: JSON.stringify({ hubId }),
+      });
+    },
+    onSuccess: () => {
+      toast.success("Drop-off submitted");
+      void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
+      void qc.invalidateQueries({ queryKey: ["hub", "pending-p2p"] });
+      setSelected(null);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Drop-off failed"),
+  });
+
+  useEffect(() => {
+    if (!selected) return;
+    setEditTitle(selected.bookTitle);
+    setEditPrice(String(selected.price));
+    setEditBorrowPrice(String(selected.borrowPrice));
+    setEditClearCover(false);
+    setEditCoverFile(null);
+    setDropHubId("");
+    setEditCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, [selected?.id]);
+
+  const updateListing = useMutation({
+    mutationFn: async () => {
+      if (!selected || !token) throw new Error("No listing");
+      const price = Number.parseInt(editPrice, 10);
+      const borrowPrice = Number.parseInt(editBorrowPrice, 10);
+      if (!Number.isFinite(price) || price < 1) throw new Error("Invalid price");
+      if (!Number.isFinite(borrowPrice) || borrowPrice < 0) throw new Error("Invalid borrow price");
+      let coverImageUrl: string | "" | undefined;
+      if (editClearCover) {
+        coverImageUrl = "";
+      } else if (editCoverFile) {
+        const fd = new FormData();
+        fd.append("image", editCoverFile);
+        const up = await apiFetch<{ url: string }>("/api/uploads/book-cover", {
+          method: "POST",
+          token,
+          body: fd,
+        });
+        coverImageUrl = up.url;
+      }
+      await apiFetch(`/api/p2p/listings/${selected.id}`, {
+        method: "PATCH",
+        token,
+        body: JSON.stringify({
+          bookTitle: editTitle.trim(),
+          price,
+          borrowPrice,
+          ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
+        }),
+      });
+    },
+    onSuccess: () => {
+      toast.success("Listing updated");
+      void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
+      setEditCoverPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      setEditCoverFile(null);
+      setEditClearCover(false);
+      setSelected(null);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Update failed"),
+  });
+
+  const deleteListing = useMutation({
+    mutationFn: async (id: string) => {
+      await apiFetch(`/api/p2p/listings/${id}`, { method: "DELETE", token: token! });
+    },
+    onSuccess: () => {
+      toast.success("Listing removed");
+      void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
+      setSelected(null);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Delete failed"),
+  });
+
+  const returnPeerBorrow = useMutation({
+    mutationFn: async (id: string) => {
+      await apiFetch(`/api/p2p/listings/${id}/return-borrow`, { method: "POST", token: token! });
+    },
+    onSuccess: () => {
+      toast.success("Peer borrow returned.");
+      invalidateCheckoutQueries();
+      setSelected(null);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
+  });
+
+  const canList =
+    user &&
+    authorize(user, ACTIONS.CREATE_P2P_LISTING, { type: "none" }) &&
+    isPremiumOk(user);
+
+  function openPeerCheckout(listing: P2pListing, mode: "borrow" | "buy") {
+    if (!token) return;
+    const hubKey = listing.hubId ?? listing.dropoffHubId;
+    const hubNm =
+      hubKey && hubsQ.data
+        ? hubsQ.data.hubs.find((h) => h.id === hubKey)?.name ?? null
+        : null;
+    setCheckout({
+      item: {
+        kind: "p2p",
+        listingId: listing.id,
+        title: listing.bookTitle,
+        hubName: hubNm,
+        buyPrice: listing.price,
+        borrowPrice: listing.borrowPrice,
+      },
+      initialMode: mode,
+    });
+    setSelected(null);
+  }
+
+  const peerListingsError = listingsQueryEnabled && listingsQ.isError;
+
+  const topPad = inShell ? "" : "pt-24";
+  const upgradeHint = inShell ? "Upgrade in the sidebar" : "Upgrade in the header";
+
+  const hubNameBorrow = (id: string) =>
+    hubsQ.data?.hubs.find((h) => h.id === id)?.name ?? id.slice(0, 8);
+
+  const hero = isBrowseMode
+    ? hubDesk
+      ? {
+          kicker: "Hub catalog",
+          title: "Network sourcing",
+          accent: "Browse, compare, acquire.",
+          body: inShell
+            ? "Use the union catalog to find titles for members, fill gaps, or buy/borrow as this hub login. Inventory remains the system of record for what you physically hold; this view is for discovery and checkout."
+            : "Browse hub and peer copies to support members. Sign in for the full desk experience.",
+        }
+      : {
+          kicker: "Browse books",
+          title: "Browse books",
+          accent: "Together in one place.",
+          body: inShell
+            ? "Use the filters and search to focus on shelf copies, student sellers, or both. Premium unlocks checkout and purchases after hub approval."
+            : "Browse hub and peer copies in one view. Sign in for checkout, requests, and purchases.",
+        }
+    : studentMode === "sell"
+      ? hubDesk
+        ? {
+            kicker: "Consignment",
+            title: "Peer shelf at your hub",
+            accent: "Drop-offs & approvals.",
+            body: inShell
+              ? "Track listings that name your hub for drop-off. Members still own their listings—you facilitate shelf space and desk pickup."
+              : "Consignment flows use your hub as the handoff point.",
+          }
+        : {
+            kicker: "Sell",
+            title: inShell ? "Your peer listings" : "List on the peer shelf",
+            accent: inShell ? "Only books you’ve listed appear here." : "One copy, campus pickup.",
+            body: inShell
+              ? "Publish a listing, submit drop-off at a hub, and track status until it sells. Use List a book to add another title."
+              : "Set a fair price, drop the book at your hub for approval, and buyers collect it from the desk when it’s ready.",
+          }
+      : {
+          kicker: "Discover",
+          title: "Peer shelf",
+          accent: "browse every listing.",
+          body: "Explore listings without signing in. Listing, drop-off, and purchase need an account (buying also needs Premium after the hub approves the copy).",
+        };
+
+  const showListCta = studentMode === "sell" || !studentMode;
 
   return (
-    <div className="min-h-[100dvh] bg-background pt-24 pb-32">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+    <div className={cn("min-h-[100dvh] bg-background pb-32 text-foreground", topPad)}>
+      <div className={cn("mx-auto w-full", inShell ? "" : PORTAL_PAGE_CONTAINER)}>
+        <div
+          className={cn(
+            "flex flex-col items-start justify-between gap-8 md:flex-row md:items-end",
+            hubDeskBrowse
+              ? "mb-4"
+              : inShell && (!hubDesk || isBrowseMode)
+                ? "mb-8 border-b border-border/30 pb-6"
+                : "mb-12",
+          )}
+        >
           <div>
-            <h1 className="text-4xl md:text-5xl font-serif font-medium mb-3">Discover</h1>
-            <p className="text-lg text-muted-foreground font-light">Buy and sell textbooks directly with peers on campus.</p>
+            {hubDeskBrowse ? (
+              <>
+                <p
+                  className={cn(
+                    "text-[10px] font-semibold uppercase tracking-[0.35em]",
+                    "text-amber-600/90 dark:text-amber-400/90",
+                  )}
+                >
+                  {isSuperAdmin ? "Super admin" : "Hub portal"}
+                </p>
+                <h1 className="mt-1 font-serif text-lg font-light text-foreground">
+                  {isSuperAdmin && inShell ? "All copies" : isSuperAdmin ? "Hub & peer catalog" : "Hub catalog"}
+                </h1>
+                {isSuperAdmin && inShell ? (
+                  <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                    The separate hub+peer grid is for hub staff and students. Your desk view for every physical copy:{" "}
+                    <Link
+                      href={SUPER_ADMIN_INVENTORY_PATH}
+                      className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+                    >
+                      All copies
+                    </Link>
+                    .
+                  </p>
+                ) : isSuperAdmin ? (
+                  <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                    Hubs and peer listings in one grid. Physical stock:{" "}
+                    <Link
+                      href={portalPaths.inventory}
+                      className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+                    >
+                      All copies
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                    Your on-shelf stock and hub-owned rows are in{" "}
+                    <Link href={portalPaths.inventory} className="font-medium text-foreground underline-offset-2 hover:underline">
+                      All copies
+                    </Link>
+                    .
+                  </p>
+                )}
+              </>
+            ) : inShell && !hubDesk ? (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
+                  Library
+                </p>
+                <h1 className="mt-1 font-serif text-lg font-light text-foreground">
+                  {isBrowseMode ? "Browse books" : studentMode === "sell" ? "Sell" : hero.title}
+                </h1>
+              </>
+            ) : (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-600/90">
+                  {hero.kicker}
+                </p>
+                <h1 className="mt-4 font-serif text-[2.25rem] font-light leading-[1.1] tracking-[-0.02em] md:text-5xl">
+                  {hero.title}
+                  <span className="mt-1 block font-serif italic text-amber-600">{hero.accent}</span>
+                </h1>
+                <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground md:text-base">
+                  {hero.body}{" "}
+                  {isBrowseMode && inShell && (
+                    <>
+                      <Link href={portalPaths.sell} className="font-medium text-amber-600 underline-offset-4 hover:underline">
+                        Selling instead?
+                      </Link>
+                    </>
+                  )}
+                  {studentMode === "sell" && inShell && (
+                    <>
+                      <Link href={portalPaths.borrow} className="font-medium text-amber-600 underline-offset-4 hover:underline">
+                        Browse books
+                      </Link>
+                    </>
+                  )}
+                </p>
+              </>
+            )}
           </div>
-          <Button className="rounded-full h-12 px-6 shadow-md font-medium" onClick={() => toast.success("List a book feature coming soon!")}>
-            List a Book
-          </Button>
-        </div>
-
-        {/* Search & Filter Bar - Desktop */}
-        <div className="hidden lg:flex flex-col sm:flex-row gap-4 mb-8 bg-card p-2 rounded-2xl border border-border shadow-sm">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search by title or author..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
-            />
-          </div>
-          <div className="w-[1px] bg-border mx-2" />
-          
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-[160px] border-none bg-transparent h-12 focus:ring-0">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-
-          <div className="w-[1px] bg-border mx-2" />
-
-          <Select value={condition} onValueChange={setCondition}>
-            <SelectTrigger className="w-[140px] border-none bg-transparent h-12 focus:ring-0">
-              <SlidersHorizontal className="w-4 h-4 mr-2 text-muted-foreground inline-block" />
-              <SelectValue placeholder="Condition" />
-            </SelectTrigger>
-            <SelectContent>
-              {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-
-          <div className="w-[1px] bg-border mx-2" />
-          
-          <div className="flex items-center px-4 gap-4 w-[200px]">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Max ₹{priceRange[0]}</span>
-            <Slider 
-              value={priceRange} 
-              onValueChange={setPriceRange} 
-              max={2000} 
-              step={50}
-              className="w-full"
-            />
-          </div>
-
-          <div className="w-[1px] bg-border mx-2" />
-          
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-[160px] border-none bg-transparent h-12 focus:ring-0">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              {SORTS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Mobile Filters */}
-        <div className="lg:hidden flex gap-2 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none"
-            />
-          </div>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="h-10 px-4 rounded-xl"><Filter className="w-4 h-4 mr-2" /> Filters</Button>
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
-                <SheetDescription>Refine your search results.</SheetDescription>
-              </SheetHeader>
-              <div className="space-y-6 py-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {user && !isPremiumOk(user) && (
+              <p className="max-w-xs text-sm text-muted-foreground">
+                {upgradeHint} to list on the shelf or complete a purchase.
+              </p>
+            )}
+            {!user ? (
+              <Button asChild className={cn("h-12 px-8", studentShellFlat ? "rounded-md" : "rounded-full")}>
+                <Link href={signInHref("/marketplace")}>
+                  {isBrowseMode ? "Sign in to borrow or buy" : "Sign in to list or buy"}
+                </Link>
+              </Button>
+            ) : showListCta ? (
+              <Dialog
+                open={listOpen}
+                onOpenChange={(open) => {
+                  setListOpen(open);
+                  if (!open) {
+                    setNewListHubId("");
+                    setNewCoverPreview((prev) => {
+                      if (prev) URL.revokeObjectURL(prev);
+                      return null;
+                    });
+                    setNewCoverFile(null);
+                  } else if (hubsQ.data?.hubs[0]?.id) {
+                    setNewListHubId(hubsQ.data.hubs[0].id);
+                  }
+                }}
+              >
+                <Button
+                  className={cn("h-12 px-8", studentShellFlat ? "rounded-md" : "rounded-full")}
+                  disabled={!canList}
+                  onClick={() => {
+                    if (!canList) {
+                      toast.message("Premium required to list.");
+                      return;
+                    }
+                    setListOpen(true);
+                  }}
+                >
+                  List a book
+                </Button>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="font-serif">New listing</DialogTitle>
+                    <DialogDescription>
+                      Choose the campus hub, then add a title, a <strong>buy</strong> price and an optional{" "}
+                      <strong>borrow</strong> fee (whole rupees; borrow may be ₹0 for sell-only copies).
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                      <Label>Hub</Label>
+                      <Select
+                        value={newListHubId || undefined}
+                        onValueChange={setNewListHubId}
+                        disabled={!hubsQ.data?.hubs.length}
+                      >
+                    <SelectTrigger>
+                          <SelectValue placeholder={hubsQ.isLoading ? "Loading hubs…" : "Choose hub"} />
+                    </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          {(hubsQ.data?.hubs ?? []).map((h) => (
+                            <SelectItem key={h.id} value={h.id}>
+                              {`${h.name} · ${hubKindLabel(h.kind)}`}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Condition</Label>
-                  <Select value={condition} onValueChange={setCondition}>
-                    <SelectTrigger><SelectValue placeholder="Condition" /></SelectTrigger>
-                    <SelectContent>
-                      {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                      <Label>Title</Label>
+                      <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
                 </div>
-                <div className="space-y-4">
-                  <Label>Max Price: ₹{priceRange[0]}</Label>
-                  <Slider value={priceRange} onValueChange={setPriceRange} max={2000} step={50} />
+                    <div className="space-y-2">
+                      <Label>Buy price (₹)</Label>
+                      <Input
+                        inputMode="numeric"
+                        min={1}
+                        placeholder="e.g. 499"
+                        value={newPrice}
+                        onChange={(e) => setNewPrice(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                      {!newListingPriceValid && newPrice.trim() !== "" && (
+                        <p className="text-xs text-destructive">Enter a whole number of ₹1 or more.</p>
+                      )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Sort By</Label>
-                  <Select value={sort} onValueChange={setSort}>
-                    <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
-                    <SelectContent>
-                      {SORTS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                      <Label>Borrow fee (₹)</Label>
+                      <Input
+                        inputMode="numeric"
+                        min={0}
+                        placeholder="e.g. 79 or 0"
+                        value={newBorrowPrice}
+                        onChange={(e) => setNewBorrowPrice(e.target.value.replace(/[^\d]/g, ""))}
+                      />
+                      {!newListingBorrowValid && newBorrowPrice.trim() !== "" && (
+                        <p className="text-xs text-destructive">Enter a whole number ₹0 or more.</p>
+                      )}
                 </div>
-                <Button className="w-full" onClick={clearFilters} variant="outline">Reset Filters</Button>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <ImagePlus className="h-4 w-4" aria-hidden />
+                        Book photo (optional)
+                      </Label>
+                      <Input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="cursor-pointer"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] ?? null;
+                          setNewCoverPreview((prev) => {
+                            if (prev) URL.revokeObjectURL(prev);
+                            return f ? URL.createObjectURL(f) : null;
+                          });
+                          setNewCoverFile(f);
+                          e.target.value = "";
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        JPEG, PNG, WebP, or GIF · up to 5&nbsp;MB
+                      </p>
+                      <BookCoverImage
+                        src={newCoverPreview}
+                        alt={newCoverPreview ? "Cover preview" : "Default book cover"}
+                        className={cn(
+                          STUDENT_CARD_SURFACE,
+                          "mt-2 max-h-40 w-28 object-cover",
+                          !newCoverPreview && "opacity-80",
+                        )}
+                      />
+                    </div>
+                    <Button
+                      className={cn("w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                      disabled={
+                        !newTitle.trim() ||
+                        !newListingPriceValid ||
+                        !newListingBorrowValid ||
+                        createListing.isPending
+                      }
+                      onClick={() => createListing.mutate()}
+                    >
+                      Publish listing
+                </Button>
               </div>
-            </SheetContent>
-          </Sheet>
+                </DialogContent>
+              </Dialog>
+            ) : null}
+          </div>
         </div>
 
-        {/* Results Header */}
-        <div className="mb-6 flex justify-between items-center text-sm text-muted-foreground">
-          <span>Showing {filteredListings.length} {filteredListings.length === 1 ? 'book' : 'books'}</span>
-          {(search || category !== "All" || condition !== "All" || priceRange[0] < 2000) && (
-            <button onClick={clearFilters} className="text-amber-600 hover:text-amber-700 font-medium">Clear filters</button>
+        {!user && (
+          <div className={cn(STUDENT_CARD_SURFACE, "mb-8 bg-card/80 px-5 py-4 text-sm text-muted-foreground")}>
+            {isBrowseMode ? (
+              <>
+                You’re browsing as a guest — hub tiles and peer listings update from the live API.{" "}
+                <Link
+                  href={signInHref("/marketplace")}
+                  className="font-medium text-amber-600 underline-offset-4 hover:underline"
+                >
+                  Sign in
+                </Link>{" "}
+                to check out, request a book, or buy after hub approval.
+              </>
+            ) : (
+              <>
+                You’re browsing as a guest — these covers are real listings when peers publish them.{" "}
+                <Link
+                  href={signInHref("/marketplace")}
+                  className="font-medium text-amber-600 underline-offset-4 hover:underline"
+                >
+                  Sign in
+                </Link>{" "}
+                to list, drop off, or buy after hub approval.
+              </>
+          )}
+        </div>
+        )}
+
+        {isBrowseMode && hubBooksEnabled && hubBooksQ.isError && (
+          <p className="mb-6 text-sm text-destructive">Couldn’t load hub catalog. Check the API and try again.</p>
+        )}
+
+        {peerListingsError && (
+          <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+              <div>
+                <p className="font-medium text-foreground">Couldn’t load peer listings</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Check that the API is running and{" "}
+                  <code className="rounded bg-muted px-1">/api/p2p/listings</code> is reachable.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className={cn("shrink-0", studentShellFlat ? "rounded-md" : "rounded-full")}
+              onClick={() => void listingsQ.refetch()}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {useDemoPreview && !peerListingsError && (
+          <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-sm text-foreground">
+            <span className="font-medium text-amber-800 dark:text-amber-200">No live listings yet.</span>{" "}
+            Showing sample covers so guests see how Discover looks — start the API with seeding (e.g.{" "}
+            <code className="rounded bg-muted px-1 text-xs">AUTO_SEED=1</code>) or publish a listing
+            after signing in.
+                    </div>
+        )}
+
+        <div
+          className={cn(
+            "mb-8 border-b border-border/30 pb-6",
+            hubDesk && isBrowseMode && inShell && "mb-6 border-b border-border pb-5",
+          )}
+        >
+          {isBrowseMode && !superAdminShellBrowse ? (
+            <>
+            <div
+              className={cn(
+                "flex flex-col gap-3 md:flex-row md:gap-4",
+                hubDesk && isBrowseMode && inShell && "sm:flex-row sm:flex-wrap sm:items-end",
+              )}
+            >
+              <div className="flex min-w-0 flex-1 flex-col">
+                <Label
+                  className={cn(
+                    "text-[10px] text-muted-foreground",
+                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                  )}
+                >
+                  Search
+                </Label>
+                {hubDesk && isBrowseMode && inShell ? (
+                  <div className="mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm">
+                    <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Search titles…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="min-w-0 flex-1 border-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                      aria-label="Search catalog titles"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      studentShellBrowse
+                        ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                        : studentShellFlat
+                          ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                          : "mt-1 flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
+                    )}
+                  >
+                    <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
+                    <input
+                      type="text"
+                      placeholder="Search titles…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="min-w-0 flex-1 border-none bg-transparent py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:text-[15px]"
+                      aria-label="Search catalog titles"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex w-full shrink-0 flex-col md:w-36">
+                <Label
+                  className={cn(
+                    "text-[10px] text-muted-foreground",
+                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                  )}
+                >
+                  {hubDesk ? "Source" : "Catalog"}
+                </Label>
+                <Select
+                  value={sourceFilter}
+                  onValueChange={(v) => setSourceFilter(v as "all" | "hub" | "peers")}
+                >
+                  <SelectTrigger
+                    className={cn(
+                      "mt-1 w-full shrink-0",
+                      hubDesk && isBrowseMode && inShell
+                        ? "h-10 rounded-md border-border bg-background px-2.5 text-sm"
+                        : studentShellBrowse
+                          ? "h-10 rounded-md border border-border bg-background px-2.5 text-sm"
+                          : "h-11 rounded-xl border border-border/60 bg-background/80 px-2.5 text-sm sm:h-12",
+                    )}
+                    aria-label={hubDesk ? "Browse source" : "Catalog source"}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="hub">Hubs</SelectItem>
+                    <SelectItem value="peers">Peers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div
+                className={cn(
+                  "flex w-full shrink-0 flex-col",
+                  hubDesk && isBrowseMode && inShell ? "md:max-w-[12rem] md:justify-self-end" : "md:w-auto",
+                )}
+              >
+                <Label
+                  className={cn(
+                    "text-[10px] text-muted-foreground",
+                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                  )}
+                >
+                  Request
+                </Label>
+                <div className="mt-1.5 sm:mt-1">
+                  {user && token ? (
+                    <RequestBookSection
+                      token={token}
+                      hubs={hubsQ.data?.hubs ?? []}
+                      user={user}
+                      onDone={() => {
+                        void qc.invalidateQueries({ queryKey: ["book-requests"] });
+                        void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
+                      }}
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className={cn(
+                            "w-full gap-2 font-medium",
+                            hubDesk && isBrowseMode && inShell
+                              ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                              : studentShellBrowse
+                                ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                : studentShellFlat
+                                  ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                  : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                          )}
+                        >
+                          <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          Request a book
+                        </Button>
+                      }
+                    />
+                  ) : (
+                    <Button
+                      asChild
+                      variant="secondary"
+                      className={cn(
+                        "w-full gap-2 font-medium",
+                        hubDesk && isBrowseMode && inShell
+                          ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                          : studentShellBrowse
+                            ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                            : studentShellFlat
+                              ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                              : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                      )}
+                    >
+                      <Link href={signInHref(inShell ? portalPaths.borrow : "/marketplace")}>
+                        <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        Request a book
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            {hubDesk && !inShell ? (
+              <p className="mt-2 max-w-xl text-[11px] leading-relaxed text-muted-foreground">
+                Your managed shelf is in Inventory; this catalog shows peers and other campuses for sourcing.
+              </p>
+            ) : null}
+            </>
+          ) : isBrowseMode && superAdminShellBrowse ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Super admin desk: every physical copy (hub and peer) lives in one place. Open{" "}
+              <Link
+                href={SUPER_ADMIN_INVENTORY_PATH}
+                className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+              >
+                All copies
+              </Link>
+              . Use <span className="font-semibold text-foreground">Source</span> and filters there. This union
+              grid is for hub operators and students; browse it signed out on the public site if needed.
+            </p>
+          ) : (
+            <div
+              className={cn(
+                "flex flex-col gap-3",
+                studentMode === "sell" && inShell && "sm:flex-row sm:flex-wrap sm:items-end",
+              )}
+            >
+              <div className="flex min-w-0 flex-1 flex-col">
+                <Label className="text-[10px] text-muted-foreground">Search</Label>
+                <div
+                  className={cn(
+                    studentShellBrowse
+                      ? "flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                      : studentShellFlat
+                        ? "flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                        : "flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
+                  )}
+                >
+                  <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
+                  <input
+                    type="search"
+                    placeholder={
+                      studentMode === "sell" && inShell
+                        ? "Search your listings…"
+                        : "Search title, author, or subject…"
+                    }
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    list="student-search-suggestions"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className="min-w-0 flex-1 border-none bg-transparent py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:text-[15px]"
+                    aria-label={
+                      studentMode === "sell" && inShell ? "Search your listings" : "Search listings"
+                    }
+                  />
+                </div>
+                <datalist id="student-search-suggestions">
+                  {searchSuggestions.map((s) => (
+                    <option key={s} value={s} />
+                  ))}
+                </datalist>
+                {studentShellBrowse && recentSearches.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {recentSearches.map((s) => (
+                      <Button
+                        key={`recent-${s}`}
+                        size="sm"
+                        variant="outline"
+                        className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px]"
+                        onClick={() => setSearch(s)}
+                      >
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              {studentMode === "sell" && inShell ? (
+                <div className="flex w-full shrink-0 flex-col sm:w-[12rem]">
+                  <Label className="text-[10px] text-muted-foreground">Sold to</Label>
+                  <Select
+                    value={soldToFilter}
+                    onValueChange={(v) => setSoldToFilter(v as "all" | "peer" | "hub")}
+                  >
+                    <SelectTrigger className="mt-1 h-10 rounded-md border border-border bg-background px-2.5 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="peer">Peer</SelectItem>
+                      <SelectItem value="hub">Hub</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+            </div>
           )}
         </div>
 
-        {/* Grid */}
-        {filteredListings.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-            <AnimatePresence mode="popLayout">
-              {filteredListings.map((listing, i) => (
-                <motion.div 
-                  layout
-                  key={listing.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className="group cursor-pointer flex flex-col"
-                  onClick={() => setSelectedBook(listing)}
-                >
-                  {/* Book Cover */}
-                  <div className="aspect-[3/4] mb-4 relative rounded-md overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1">
-                    <img src={listing.cover} alt={listing.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Condition Badge */}
-                    <div className="absolute top-3 left-3">
-                      <Badge variant="secondary" className="bg-background/90 backdrop-blur-md border-none text-[10px] sm:text-xs font-medium text-foreground shadow-sm px-2 py-0.5">
-                        {listing.condition}
-                      </Badge>
-                    </div>
-                    
-                    {/* Save Button */}
-                    <button 
-                      onClick={(e) => toggleSave(e, listing.id)}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-sm"
+        {isBrowseMode && !superAdminShellBrowse
+          ? browseLoading
+            ? (
+                <div className="flex justify-center py-24">
+                  <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                </div>
+              )
+            : (
+            <>
+              <div className="grid grid-cols-2 items-stretch gap-5 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                {browseRows.map((row) => {
+                if (row.kind === "hub") {
+                  const b = row.book;
+                  const canCheckout =
+                    !!user &&
+                    authorize(user, ACTIONS.CHECKOUT_BOOK, {
+                      type: "book",
+                      hubId: b.hubId,
+                      bookId: b.id,
+                    });
+                  const isAvailable = b.status === "available";
+                  const upgradeWhere = inShell ? "sidebar" : "header";
+                  const refShort = catalogRefLabel(b.refId ?? b.id, null);
+                  return (
+                    <div
+                      key={row.key}
+                      className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}
+                      data-book-id={b.id}
+                      data-book-ref-id={b.refId ?? undefined}
                     >
-                      <Heart className={`w-4 h-4 ${savedBooks.has(listing.id) ? 'fill-amber-500 text-amber-500' : ''}`} />
-                    </button>
-                    
-                    {/* Hover Action */}
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
-                       <Button size="sm" className="rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 border-none shadow-lg h-8 px-6 text-xs font-medium">
-                         Quick View
-                       </Button>
+                      {studentShellBrowse ? (
+                        <>
+                        <div className="flex min-w-0 items-start justify-between gap-2">
+                          <span className="max-w-full min-w-0 shrink truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
+                              {b.source === "p2p" ? "From student" : "From hub"}
+                            </span>
+                            <span
+                              className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground"
+                              title={b.refId ?? b.id}
+                            >
+                              {refShort}
+                            </span>
+                          </div>
+                          <CopyLifecycleStrip status={b.status} />
+                          <p className="text-[10px] text-muted-foreground">
+                            Pickup hub: {hubNameBorrow(b.hubId) || "Hub"}
+                          </p>
+                        </>
+                      ) : null}
+                      <CatalogBookCard
+                        title={b.title}
+                        coverUrl={b.coverImageUrl ? apiPublicUrl(b.coverImageUrl) : b.coverImageUrl}
+                        hubName={hubNameBorrow(b.hubId)}
+                        fromHubName={b.acquiredFromHubName ?? undefined}
+                        refDisplay={refShort}
+                        addedText={addedLabel(b.createdAt)}
+                        addedAtTitle={
+                          b.createdAt ? new Date(b.createdAt).toLocaleString() : undefined
+                        }
+                        fullIdForTitle={b.refId ?? b.id}
+                        isSample={false}
+                        shelfStatus={b.status}
+                        action={
+                          <>
+                            {!user && (
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                                  studentShellFlat ? "rounded-md" : "rounded-full",
+                                )}
+                                asChild
+                              >
+                                <Link href={signInHref(portalPaths.borrow)}>
+                                  <BookOpen className="mr-2 h-4 w-4" />
+                                  Sign in to borrow
+                                </Link>
+                              </Button>
+                            )}
+                            {user && token && !isAvailable && (
+                              <div className="space-y-2">
+                                <p className="text-left text-[11px] text-muted-foreground">
+                                  Why unavailable? {unavailableReason(b.status)}.
+                                </p>
+                                <RequestBookSection
+                                  token={token}
+                                  hubs={hubsQ.data?.hubs ?? []}
+                                  user={user}
+                                  defaultHubId={b.hubId}
+                                  initialBookTitle={b.title}
+                                  redirectToActivityAfterSubmit
+                                  onDone={() => {
+                                    void qc.invalidateQueries({ queryKey: ["book-requests"] });
+                                    void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
+                                  }}
+                                  trigger={
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      className={cn(
+                                        "w-full border border-border bg-muted/50 hover:bg-muted/70",
+                                        studentShellFlat ? "rounded-md" : "rounded-full",
+                                      )}
+                                    >
+                                      Request from hub
+                                    </Button>
+                                  }
+                                />
+                              </div>
+                            )}
+                            {user && isAvailable && !canCheckout && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className={cn("w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                                onClick={() =>
+                                  toast.message(
+                                    `Premium unlocks borrow and buy. Use Upgrade in the ${upgradeWhere}.`,
+                                  )
+                                }
+                              >
+                                <BookOpen className="mr-2 h-4 w-4" />
+                                Borrow
+                              </Button>
+                            )}
+                            {user && isAvailable && canCheckout && token && (
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                                  studentShellFlat ? "rounded-md" : "rounded-full",
+                                )}
+                                onClick={() =>
+                                  (pushRecentViewedTitle(b.title),
+                                  setCheckout({
+                                    item: {
+                                      kind: "hub",
+                                      bookId: b.id,
+                                      title: b.title,
+                                      hubName: hubNameBorrow(b.hubId),
+                                      buyPrice: b.buyPrice ?? 0,
+                                      borrowPrice: b.borrowPrice ?? 0,
+                                    },
+                                    initialMode: "borrow",
+                                  }))
+                                }
+                              >
+                                <BookOpen className="mr-2 h-4 w-4" />
+                                Borrow or buy
+                              </Button>
+                            )}
+                          </>
+                        }
+                      />
                     </div>
+                  );
+                }
+                const listing = row.listing;
+                const peerRefShort = catalogRefLabel(listing.id, null);
+                return (
+                  <div key={row.key} className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}>
+                    {studentShellBrowse ? (
+                      <>
+                        <div className="flex min-w-0 items-start justify-between gap-2">
+                          <span className="max-w-full min-w-0 shrink truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
+                            From students
+                          </span>
+                          <span
+                            className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground"
+                            title={listing.id}
+                          >
+                            {peerRefShort}
+                          </span>
+                        </div>
+                        <CopyLifecycleStrip status={peerStatusToLifecycle(listing.status)} />
+                        <p className="text-[10px] text-muted-foreground">
+                          Pickup hub:{" "}
+                          {hubsQ.data?.hubs.find((h) => h.id === (listing.hubId ?? listing.dropoffHubId))
+                            ?.name ?? "Hub"}
+                        </p>
+                      </>
+                    ) : null}
+                    <MarketplacePeerCard
+                      listing={listing}
+                      onSelect={setSelected}
+                    />
                   </div>
-                  
-                  {/* Details */}
-                  <div className="px-1 flex-1 flex flex-col">
-                    <h3 className="font-serif font-medium text-foreground line-clamp-1 text-base sm:text-lg group-hover:text-amber-600 transition-colors">{listing.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-1">{listing.author}</p>
-                    
-                    <div className="mt-auto flex items-center justify-between pt-1">
-                      <span className="font-medium text-foreground text-lg">₹{listing.price}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground hidden sm:inline-block">Seller: {listing.seller.split(' ')[0]}</span>
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-foreground border border-border">
-                          {listing.seller.charAt(0)}
+                );
+                })}
+              </div>
+              <GridPagination
+                page={browsePage}
+                totalPages={browseTotalPages}
+                onPageChange={setBrowsePage}
+                label="Borrow and buy pagination"
+              />
+              {studentShellBrowse ? (
+                <section className="mt-8 space-y-4">
+                  <div className="rounded-md border border-border bg-card/60 p-5">
+                    <h3 className="text-base font-semibold tracking-tight text-foreground">Smart recommendations</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Quick picks based on your browsing and hub activity.
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-md border border-border/70 bg-background p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Similar books
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {(similarBooks.length ? similarBooks : searchSuggestions.slice(0, 4)).map((t) => (
+                            <Button
+                              key={`sim-${t}`}
+                              size="sm"
+                              variant="outline"
+                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                              onClick={() => setSearch(t)}
+                            >
+                              {t}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-md border border-border/70 bg-background p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Popular at your hub
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {(popularAtHub.length ? popularAtHub : searchSuggestions.slice(0, 4)).map((t) => (
+                            <Button
+                              key={`pop-${t}`}
+                              size="sm"
+                              variant="outline"
+                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                              onClick={() => setSearch(t)}
+                            >
+                              {t}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-md border border-border/70 bg-background p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Recently requested
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {(recentRequestedTitles.length ? recentRequestedTitles : searchSuggestions.slice(0, 4)).map((t) => (
+                            <Button
+                              key={`req-${t}`}
+                              size="sm"
+                              variant="outline"
+                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                              onClick={() => setSearch(t)}
+                            >
+                              {t}
+                            </Button>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-24 text-center border border-dashed rounded-2xl bg-card/30"
-          >
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Search className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium mb-2">No books found</h3>
-            <p className="text-muted-foreground mb-6 max-w-sm">We couldn't find any books matching your current filters. Try adjusting your search criteria.</p>
-            <Button onClick={clearFilters} variant="outline" className="rounded-full">Clear all filters</Button>
-          </motion.div>
-        )}
-        
-        {filteredListings.length > 0 && (
-          <div className="mt-16 flex justify-center">
-             <Button variant="outline" className="rounded-full h-12 px-8" onClick={() => toast("No more results to load.")}>Load More Listings</Button>
-          </div>
-        )}
+                </section>
+              ) : null}
+            </>
+              )
+          : !isBrowseMode
+            ? listingsQ.isLoading
+              ? (
+                  <div className="flex justify-center py-24">
+                    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                  </div>
+                )
+              : peerListingsError
+                ? null
+                : (
+                    <>
+                      <div className="grid grid-cols-2 items-stretch gap-5 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                        {peerGridRows.map((l) => (
+                          <div key={l.id} className={cn(studentMode === "sell" && inShell ? "flex min-w-0 flex-col gap-1.5" : "")}>
+                            {studentMode === "sell" && inShell ? (
+                              <div className="space-y-1">
+                                <div className="flex min-w-0 items-start justify-between gap-2">
+                                  <span className="truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
+                                    {listingStatusLabel(l.status)}
+                                  </span>
+                                  <span className="font-mono text-[10px] text-muted-foreground">
+                                    {catalogRefLabel(l.id, null)}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">
+                                  Pickup hub:{" "}
+                                  {hubsQ.data?.hubs.find((h) => h.id === (l.dropoffHubId ?? l.hubId))?.name ?? "Not selected"}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  Next step: {listingNextStep(l.status)}
+                                </p>
+                              </div>
+                            ) : null}
+                            <MarketplacePeerCard listing={l} onSelect={setSelected} />
+                          </div>
+                        ))}
+                      </div>
+                      <GridPagination
+                        page={peerGridPage}
+                        totalPages={peerGridTotalPages}
+                        onPageChange={setPeerGridPage}
+                        label="Listings pagination"
+                      />
+                    </>
+                  )
+            : null}
 
+        {isBrowseMode &&
+          !superAdminShellBrowse &&
+          !browseLoading &&
+          browseRowsFull.length === 0 &&
+          !(hubBooksEnabled && hubBooksQ.isError) &&
+          (!peerListingsError || sourceFilter === "hub") && (
+            <div className="py-16 text-center">
+              <p className="text-sm text-muted-foreground">
+                {search.trim()
+                  ? "No results. You can request this book from your hub."
+                  : "Nothing in this view yet. Available hub copies and on-shelf peer listings appear first when they exist."}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Try: {(searchSuggestions.slice(0, 3).join(" · ") || "popular titles")} .
+              </p>
+              {search.trim() && user && token && (
+                <div className="mt-6 flex justify-center">
+                  <RequestBookSection
+                    token={token}
+                    hubs={hubsQ.data?.hubs ?? []}
+                    user={user}
+                    initialBookTitle={search.trim()}
+                    redirectToActivityAfterSubmit
+                    onDone={() => {
+                      void qc.invalidateQueries({ queryKey: ["book-requests"] });
+                      void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
+                    }}
+                    trigger={
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className={cn(studentShellFlat ? "rounded-md px-5" : "rounded-full px-6")}
+                      >
+                        Request this book
+            </Button>
+                    }
+                  />
+          </div>
+        )}
       </div>
+          )}
 
-      {/* Book Detail Dialog */}
-      <Dialog open={!!selectedBook} onOpenChange={(open) => !open && setSelectedBook(null)}>
-        <DialogContent className="max-w-2xl bg-card border-border p-0 overflow-hidden">
-          {selectedBook && (
-            <div className="flex flex-col md:flex-row h-full max-h-[80vh] md:max-h-[500px]">
-              {/* Image Side */}
-              <div className="w-full md:w-2/5 bg-muted relative shrink-0">
-                <img src={selectedBook.cover} alt={selectedBook.title} className="w-full h-full object-cover" />
-                <button 
-                  onClick={(e) => toggleSave(e, selectedBook.id)}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center text-foreground hover:bg-background transition-colors shadow-sm"
-                >
-                  <Heart className={`w-5 h-5 ${savedBooks.has(selectedBook.id) ? 'fill-amber-500 text-amber-500' : ''}`} />
-                </button>
+        {!isBrowseMode && !listingsQ.isLoading && !peerListingsError && peerShelfOrdered.length === 0 && (
+          <div className="py-16 text-center">
+            {studentMode === "sell" && inShell && !user ? (
+              <div
+                className={cn(
+                  STUDENT_CARD_SURFACE,
+                  "mx-auto max-w-md space-y-4 bg-card/90 p-8 text-muted-foreground",
+                )}
+              >
+                <p className="text-sm">Sign in to see the books you&apos;re selling.</p>
+                <Button className={cn(studentShellFlat ? "rounded-md" : "rounded-full")} asChild>
+                  <Link href={signInHref(portalPaths.sell)}>Sign in</Link>
+                </Button>
               </div>
-              
-              {/* Content Side */}
-              <div className="flex-1 p-6 md:p-8 flex flex-col overflow-y-auto">
-                <div className="mb-2">
-                  <Badge variant="outline" className="mb-3 text-xs">{selectedBook.category}</Badge>
-                  <h2 className="text-2xl md:text-3xl font-serif font-medium leading-tight mb-2">{selectedBook.title}</h2>
-                  <p className="text-muted-foreground text-lg">{selectedBook.author}</p>
+            ) : studentMode === "sell" && inShell && user ? (
+              <div
+                className={cn(
+                  STUDENT_CARD_SURFACE,
+                  "mx-auto max-w-md space-y-4 bg-card/90 p-8 text-muted-foreground",
+                )}
+              >
+                <p className="text-sm">
+                  {search.trim()
+                    ? "No listing matches your search."
+                    : "You haven’t listed any books yet. Publish a copy to sell it through your hub."}
+                </p>
+                {canList && (
+                  <Button
+                    className={cn(
+                      studentShellFlat
+                        ? "rounded-md bg-amber-500 text-slate-950 hover:bg-amber-400"
+                        : "rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                    )}
+                    onClick={() => setListOpen(true)}
+                  >
+                    List a book
+                      </Button>
+                )}
+                {user && !isPremiumOk(user) && (
+                  <p className="text-xs">Premium is required to create listings.</p>
+                )}
                 </div>
-                
-                <div className="flex items-center gap-4 my-6 py-4 border-y border-border/50">
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Condition</p>
-                    <p className="font-medium">{selectedBook.condition}</p>
+            ) : (
+              <p className="text-muted-foreground">
+                {search.trim()
+                  ? "Not available — no peer listing matches your search."
+                  : "No peer listings to show yet."}
+              </p>
+            )}
                   </div>
-                  <div className="w-[1px] h-8 bg-border" />
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Price</p>
-                    <p className="font-medium text-lg">₹{selectedBook.price}</p>
-                  </div>
-                </div>
-                
-                <div className="mb-8 space-y-4">
-                  <div className="flex items-start gap-3 bg-muted/30 p-3 rounded-lg">
-                    <MapPin className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Located at {selectedBook.location}</p>
-                      <p className="text-xs text-muted-foreground">{selectedBook.distance} away from you</p>
+        )}
                     </div>
+
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent
+          className={cn(
+            "max-h-[min(90vh,720px)] max-w-lg gap-0 overflow-hidden p-0 sm:rounded-2xl",
+            STUDENT_CARD_CHROME,
+          )}
+        >
+          {selected && (
+            <>
+              <div className="border-b border-border/70 bg-gradient-to-b from-muted/50 to-muted/20 px-6 pb-5 pt-6">
+                <DialogHeader className="space-y-3 text-left">
+                    <DialogDescription className="sr-only">
+                    Peer listing {selected.bookTitle}, buy ₹{selected.price.toLocaleString("en-IN")},
+                    borrow ₹{selected.borrowPrice.toLocaleString("en-IN")}, status {selected.status}.
+                  </DialogDescription>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <DialogTitle className="font-serif text-xl font-light leading-snug tracking-tight md:text-2xl">
+                      {selected.bookTitle}
+                    </DialogTitle>
+                    <ShelfPeerStatusBadge status={selected.status} className="shrink-0" onCover={false} />
                   </div>
-                  <div className="flex items-start gap-3 bg-muted/30 p-3 rounded-lg">
-                    <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-700 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                      {selectedBook.seller.charAt(0)}
+                  <div className="flex flex-col gap-2 text-sm text-foreground">
+                    <div className="flex flex-wrap gap-x-6 gap-y-1">
+                      <p className="text-lg font-semibold tabular-nums tracking-tight text-amber-700 dark:text-amber-300">
+                        Buy ₹{selected.price.toLocaleString("en-IN")}
+                      </p>
+                      <p className="text-lg font-semibold tabular-nums tracking-tight text-amber-700/85 dark:text-amber-300/90">
+                        Borrow ₹{selected.borrowPrice.toLocaleString("en-IN")}
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">Seller: {selectedBook.seller}</p>
-                      <p className="text-xs text-muted-foreground">Very responsive • 4.9 ★</p>
-                    </div>
+                    <p className="text-muted-foreground">Peer-to-peer · campus hub pickup</p>
+                    {(selected.hubId ?? selected.dropoffHubId) && hubsQ.data && (
+                      <p className="flex items-center gap-1.5 text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
+                        <span>
+                          {hubsQ.data.hubs.find(
+                            (h) => h.id === (selected.hubId ?? selected.dropoffHubId),
+                          )?.name ?? "Hub"}
+                        </span>
+                      </p>
+                    )}
                   </div>
+                </DialogHeader>
                 </div>
 
-                <div className="mt-auto grid grid-cols-2 gap-3">
-                  <Button onClick={() => handleAction('borrowed')} variant="outline" className="w-full h-12">
-                    <BookOpen className="w-4 h-4 mr-2" /> Borrow ₹49/day
+              <div className="max-h-[calc(min(90vh,720px)-8.5rem)] overflow-y-auto px-6 py-5">
+                <div className="space-y-6">
+                  <div className="flex justify-center">
+                    <BookCoverImage
+                      src={
+                        editCoverPreview
+                          ? editCoverPreview
+                          : editClearCover
+                            ? null // BookCoverImage handles placeholder if src is null
+                            : selected.coverImageUrl
+                              ? apiPublicUrl(selected.coverImageUrl)
+                              : null
+                      }
+                      alt={selected.bookTitle}
+                      className={cn(
+                        STUDENT_CARD_SURFACE,
+                        "h-44 w-32 object-cover shadow-md sm:h-52 sm:w-36",
+                      )}
+                    />
+                  </div>
+
+                  {isDemoListingId(selected.id) && (
+                    <p className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-foreground">
+                      <span className="font-medium text-amber-800 dark:text-amber-200">
+                        Sample listing.
+                      </span>{" "}
+                      Preview only — sign in and list a book (or use a seeded API) for real peer copies.
+                    </p>
+                  )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId === user.userId &&
+                    (selected.status === "listed" || selected.status === "pending_dropoff") && (
+                      <div
+                        className={cn(
+                          "space-y-4 rounded-xl border border-border/80 bg-card/60 p-4 shadow-sm",
+                        )}
+                      >
+                    <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
+                            Your listing
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Edit or delete until the hub approves the copy.
+                          </p>
+                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-listing-title">Title</Label>
+                          <Input
+                            id="edit-listing-title"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="h-11"
+                          />
+                  </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-listing-price">Buy price (₹)</Label>
+                          <Input
+                            id="edit-listing-price"
+                            inputMode="numeric"
+                            min={1}
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(e.target.value.replace(/[^\d]/g, ""))}
+                            className="h-11 tabular-nums"
+                          />
+                          {!editListingPriceValid && editPrice.trim() !== "" && (
+                            <p className="text-xs text-destructive">
+                              Enter a whole number of ₹1 or more.
+                            </p>
+        )}
+                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-listing-borrow">Borrow fee (₹)</Label>
+                          <Input
+                            id="edit-listing-borrow"
+                            inputMode="numeric"
+                            min={0}
+                            value={editBorrowPrice}
+                            onChange={(e) =>
+                              setEditBorrowPrice(e.target.value.replace(/[^\d]/g, ""))
+                            }
+                            className="h-11 tabular-nums"
+                          />
+                          {!editListingBorrowValid && editBorrowPrice.trim() !== "" && (
+                            <p className="text-xs text-destructive">
+                              Enter a whole number ₹0 or more.
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="edit-listing-cover"
+                            className="flex items-center gap-2 text-foreground"
+                          >
+                            <ImagePlus className="h-4 w-4 text-muted-foreground" aria-hidden />
+                            Cover photo
+                          </Label>
+                          <Input
+                            id="edit-listing-cover"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className={cn(
+                              "h-11 cursor-pointer text-sm file:mr-3 file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium",
+                              studentShellFlat ? "file:rounded-md" : "file:rounded-full",
+                            )}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] ?? null;
+                              setEditClearCover(false);
+                              setEditCoverPreview((prev) => {
+                                if (prev) URL.revokeObjectURL(prev);
+                                return f ? URL.createObjectURL(f) : null;
+                              });
+                              setEditCoverFile(f);
+                              e.target.value = "";
+                            }}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            JPEG, PNG, WebP, or GIF · up to 5&nbsp;MB
+                          </p>
+                          {(selected.coverImageUrl || editCoverPreview) && (
+                            <Button
+                  type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 px-0 text-xs text-muted-foreground hover:text-destructive"
+                              onClick={() => {
+                                setEditCoverPreview((prev) => {
+                                  if (prev) URL.revokeObjectURL(prev);
+                                  return null;
+                                });
+                                setEditCoverFile(null);
+                                setEditClearCover(true);
+                              }}
+                            >
+                              Remove photo from listing
+                            </Button>
+                          )}
+              </div>
+                        <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
+                          <Button
+                            className={cn(studentShellFlat ? "rounded-md sm:flex-1" : "rounded-full sm:flex-1")}
+                            disabled={
+                              updateListing.isPending ||
+                              !editTitle.trim() ||
+                              !editListingPriceValid ||
+                              !editListingBorrowValid
+                            }
+                            onClick={() => updateListing.mutate()}
+                          >
+                            Save changes
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              studentShellFlat
+                                ? "rounded-md border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1"
+                                : "rounded-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1",
+                            )}
+                            disabled={deleteListing.isPending}
+                            onClick={() => deleteListing.mutate(selected.id)}
+                          >
+                            Delete listing
+                          </Button>
+                </div>
+                  </div>
+                    )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId === user.userId &&
+                    selected.status === "listed" &&
+                    hubsQ.data && (
+                      <div
+                        className={cn(
+                          "space-y-4 rounded-xl border border-border/80 bg-card/40 p-4 shadow-sm",
+                        )}
+                      >
+                    <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
+                            Drop-off
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Choose a hub desk so staff can verify your copy.
+                          </p>
+                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dropoff-hub">Hub</Label>
+                          <Select value={dropHubId || undefined} onValueChange={setDropHubId}>
+                            <SelectTrigger id="dropoff-hub" className="h-11">
+                              <SelectValue placeholder="Choose hub" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hubsQ.data.hubs.map((h) => (
+                                <SelectItem key={h.id} value={h.id}>
+                                  {`${h.name} · ${hubKindLabel(h.kind)}`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                  </div>
+                        <Button
+                          className={cn(
+                            "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                            studentShellFlat ? "rounded-md" : "rounded-full",
+                          )}
+                          disabled={!dropHubId || submitDropoff.isPending}
+                          onClick={() =>
+                            submitDropoff.mutate({ id: selected.id, hubId: dropHubId })
+                          }
+                        >
+                          Submit drop-off
+                        </Button>
+                </div>
+                    )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId === user.userId &&
+                    selected.status === "available" && (
+                      <p className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                        On shelf at the hub — other students can borrow or buy at your listed rates. Editing is
+                        locked.
+                      </p>
+                    )}
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId === user.userId &&
+                    selected.status === "reserved" && (
+                      <p className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                        This copy is on loan. You&apos;ll get it back when the borrower returns it at the
+                        hub.
+                      </p>
+                    )}
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId === user.userId &&
+                    selected.status === "sold" && (
+                      <p className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                        Sold — this listing is read-only.
+                      </p>
+                    )}
+
+                  <Separator className="opacity-60" />
+
+                  {selected.status === "available" && !user && !isDemoListingId(selected.id) && (
+                    <Button
+                      asChild
+                      className={cn(
+                        "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                        studentShellFlat ? "rounded-md" : "rounded-full",
+                      )}
+                    >
+                      <Link href={signInHref("/marketplace")}>
+                        Sign in to borrow or buy · Buy ₹{selected.price.toLocaleString("en-IN")} · Borrow ₹
+                        {selected.borrowPrice.toLocaleString("en-IN")}
+                      </Link>
                   </Button>
-                  <Button onClick={() => handleAction('purchased')} className="w-full h-12 bg-amber-500 hover:bg-amber-400 text-slate-950">
-                    Buy for ₹{selectedBook.price}
+                  )}
+
+                  {selected.status === "available" && !user && isDemoListingId(selected.id) && (
+                    <Button
+                      asChild
+                      className={cn(
+                        "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                        studentShellFlat ? "rounded-md" : "rounded-full",
+                      )}
+                    >
+                      <Link href={signInHref("/marketplace")}>Sign in for real listings</Link>
                   </Button>
-                  <Button onClick={() => setMessageOpen(true)} variant="ghost" className="col-span-2 w-full h-12 border border-dashed border-border">
-                    <MessageCircle className="w-4 h-4 mr-2" /> Message Seller
+                  )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId !== user.userId &&
+                    selected.status === "available" &&
+                    !isPremiumOk(user) && (
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        Premium required to borrow or buy — use Upgrade in the{" "}
+                        {inShell ? "sidebar" : "header"}.
+                      </p>
+                    )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.borrowerUserId === user.userId &&
+                    selected.status === "reserved" && (
+                      <Button
+                        className={cn(
+                          "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                          studentShellFlat ? "rounded-md" : "rounded-full",
+                        )}
+                        disabled={returnPeerBorrow.isPending}
+                        onClick={() => returnPeerBorrow.mutate(selected.id)}
+                      >
+                        Return peer borrow
+                      </Button>
+                    )}
+
+                  {user &&
+                    token &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId !== user.userId &&
+                    authorize(user, ACTIONS.BUY_P2P, {
+                      type: "p2p_listing",
+                      listingId: selected.id,
+                      ownerId: selected.ownerId,
+                      hubId: selected.hubId ?? selected.dropoffHubId,
+                      dropoffHubId: selected.dropoffHubId,
+                    }) &&
+                    selected.status === "available" && (
+                      <div className="flex flex-col gap-2">
+                        {(selected.type ?? "sell") === "rent" && (
+                          <Button
+                            className={cn(
+                              "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                              studentShellFlat ? "rounded-md" : "rounded-full",
+                            )}
+                            onClick={() => openPeerCheckout(selected, "borrow")}
+                          >
+                            Borrow for ₹{selected.borrowPrice.toLocaleString("en-IN")}
+                          </Button>
+                        )}
+                        <Button
+                          variant="secondary"
+                          className={cn(
+                            "h-11 w-full border border-border",
+                            studentShellFlat ? "rounded-md" : "rounded-full",
+                          )}
+                          onClick={() => openPeerCheckout(selected, "buy")}
+                        >
+                          Buy for ₹{selected.price.toLocaleString("en-IN")}
                   </Button>
                 </div>
+                    )}
+
+                  {user &&
+                    !isDemoListingId(selected.id) &&
+                    selected.ownerId !== user.userId &&
+                    isPremiumOk(user) &&
+                    selected.status !== "sold" &&
+                    selected.status !== "available" && (
+                      <Button
+                        className={cn("h-11 w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                        variant="secondary"
+                        disabled
+                      >
+                        Buy unavailable — the hub must verify drop-off first
+                      </Button>
+                    )}
+
+                  {!isDemoListingId(selected.id) &&
+                    selected.status !== "available" &&
+                    selected.status !== "sold" &&
+                    selected.status !== "reserved" &&
+                    (!user || selected.ownerId === user.userId) && (
+                      <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                        Buyers can purchase only after the hub desk approves drop-off (status becomes
+                        &quot;available&quot; on the shelf).
+                      </p>
+                    )}
               </div>
             </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Message Dialog */}
-      <Dialog open={messageOpen} onOpenChange={setMessageOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
-          <DialogHeader>
-            <DialogTitle>Message {selectedBook?.seller}</DialogTitle>
-            <DialogDescription>
-              Ask about {selectedBook?.title}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={sendMessage} className="space-y-4 py-4">
-            <Textarea 
-              placeholder="Hi, is this still available?" 
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              className="resize-none h-32 bg-background"
-              required
-            />
-            <Button type="submit" className="w-full">Send Message</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {token ? (
+        <CheckoutFlowDialog
+          open={!!checkout}
+          onOpenChange={(o) => !o && setCheckout(null)}
+          item={checkout?.item ?? null}
+          initialMode={checkout?.initialMode}
+          token={token}
+          onComplete={invalidateCheckoutQueries}
+          deskAcquireHubs={deskAcquireHubs ?? undefined}
+        />
+      ) : null}
     </div>
   );
 }

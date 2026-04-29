@@ -1,19 +1,14 @@
 import { motion, useScroll, useTransform, animate } from "framer-motion";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 import {
-  BookOpen,
   MapPin,
   RefreshCw,
   Smartphone,
-  Sparkles,
   Users,
   ArrowRight,
 } from "lucide-react";
@@ -23,7 +18,11 @@ import constellation from "@/assets/images/constellation.png";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
+  },
 };
 
 const staggerContainer = {
@@ -34,7 +33,57 @@ const staggerContainer = {
   },
 };
 
-function Counter({ from, to, suffix = "", prefix = "", duration = 2 }: { from: number, to: number, suffix?: string, prefix?: string, duration?: number }) {
+const HERO_LIVE_METRICS = [
+  {
+    idx: "01",
+    kicker: "Trusted by",
+    note: "Campuses across India",
+    from: 0,
+    to: 50,
+    suffix: "+",
+    prefix: "",
+    kickerClass: "text-amber-400",
+    delay: 0.1,
+  },
+  {
+    idx: "02",
+    kicker: "Books in circulation",
+    note: "And growing every semester",
+    from: 0,
+    to: 120,
+    suffix: "k",
+    prefix: "",
+    kickerClass: "text-sky-400",
+    delay: 0.18,
+  },
+  {
+    idx: "03",
+    kicker: "Average savings",
+    note: "Per student, per year",
+    from: 0,
+    to: 12,
+    suffix: "k+",
+    prefix: "₹",
+    kickerClass: "text-emerald-400",
+    delay: 0.26,
+  },
+] as const;
+
+function Counter({
+  from,
+  to,
+  suffix = "",
+  prefix = "",
+  duration = 2,
+  className,
+}: {
+  from: number;
+  to: number;
+  suffix?: string;
+  prefix?: string;
+  duration?: number;
+  className?: string;
+}) {
   const nodeRef = useRef<HTMLSpanElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -53,85 +102,51 @@ function Counter({ from, to, suffix = "", prefix = "", duration = 2 }: { from: n
   }, []);
 
   useEffect(() => {
-    if (inView && nodeRef.current) {
-      const node = nodeRef.current;
-      const controls = animate(from, to, {
-        duration: duration,
-        ease: "easeOut",
-        onUpdate(value) {
-          node.textContent = prefix + Math.round(value).toLocaleString() + suffix;
-        }
-      });
-      return () => controls.stop();
-    }
+    if (!inView || !nodeRef.current) return;
+    const node = nodeRef.current;
+    const controls = animate(from, to, {
+      duration: duration,
+      ease: "easeOut",
+      onUpdate(value) {
+        node.textContent = prefix + Math.round(value).toLocaleString() + suffix;
+      }
+    });
+    return () => controls.stop();
   }, [from, to, inView, duration, prefix, suffix]);
 
-  return <span ref={nodeRef}>{prefix}{from}{suffix}</span>;
+  return (
+    <span ref={nodeRef} className={className}>
+      {prefix}
+      {from}
+      {suffix}
+    </span>
+  );
 }
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const catalogTeaser = useQuery({
+    queryKey: ["home", "catalog-teaser"],
+    queryFn: async () => {
+      const [b, h, p] = await Promise.all([
+        apiFetch<{ books: { id: string }[] }>("/api/catalog/books"),
+        apiFetch<{ hubs: { id: string }[] }>("/api/catalog/hubs"),
+        apiFetch<{ listings: { id: string }[] }>("/api/p2p/listings"),
+      ]);
+      return {
+        books: b.books.length,
+        hubs: h.hubs.length,
+        listings: p.listings.length,
+      };
+    },
+    staleTime: 60_000,
+  });
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
-  const [joinRole, setJoinRole] = useState("student");
-
-  const openJoin = (role: string) => {
-    setJoinRole(role);
-    setJoinDialogOpen(true);
-  };
-
-  const handleJoinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("We'll be in touch — welcome to the Network.");
-    setJoinDialogOpen(false);
-    if (joinRole === "student") {
-      setLocation("/student");
-    } else {
-      setLocation("/colleges");
-    }
-  };
-
   return (
     <div className="flex flex-col w-full bg-background selection:bg-amber-500/30">
-      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-2xl">Join PSLN</DialogTitle>
-            <DialogDescription>
-              Enter your details to join the network or sign in to your account.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleJoinSubmit} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="Alex Sharma" required className="bg-background" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <Input id="email" type="email" placeholder="alex@example.com" required className="bg-background" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">I am a...</Label>
-              <Select value={joinRole} onValueChange={setJoinRole}>
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="college">College Administrator</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
-              Continue
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
       {/* Editorial Hero */}
       <section className="relative min-h-[100dvh] flex items-center pt-24 overflow-hidden bg-slate-950 text-slate-50">
         {/* Background Image with Parallax */}
@@ -166,39 +181,114 @@ export default function Home() {
                 Discover, borrow, and pick up textbooks at local campus hubs. A seamless network bridging digital convenience with physical books.
               </motion.p>
               
-              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
+              <motion.div variants={fadeInUp} className="flex flex-col flex-wrap gap-4 sm:flex-row">
                 <Link href="/marketplace" className="h-14 px-8 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 text-base font-medium transition-all hover:scale-105 inline-flex items-center justify-center">
                   Explore Network <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+                <Link href="/library" className="h-14 px-8 rounded-full border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all inline-flex items-center justify-center">
+                  Browse catalog
                 </Link>
                 <Link href="/colleges" className="h-14 px-8 rounded-full border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all inline-flex items-center justify-center">
                   For Colleges
                 </Link>
               </motion.div>
+              {catalogTeaser.data && (
+                <motion.p
+                  variants={fadeInUp}
+                  className="mt-8 max-w-xl text-sm leading-relaxed text-slate-400"
+                >
+                  <span className="text-slate-300">Live network: </span>
+                  <Link
+                    href="/library"
+                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
+                  >
+                    {catalogTeaser.data.books} titles
+                  </Link>
+                  <span className="text-slate-500"> · </span>
+                  <Link
+                    href="/library"
+                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
+                  >
+                    {catalogTeaser.data.hubs} hubs
+                  </Link>
+                  <span className="text-slate-500"> · </span>
+                  <Link
+                    href="/marketplace"
+                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
+                  >
+                    {catalogTeaser.data.listings} peer listings
+                  </Link>
+                  <span className="text-slate-500"> — no sign-in to browse.</span>
+                </motion.p>
+              )}
             </motion.div>
 
-            {/* Stat Pillars */}
+            {/* Hero metrics — minimal stack, high contrast, no decoration noise */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-              className="lg:col-span-4 hidden lg:flex flex-col gap-6"
+              transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] as const }}
+              className="lg:col-span-4 w-full lg:self-center"
             >
-              <div className="relative rounded-2xl border border-amber-500/20 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
-                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-amber-500/20 blur-2xl" />
-                <p className="text-xs uppercase tracking-[0.2em] text-amber-400/80 mb-3">Trusted by</p>
-                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={50} suffix="+" /></p>
-                <p className="text-sm text-slate-400">Campuses across India</p>
+              {/* Mobile: simple vertical list */}
+              <div className="mt-14 divide-y divide-white/10 border-t border-white/15 lg:hidden">
+                {HERO_LIVE_METRICS.map((row) => (
+                  <div key={row.kicker} className="py-9 first:pt-0 last:pb-0">
+                    <p className="font-mono text-[11px] tabular-nums tracking-wider text-slate-400">
+                      {row.idx}
+                    </p>
+                    <p
+                      className={`mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] ${row.kickerClass}`}
+                    >
+                      {row.kicker}
+                    </p>
+                    <Counter
+                      from={row.from}
+                      to={row.to}
+                      prefix={row.prefix}
+                      suffix={row.suffix}
+                      className="mt-3 block font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50"
+                    />
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-300">
+                      {row.note}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div className="relative rounded-2xl border border-slate-700/40 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
-                <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-blue-500/20 blur-2xl" />
-                <p className="text-xs uppercase tracking-[0.2em] text-blue-300/80 mb-3">Books in circulation</p>
-                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={120} suffix="k" /></p>
-                <p className="text-sm text-slate-400">And growing every semester</p>
-              </div>
-              <div className="relative rounded-2xl border border-slate-700/40 bg-slate-900/40 backdrop-blur-xl p-6 overflow-hidden">
-                <p className="text-xs uppercase tracking-[0.2em] text-emerald-400/80 mb-3">Average savings</p>
-                <p className="font-serif text-4xl text-slate-50 mb-1"><Counter from={0} to={12} prefix="₹" suffix="k+" /></p>
-                <p className="text-sm text-slate-400">Per student, per year</p>
+
+              {/* Desktop: one hairline + calm typography */}
+              <div className="mt-4 hidden flex-col gap-12 border-l border-white/20 pl-8 lg:flex">
+                {HERO_LIVE_METRICS.map((row) => (
+                  <motion.div
+                    key={row.kicker}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.65,
+                      delay: 0.5 + row.delay,
+                      ease: [0.16, 1, 0.3, 1] as const,
+                    }}
+                  >
+                    <p className="font-mono text-[11px] tabular-nums tracking-wider text-slate-400">
+                      {row.idx}
+                    </p>
+                    <p
+                      className={`mt-2 text-[11px] font-semibold uppercase tracking-[0.22em] ${row.kickerClass}`}
+                    >
+                      {row.kicker}
+                    </p>
+                    <Counter
+                      from={row.from}
+                      to={row.to}
+                      prefix={row.prefix}
+                      suffix={row.suffix}
+                      className="mt-3 block font-serif text-5xl xl:text-6xl font-light tabular-nums tracking-tight text-slate-50"
+                    />
+                    <p className="mt-3 max-w-[17rem] text-sm leading-relaxed text-slate-300">
+                      {row.note}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           </div>
@@ -250,151 +340,238 @@ export default function Home() {
 
       <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
 
-      {/* The Solution — Three Pillars */}
-      <section className="py-32 relative bg-slate-950 text-slate-50 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.12]">
-          <img src={constellation} alt="" className="w-full h-full object-cover mix-blend-screen" />
+      {/* The Solution — bespoke atelier layout */}
+      <section className="relative py-28 md:py-40 overflow-hidden bg-[#06060a] text-[#ebe8e2]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 opacity-[0.14]">
+            <img src={constellation} alt="" className="h-full w-full object-cover mix-blend-screen" />
+          </div>
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_10%_0%,rgba(201,162,39,0.14),transparent_55%),radial-gradient(ellipse_70%_50%_at_95%_60%,rgba(96,165,250,0.09),transparent_50%)]"
+            aria-hidden
+          />
+          <div
+            className="absolute inset-0 opacity-[0.4] bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[length:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"
+            aria-hidden
+          />
         </div>
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-[140px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-end"
-          >
-            <motion.div variants={fadeInUp} className="lg:col-span-7">
-              <p className="text-xs uppercase tracking-[0.25em] text-amber-400/80 mb-5">The Solution</p>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.05] tracking-tight">
-                One network. <span className="italic font-light text-amber-400">Three</span> pillars.
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
+          <div className="mb-20 flex flex-col gap-10 lg:mb-28 lg:flex-row lg:items-end lg:justify-between">
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-xl"
+            >
+              <div className="mb-6 flex items-center gap-3">
+                <span className="h-px w-12 bg-gradient-to-r from-[#c9a227] to-transparent" />
+                <span className="text-[10px] font-medium uppercase tracking-[0.45em] text-[#c9a227]/90">
+                  The solution
+                </span>
+              </div>
+              <h2 className="font-serif text-[2.125rem] font-light leading-[1.12] tracking-[-0.02em] sm:text-5xl md:text-[3.25rem]">
+                One nervous system
+                <span className="mt-3 block font-serif text-[#c9a227] italic">
+                  for digital, physical, and networked books.
+                </span>
               </h2>
             </motion.div>
-            <motion.p variants={fadeInUp} className="lg:col-span-5 text-lg text-slate-400 font-light leading-relaxed lg:pl-8 lg:border-l border-slate-800">
-              We weave together a polished mobile app, real campus pickup points, and a shared inter-college library — so any book is always within reach.
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-md border-l border-[#c9a227]/25 pl-6 text-[15px] leading-[1.75] text-[#9a968c] lg:max-w-sm lg:border-l-0 lg:border-r lg:pl-0 lg:pr-8 lg:text-right"
+            >
+              Phygital Library treats the app, the hub shelf, and the inter-campus catalog as one orchestrated layer so that
+              availability, routing, and pickup stay in sync.
             </motion.p>
-          </motion.div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative">
+          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-4">
+            <div className="pointer-events-none absolute left-1/2 top-[18%] hidden h-[64%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#c9a227]/35 to-transparent lg:block" />
+
             {[
               {
-                step: "01",
-                title: "Digital App",
-                desc: "Search, reserve, and manage your borrows from your phone — anywhere on campus, anytime.",
+                step: "I",
+                title: "Glass interface",
+                subtitle: "Reserve from anywhere",
+                body: "Search once across the union catalog. Hold, renew, and see live ETAs without calling a desk.",
                 Icon: Smartphone,
-                accent: "amber",
-                tag: "iOS · Android · Web",
+                span: "lg:col-span-4 lg:row-span-1 lg:translate-y-8",
+                glow: "from-amber-500/25",
+                rim: "from-amber-400/50 via-amber-500/10 to-transparent",
               },
               {
-                step: "02",
-                title: "Physical Hubs",
-                desc: "Compact, beautifully-lit pickup points inside every partner college. Scan a QR, walk out with your book.",
+                step: "II",
+                title: "Curated hubs",
+                subtitle: "Physical custody, refined",
+                body: "Human-scale pickup rooms with calibrated lighting and QR handoff so that dignity is maintained in the last meter.",
                 Icon: MapPin,
-                accent: "blue",
-                tag: "On-campus · 24×7",
+                span: "lg:col-span-4 lg:-translate-y-4",
+                glow: "from-sky-400/20",
+                rim: "from-sky-300/40 via-sky-500/10 to-transparent",
               },
               {
-                step: "03",
-                title: "Shared Network",
-                desc: "Inventory pools across partner colleges. The catalog you have access to is bigger than any single library.",
+                step: "III",
+                title: "Mesh inventory",
+                subtitle: "Many shelves, one ledger",
+                body: "Pooling stock across partner campuses expands what any single library could ever hold alone.",
                 Icon: RefreshCw,
-                accent: "emerald",
-                tag: "Inter-college routing",
+                span: "lg:col-span-4 lg:translate-y-6",
+                glow: "from-emerald-400/18",
+                rim: "from-emerald-300/45 via-emerald-500/10 to-transparent",
               },
             ].map((p, i) => (
-              <motion.div
+              <motion.article
                 key={p.step}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 36 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.7, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                className="group relative"
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.75, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                className={`group relative ${p.span}`}
               >
-                <div className="relative h-full rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl p-8 lg:p-10 overflow-hidden transition-all duration-500 hover:border-slate-700 hover:-translate-y-1">
+                <div
+                  className={`rounded-[2px] bg-gradient-to-br ${p.rim} p-px shadow-[0_32px_64px_-32px_rgba(0,0,0,0.85)]`}
+                >
+                  <div className="relative overflow-hidden rounded-[1px] border border-white/[0.06] bg-[#0a0a0f]/95 p-8 backdrop-blur-md md:p-9">
                   <div
-                    className={`absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-40 transition-opacity duration-500 group-hover:opacity-70 ${
-                      p.accent === "amber" ? "bg-amber-500/30" : p.accent === "blue" ? "bg-blue-500/30" : "bg-emerald-500/30"
-                    }`}
+                    className={`pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-gradient-to-br ${p.glow} to-transparent blur-3xl transition-transform duration-700 group-hover:scale-110`}
                   />
-                  <div className="relative flex items-start justify-between mb-10">
-                    <div
-                      className={`w-14 h-14 rounded-2xl border flex items-center justify-center backdrop-blur-md ${
-                        p.accent === "amber"
-                          ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                          : p.accent === "blue"
-                          ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
-                          : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                      }`}
-                    >
-                      <p.Icon className="w-6 h-6" />
+                  <div className="relative flex items-start justify-between gap-6">
+                    <div>
+                      <p className="font-serif text-xs tracking-[0.35em] text-[#6b6860]">{p.step}</p>
+                      <h3 className="mt-4 font-serif text-2xl font-normal tracking-tight text-[#f4f1ea] md:text-[1.65rem]">
+                        {p.title}
+                      </h3>
+                      <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.28em] text-[#c9a227]/80">
+                        {p.subtitle}
+                      </p>
                     </div>
-                    <span className="font-serif text-sm text-slate-500 tracking-widest">{p.step}</span>
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-[#c9a227] transition-colors duration-500 group-hover:border-[#c9a227]/35 group-hover:text-[#e8d48b]">
+                      <p.Icon className="h-5 w-5" strokeWidth={1.25} />
+                    </div>
                   </div>
-                  <h3 className="relative font-serif text-2xl text-slate-50 mb-4">{p.title}</h3>
-                  <p className="relative text-slate-400 leading-relaxed mb-8">{p.desc}</p>
-                  <div className="relative pt-6 border-t border-slate-800">
-                    <span className="text-xs uppercase tracking-[0.2em] text-slate-500">{p.tag}</span>
+                  <p className="relative mt-8 text-[14px] leading-[1.75] text-[#9a968c]">{p.body}</p>
+                  <div className="relative mt-10 flex items-center gap-2 border-t border-white/[0.06] pt-6">
+                    <span className="h-1 w-1 rounded-full bg-[#c9a227]" />
+                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#6b6860]">Phygital Library stack</span>
+                  </div>
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works — Editorial Flow */}
-      <section className="py-32 bg-background relative overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+      {/* How it works — full-bleed runway, zero cards */}
+      <section className="relative bg-[#050505] text-[#f4f1ea]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.15),transparent),radial-gradient(ellipse_60%_40%_at_100%_100%,rgba(56,189,248,0.06),transparent)]"
+          aria-hidden
+        />
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-end"
-          >
-            <motion.div variants={fadeInUp} className="lg:col-span-7">
-              <p className="text-xs uppercase tracking-[0.25em] text-amber-600 mb-5">How It Works</p>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.05] tracking-tight">
-                A book in your hands, in <span className="italic font-light text-amber-600">four steps.</span>
+        <div className="relative z-10 mx-auto max-w-7xl border-b border-white/[0.08] px-6 py-20 lg:px-12 lg:py-28">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] as const }}
+              className="max-w-3xl"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90">
+                How it works
+              </p>
+              <h2 className="mt-5 font-serif text-[2.25rem] font-light leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-[3.35rem]">
+                Four beats.
+                <span className="mt-1 block font-serif italic text-amber-400/95">One straight line to the shelf.</span>
               </h2>
             </motion.div>
-            <motion.p variants={fadeInUp} className="lg:col-span-5 text-lg text-muted-foreground font-light leading-relaxed lg:pl-8 lg:border-l border-border">
-              From a quiet evening search to walking up to a hub and scanning a QR — the whole journey takes minutes, not days.
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.65, delay: 0.08, ease: [0.16, 1, 0.3, 1] as const }}
+              className="max-w-md text-[15px] leading-[1.75] text-slate-400"
+            >
+              Nothing boxed in modals or hidden states so that just the path your book takes from search to handoff.
             </motion.p>
-          </motion.div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {[
-              { num: "01", title: "Search", desc: "Find any textbook by title, author, or ISBN across the entire network.", Icon: Sparkles },
-              { num: "02", title: "Borrow or Buy", desc: "Reserve for a semester or purchase outright. Choose what fits your need.", Icon: BookOpen },
-              { num: "03", title: "Smart Routing", desc: "We route the book from the nearest hub holding the right copy, to you.", Icon: RefreshCw },
-              { num: "04", title: "Pickup at Hub", desc: "Walk in, scan the QR on the shelf, walk out. No queues, no librarian.", Icon: MapPin },
-            ].map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.6, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="group relative"
-              >
-                <div className="relative h-full p-8 rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl shadow-[0_4px_30px_-12px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-20px_rgba(245,158,11,0.25)] hover:border-amber-500/30">
-                  <div className="flex items-center justify-between mb-10">
-                    <span className="font-serif text-5xl font-light text-amber-600/30 group-hover:text-amber-600/60 transition-colors">{step.num}</span>
-                    <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-500">
-                      <step.Icon className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <h3 className="font-serif text-xl text-foreground mb-3">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                </div>
-                {i < 3 && (
-                  <div className="hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 z-10 items-center justify-center">
-                    <div className="w-8 h-[1px] bg-gradient-to-r from-amber-500/40 to-transparent" />
-                    <ArrowRight className="w-3 h-3 text-amber-500/60 -ml-1" />
-                  </div>
-                )}
-              </motion.div>
+          <div
+            className="mt-14 flex gap-1 lg:mt-20"
+            aria-hidden
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-px flex-1 bg-gradient-to-r from-amber-500/50 via-amber-500/20 to-transparent opacity-50" />
             ))}
           </div>
         </div>
+
+        {(
+          [
+            {
+              mark: "01",
+              title: "Discover",
+              desc: "Title, author, or ISBN, one search spans every participating shelf.",
+              bar: "from-amber-400 to-amber-600/20",
+            },
+            {
+              mark: "02",
+              title: "Commit",
+              desc: "Borrow for the term or buy outright; pricing and return windows stay transparent.",
+              bar: "from-sky-400 to-sky-600/20",
+            },
+            {
+              mark: "03",
+              title: "Route",
+              desc: "The mesh picks the nearest copy with a valid hold window and stages it to your hub.",
+              bar: "from-emerald-400 to-emerald-600/20",
+            },
+            {
+              mark: "04",
+              title: "Release",
+              desc: "Scan, collect, leave. The ledger closes the moment the QR clears.",
+              bar: "from-amber-400 via-fuchsia-400/80 to-transparent",
+            },
+          ] as const
+        ).map((step, i) => (
+          <motion.div
+            key={step.mark}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as const }}
+            className="relative border-b border-white/[0.06]"
+          >
+            <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-14 sm:py-16 lg:grid-cols-12 lg:items-start lg:gap-10 lg:px-12 lg:py-20">
+              <div className="flex gap-5 lg:col-span-2 lg:flex-col lg:gap-4">
+                <div
+                  className={`h-full min-h-[3.5rem] w-px shrink-0 bg-gradient-to-b ${step.bar} lg:min-h-[4.5rem]`}
+                  aria-hidden
+                />
+                <span className="font-mono text-[11px] font-medium tabular-nums tracking-[0.35em] text-slate-500">
+                  {step.mark}
+                </span>
+              </div>
+
+              <div className="lg:col-span-4">
+                <h3 className="font-serif text-[1.85rem] font-light tracking-[-0.02em] sm:text-3xl lg:text-[2.125rem] lg:leading-[1.12]">
+                  {step.title}
+                </h3>
+              </div>
+
+              <p className="text-base leading-[1.8] text-slate-400 sm:text-[17px] lg:col-span-6 lg:pt-1">
+                {step.desc}
+              </p>
+            </div>
+
+          </motion.div>
+        ))}
       </section>
 
       {/* Features Bento */}
@@ -438,46 +615,122 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Impact Stats */}
-      <section className="py-32 bg-slate-950 text-slate-50 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <h3 className="text-6xl md:text-7xl font-serif font-light text-amber-500 mb-4">
-                <Counter from={0} to={12} prefix="₹" suffix="k+" />
-              </h3>
-              <p className="text-slate-400 font-medium tracking-wide uppercase text-sm">Savings per student</p>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.1 }}>
-              <h3 className="text-6xl md:text-7xl font-serif font-light text-blue-400 mb-4">
-                <Counter from={0} to={50} suffix="+" />
-              </h3>
-              <p className="text-slate-400 font-medium tracking-wide uppercase text-sm">Campuses Connected</p>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.2 }}>
-              <h3 className="text-6xl md:text-7xl font-serif font-light text-emerald-400 mb-4">
-                <Counter from={0} to={80} suffix="%" />
-              </h3>
-              <p className="text-slate-400 font-medium tracking-wide uppercase text-sm">Resource Reuse Rate</p>
-            </motion.div>
+      {/* Impact — same language as hero metrics & runway */}
+      <section className="relative border-y border-white/[0.06] bg-[#050505] text-[#f4f1ea]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-35 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(212,175,55,0.08),transparent),radial-gradient(ellipse_50%_35%_at_100%_100%,rgba(56,189,248,0.05),transparent)]"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
+          <p className="pt-16 text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/85 lg:pt-20">
+            Impact
+          </p>
+          <div className="mt-6 grid grid-cols-1 divide-y divide-white/10 md:grid-cols-3 md:divide-x md:divide-y-0 md:divide-white/10">
+            {(
+              [
+                {
+                  bar: "from-amber-400 to-amber-700/10",
+                  label: "Savings per student",
+                  counter: (
+                    <Counter
+                      from={0}
+                      to={12}
+                      prefix="₹"
+                      suffix="k+"
+                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
+                    />
+                  ),
+                  delay: 0,
+                },
+                {
+                  bar: "from-sky-400 to-sky-700/10",
+                  label: "Campuses Connected",
+                  counter: (
+                    <Counter
+                      from={0}
+                      to={50}
+                      suffix="+"
+                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
+                    />
+                  ),
+                  delay: 0.08,
+                },
+                {
+                  bar: "from-emerald-400 to-emerald-700/10",
+                  label: "Resource Reuse Rate",
+                  counter: (
+                    <Counter
+                      from={0}
+                      to={80}
+                      suffix="%"
+                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
+                    />
+                  ),
+                  delay: 0.16,
+                },
+              ] as const
+            ).map((row) => (
+              <motion.div
+                key={row.label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.65, delay: row.delay, ease: [0.16, 1, 0.3, 1] as const }}
+                className="flex gap-6 py-14 md:py-16 md:pl-10 md:pr-8 lg:pl-12 lg:pr-10"
+              >
+                <div
+                  className={`w-px shrink-0 self-stretch bg-gradient-to-b ${row.bar} opacity-90`}
+                  aria-hidden
+                />
+                <div className="min-w-0 flex-1">
+                  {row.counter}
+                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    {row.label}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-40 relative bg-slate-950 text-slate-50 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-            <h2 className="text-5xl md:text-7xl font-serif font-medium mb-8 leading-tight tracking-tight">
-              Ready to open <br /> <span className="italic text-amber-400">the next chapter?</span>
+      {/* Final CTA — aligned with hero actions */}
+      <section className="relative overflow-hidden border-t border-white/[0.06] bg-[#050505] text-[#f4f1ea]">
+        <div
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[min(90vw,42rem)] w-[min(90vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.12)_0%,transparent_65%)] blur-3xl"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center lg:px-12 lg:py-32">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] as const }}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90">
+              Join the network
+            </p>
+            <h2 className="mt-6 font-serif text-[2.35rem] font-light leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-6xl">
+              Ready to open
+              <span className="mt-2 block font-serif italic text-amber-400">the next chapter?</span>
             </h2>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12">
-              <Button onClick={() => openJoin("student")} size="lg" className="h-16 px-10 rounded-full bg-slate-50 text-slate-950 hover:bg-slate-200 text-lg font-medium shadow-[0_0_40px_rgba(255,255,255,0.1)] transition-all hover:scale-105">
+            <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-slate-400">
+              Students save on books; colleges keep shelves alive. Pick the path that fits you.
+            </p>
+            <div className="mt-12 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <Button
+                onClick={() => setLocation("/sign-in")}
+                size="lg"
+                className="h-14 rounded-full border-0 bg-amber-500 px-10 text-base font-medium text-slate-950 shadow-[0_0_0_1px_rgba(251,191,36,0.35)] transition-all hover:scale-[1.02] hover:bg-amber-400"
+              >
                 Join as Student
               </Button>
-              <Button onClick={() => openJoin("college")} size="lg" variant="outline" className="h-16 px-10 rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-lg transition-all hover:scale-105">
+              <Button
+                onClick={() => setLocation("/sign-in")}
+                size="lg"
+                variant="outline"
+                className="h-14 rounded-full border border-white/20 bg-transparent px-10 text-base font-medium text-slate-50 transition-all hover:scale-[1.02] hover:border-amber-400/50 hover:bg-white/[0.04]"
+              >
                 Partner as College
               </Button>
             </div>

@@ -10,7 +10,7 @@ import { useState } from "react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } },
 };
 
 export default function About() {
@@ -73,7 +73,7 @@ export default function About() {
            initial={{ scale: 1.1 }}
            whileInView={{ scale: 1 }}
            viewport={{ once: true }}
-           transition={{ duration: 1.5, ease: "easeOut" }}
+           transition={{ duration: 1.5, ease: "easeOut" as const }}
            className="w-full h-full"
         >
           <img src={constellation} alt="Network Constellation" className="w-full h-full object-cover" />
