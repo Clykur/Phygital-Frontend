@@ -12,6 +12,7 @@ import {
 import { ACTIONS } from "../lib/rbac/actions";
 import { authorize } from "../lib/rbac/authorize";
 import { logAudit } from "../lib/audit";
+import { logger } from "../lib/logger";
 import { pathParam } from "../lib/path-param";
 import { authMiddleware, requireAuth } from "../middleware/auth";
 import { requireActiveHub, requireHubStaff } from "../lib/hub-guards";
@@ -39,6 +40,103 @@ import { hubP2pPipelineListingsOrderBy } from "../lib/hub-p2p-pipeline-listings-
 import { nextBookRefId } from "../lib/public-ids";
 
 const router: IRouter = Router();
+
+const p2pStatusUpdateSchema = z.object({
+  status: z.enum(["approved", "rejected"]),
+});
+
+router.put(
+  "/p2p-submissions/:listingId/status",
+  authMiddleware,
+  requireAuth,
+  async (req, res) => {
+    const auth = req.auth!;
+    const listingId = pathParam(req.params["listingId"]);
+    if (!listingId) {
+      return res.status(400).json({ error: "Invalid listing ID" });
+    }
+    const parsed = p2pStatusUpdateSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const { status } = parsed.data;
+
+    try {
+      await db.transaction(async (tx) => {
+        const listing = await tx.query.p2pListings.findFirst({
+          where: eq(p2pListings.id, listingId),
+        });
+
+        if (!listing) {
+          throw new Error("NOT_FOUND");
+        }
+
+        if (listing.status !== "pending_dropoff") {
+          throw new Error("BAD_STATUS");
+        }
+
+        if (!listing.dropoffHubId) {
+          throw new Error("NO_HUB_ID");
+        }
+
+        if (!auth.hubStaffHubIds.includes(listing.dropoffHubId!)) {
+          throw new Error("FORBIDDEN");
+        }
+
+        if (status === "approved") {
+        const [newBook] = await tx
+            .insert(books)
+            .values({
+              refId: await nextBookRefId(),
+              title: listing.bookTitle,
+              hubId: listing.dropoffHubId,
+              coverImageUrl: listing.coverImageUrl,
+              source: "p2p",
+              status: "available",
+              buyPrice: listing.price,
+              borrowPrice: listing.borrowPrice,
+              ownerId: listing.ownerId,
+              listingId: listing.id,
+            })
+            .returning();
+
+          await tx
+            .update(p2pListings)
+            .set({ status: "approved" })
+            .where(eq(p2pListings.id, listingId));
+        } else {
+          await tx
+            .update(p2pListings)
+            .set({ status })
+            .where(eq(p2pListings.id, listingId));
+        }
+      });
+
+      res.json({ success: true });
+    } catch (error: any) {
+      if (error.message === "NOT_FOUND") {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      if (error.message === "BAD_STATUS") {
+        return res
+          .status(400)
+          .json({ error: "Listing is not pending drop-off." });
+      }
+      if (error.message === "NO_HUB_ID") {
+        return res.status(400).json({ error: "Listing has no drop-off hub." });
+      }
+      if (error.message === "FORBIDDEN") {
+        return res
+          .status(403)
+          .json({ error: "You are not authorized to manage this submission" });
+      }
+      logger.error(error, "Failed to update P2P submission status");
+      res.status(500).json({ error: "Failed to update submission status" });
+    }
+  },
+);
 
 function escapeIlikePattern(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");

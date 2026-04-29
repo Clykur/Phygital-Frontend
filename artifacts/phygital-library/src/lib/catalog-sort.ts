@@ -28,30 +28,27 @@ export function hubStatusRank(status: string): number {
  * Keep in sync with `hubP2pPipelineListingsOrderBy` in the API (desk P2P pipeline query).
  */
 export function p2pShelfStatusRank(status: string): number {
-  switch (status) {
-    case "available":
-    case "approved":
-      return 0;
-    case "reserved":
-    case "borrowed":
-      return 1;
-    case "listed":
-      return 2;
-    case "pending_dropoff":
-      return 3;
-    case "sold":
-      return 4;
-    case "rejected":
-    case "expired":
-      return 6;
-    default:
-      return 5;
-  }
+  if (status === "approved") return 0;
+  if (status === "rejected") return 1;
+  if (status === "sold") return 2;
+  if (status === "available") return 3;
+  if (status === "pending_dropoff") return 4;
+  if (status === "listed") return 5;
+  if (status === "reserved" || status === "borrowed") return 6;
+  if (status === "checked_out") return 7;
+  if (status === "overdue") return 8;
+  return 9;
 }
 
 /** Shelf UI label for peer listing status. */
 export function peerShelfStatusLabel(raw: string): string {
-  if (raw === "approved" || raw === "available") return "available";
-  if (raw === "borrowed" || raw === "reserved") return "on loan";
+  if (raw === "approved") return "APPROVED";
+  if (raw === "rejected") return "REJECTED";
+  if (raw === "available") return "Available";
+  if (raw === "borrowed") return "On loan";
+  if (raw === "sold") return "Sold";
+  if (raw === "reserved") return "Reserved";
+  if (raw === "checked_out") return "Checked out";
+  if (raw === "overdue") return "Overdue";
   return raw.replace(/_/g, " ");
 }

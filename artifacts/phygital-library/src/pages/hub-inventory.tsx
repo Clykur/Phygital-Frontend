@@ -316,6 +316,24 @@ export default function HubInventoryPage() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not update copy"),
   });
 
+  const markCopyAvailable = useMutation({
+    mutationFn: async (bookId: string) => {
+      return apiFetch(`/api/books/${bookId}`, {
+        method: "PATCH",
+        token: token!,
+        body: JSON.stringify({ status: "available" }),
+      });
+    },
+    onSuccess: () => {
+      toast.success("Copy marked available.");
+      void qc.invalidateQueries({ queryKey: ["hub", "books"] });
+      void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
+      void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
+    },
+    onError: (e) =>
+      toast.error(e instanceof ApiError ? e.message : "Could not update copy"),
+  });
+
   const convertP2pToHub = useMutation({
     mutationFn: async (bookId: string) => {
       return apiFetch<{ ok: boolean }>(`/api/hub/books/${bookId}/acquire-peer-ownership`, {
@@ -339,11 +357,17 @@ export default function HubInventoryPage() {
       if (addCoverFile) {
         const fd = new FormData();
         fd.append("image", addCoverFile);
-        const up = await apiFetch<{ url: string }>("/api/uploads/book-cover", {
+        const promise = apiFetch<{ url:string }>("/api/uploads/book-cover", {
           method: "POST",
           token: token!,
           body: fd,
         });
+        toast.promise(promise, {
+          loading: "Uploading cover…",
+          success: "Cover uploaded!",
+          error: "Cover upload failed.",
+        });
+        const up = await promise;
         coverImageUrl = up.url;
       }
       const buyPrice = Number.parseInt(addBuy, 10);
@@ -376,10 +400,13 @@ export default function HubInventoryPage() {
       setStatus("all");
       setQ("");
       setPage(0);
-      void qc.invalidateQueries({ queryKey: ["hub", "books"] });
-      void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
-      void qc.invalidateQueries({ queryKey: ["catalog"] });
-      void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
+      // Hub books, overview, catalog, and hub-specific book requests are all stale.
+      // By removing, we ensure a clean refetch without relying on staleness timers.
+      void qc.removeQueries({ queryKey: ["hub", "books"] });
+      void qc.removeQueries({ queryKey: ["hub", "overview"] });
+      void qc.removeQueries({ queryKey: ["catalog"] });
+      void qc.removeQueries({ queryKey: ["book-requests", "hub"] });
+
       try {
         const sweepBody = addTargetHubId ? { hubId: addTargetHubId } : {};
         const r = await apiFetch<{ processed: number; linked: number }>(
@@ -392,9 +419,6 @@ export default function HubInventoryPage() {
         );
         if (r.linked > 0) {
           toast.message(`Linked ${r.linked} open request(s) to new availability.`);
-          void qc.invalidateQueries({ queryKey: ["hub", "books"] });
-          void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
-          void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
         }
       } catch {
         /* sweep is best-effort */
@@ -912,6 +936,24 @@ export default function HubInventoryPage() {
                                 }}
                               >
                                 Mark unavailable
+                              </Button>
+                            ) : null}
+                            {user &&
+                              user.hubStaffHubIds.includes(b.hubId) &&
+                              !inInterHubTransfer &&
+                              b.status === "unavailable" ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-8 w-full rounded-md border border-emerald-400/40 bg-emerald-500/20 text-[11px] text-white hover:bg-emerald-500/30"
+                                disabled={markCopyAvailable.isPending}
+                                onClick={() => {
+                                  if (window.confirm("Mark this copy available again?")) {
+                                    markCopyAvailable.mutate(b.id);
+                                  }
+                                }}
+                              >
+                                Mark available
                               </Button>
                             ) : null}
                             {b.source === "p2p" && b.status === "available" && !inInterHubTransfer && user?.hubStaffHubIds.includes(b.hubId) ? (

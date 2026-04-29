@@ -569,6 +569,51 @@ router.post("/:id/release-assignment", authMiddleware, requireAuth, async (req, 
   res.json({ request });
 });
 
+router.post("/:id/verify-assignment", authMiddleware, requireAuth, async (req, res) => {
+  const auth = req.auth!;
+  const id = pathParam(req.params["id"]);
+  if (!id) {
+    res.status(400).json({ error: "Missing id" });
+    return;
+  }
+  const [row] = await db.select().from(bookRequests).where(eq(bookRequests.id, id)).limit(1);
+  if (!row) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  try {
+    requireHubStaff(auth, row.hubId);
+    await requireActiveHub(db, row.hubId);
+  } catch {
+    res.status(403).json({ error: "Only hub staff for this hub can perform this action." });
+    return;
+  }
+  if (!row.assignedCopyId) {
+    res.status(409).json({ error: "No assigned copy to verify." });
+    return;
+  }
+  if (!["fulfilled", "ready"].includes(row.status)) {
+    res.status(409).json({ error: "Can only verify for fulfilled or ready requests." });
+    return;
+  }
+  const [updated] = await db
+    .update(bookRequests)
+    .set({ assignmentVerified: true, updatedAt: new Date() })
+    .where(eq(bookRequests.id, id))
+    .returning();
+  await logAudit({
+    userId: auth.userId,
+    actorId: auth.userId,
+    hubId: row.hubId,
+    action: "BOOK_REQUEST_ASSIGNMENT_VERIFIED",
+    resourceType: "book_request",
+    resourceId: row.id,
+    meta: { assignedCopyId: row.assignedCopyId },
+  });
+  const [request] = await withReassignMeta([updated ?? row]);
+  res.json({ request });
+});
+
 router.patch("/:id", authMiddleware, requireAuth, async (req, res) => {
   const auth = req.auth!;
   const id = pathParam(req.params["id"]);
@@ -645,7 +690,7 @@ router.patch("/:id", authMiddleware, requireAuth, async (req, res) => {
       });
       return;
     }
-    if (row.assignmentVerified === false) {
+    if (row.status !== "ready" || row.assignmentVerified === false) {
       await logAudit({
         userId: auth.userId,
         actorId: auth.userId,
@@ -657,7 +702,7 @@ router.patch("/:id", authMiddleware, requireAuth, async (req, res) => {
         meta: { assignedCopyId: row.assignedCopyId },
       });
       res.status(409).json({
-        error: "Copy not shelf verified. Verify before completing pickup.",
+        error: "Verify the copy on shelf before completing pickup.",
       });
       return;
     }
