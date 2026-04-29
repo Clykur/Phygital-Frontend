@@ -3,7 +3,7 @@
  * Use a public asset so the same placeholder appears everywhere.
  */
 // IMPORTANT: must be absolute (not route-relative) so it works under /superadmin/*, /hub/*, etc.
-export const BOOK_COVER_PLACEHOLDER_URL = "/book_placeholder.webp";
+export const BOOK_COVER_PLACEHOLDER_URL = "/Book_Placeholder.jpg";
 
 export function hasBookCover(coverUrl: string | null | undefined): boolean {
   return coverUrl != null && String(coverUrl).trim() !== "";

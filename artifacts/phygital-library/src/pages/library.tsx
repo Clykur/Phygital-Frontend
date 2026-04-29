@@ -60,6 +60,7 @@ import {
 import { STUDENT_CARD_CHROME, STUDENT_CARD_SURFACE } from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
 import { bookCoverDisplayUrl } from "@/lib/book-cover-display";
+import { Portal } from "@radix-ui/react-portal";
 
 type Hub = { id: string; name: string; location: string };
 export type LibraryCatalogBook = {
@@ -155,7 +156,7 @@ export function CatalogBookCard({
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cn(STUDENT_CARD_SURFACE, "group relative h-full")}
     >
-      <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
+      <div className="relative h-full min-h-[200px] w-full overflow-hidden bg-muted">
         {!isSample && (pipelineListingStatus || shelfStatus) ? (
           <div className="absolute right-2 top-2 z-10 max-w-[min(100%,12rem)]">
             {pipelineListingStatus ? (
@@ -168,7 +169,7 @@ export function CatalogBookCard({
         <BookCoverImage
           src={coverUrl}
           alt={title}
-          className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
 
         {/* Resting label */}
@@ -602,19 +603,19 @@ export default function LibraryPage() {
             <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
               {showSampleLayout
                 ? DEMO_LIBRARY_ROWS.map((b, idx) => (
-                    <CatalogBookCard
-                      key={`sample-${idx}`}
-                      title={b.title}
-                      coverUrl={b.coverImageUrl}
-                      hubName={b.hubName}
-                      refDisplay={catalogRefLabel("sample", idx)}
-                      addedText="—"
-                      isSample
-                      action={
-                        <p className="text-center text-xs text-white/70">Preview — not a live copy</p>
-                      }
-                    />
-                  ))
+                  <CatalogBookCard
+                    key={`sample-${idx}`}
+                    title={b.title}
+                    coverUrl={b.coverImageUrl}
+                    hubName={b.hubName}
+                    refDisplay={catalogRefLabel("sample", idx)}
+                    addedText="—"
+                    isSample
+                    action={
+                      <p className="text-center text-xs text-white/70">Preview — not a live copy</p>
+                    }
+                  />
+                ))
                 : rowsPage.map((b) => {
                   const canCheckout =
                     !!user &&
@@ -859,7 +860,7 @@ export function RequestBookSection({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-serif">Request via Hub</DialogTitle>
           <DialogDescription>
@@ -886,46 +887,50 @@ export function RequestBookSection({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                className="z-[100] w-[var(--radix-popover-trigger-width)] p-0"
-                align="start"
-                sideOffset={4}
-                onCloseAutoFocus={(e) => e.preventDefault()}
-              >
-                <Command>
-                  <CommandInput placeholder="Search hubs…" />
-                  <CommandList>
-                    <CommandEmpty>No hub matches.</CommandEmpty>
-                    <CommandGroup>
-                      {hubs.map((h) => (
-                        <CommandItem
-                          key={h.id}
-                          value={[h.name, h.location, h.id].filter(Boolean).join(" ")}
-                          onSelect={() => {
-                            setHubId(h.id);
-                            setHubPickerOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mt-0.5 h-4 w-4 shrink-0 self-start",
-                              hubId === h.id ? "opacity-100" : "opacity-0",
-                            )}
-                          />
-                          <span className="flex min-w-0 flex-col gap-0.5 text-left">
-                            <span className="truncate font-medium">{h.name}</span>
-                            {h.location ? (
-                              <span className="truncate text-xs text-muted-foreground">
-                                {h.location}
-                              </span>
-                            ) : null}
-                          </span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
+              <Portal>
+  <PopoverContent
+    className="z-[9999] w-[var(--radix-popover-trigger-width)] p-0"
+    align="start"
+    sideOffset={4}
+    onCloseAutoFocus={(e) => e.preventDefault()}
+  >
+    <div className="max-h-[240px] overflow-y-auto">
+  <Command>
+    <CommandInput placeholder="Search hubs…" />
+    <CommandList>
+      <CommandEmpty>No hub matches.</CommandEmpty>
+      <CommandGroup className="flex-1 overflow-y-auto">
+        {hubs.map((h) => (
+          <CommandItem
+            key={h.id}
+            value={[h.name, h.location, h.id].filter(Boolean).join(" ")}
+            onSelect={() => {
+              setHubId(h.id);
+              setHubPickerOpen(false);
+            }}
+          >
+            <Check
+              className={cn(
+                "mt-0.5 h-4 w-4 shrink-0 self-start",
+                hubId === h.id ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <span className="flex min-w-0 flex-col gap-0.5 text-left">
+              <span className="truncate font-medium">{h.name}</span>
+              {h.location ? (
+                <span className="truncate text-xs text-muted-foreground">
+                  {h.location}
+                </span>
+              ) : null}
+            </span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </CommandList>
                 </Command>
+                </div>
               </PopoverContent>
+              </Portal>
             </Popover>
           </div>
           <div className="space-y-2">

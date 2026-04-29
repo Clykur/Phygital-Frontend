@@ -229,18 +229,22 @@ function unavailableReason(status: string) {
 }
 
 function listingStatusLabel(status: string) {
-  if (status === "listed") return "Draft";
-  if (status === "pending_dropoff") return "Pending drop-off";
-  if (status === "available") return "On shelf";
+  if (status === "listed") return "Listed (Draft)";
+  if (status === "pending_dropoff") return "Pending Drop-off";
+  if (status === "approved") return "Approved (Pending On-shelf)";
+  if (status === "available") return "On-shelf";
   if (status === "sold") return "Sold";
+  if (status === "rejected") return "Rejected";
   return status.replace(/_/g, " ");
 }
 
 function listingNextStep(status: string) {
   if (status === "listed") return "Choose drop-off hub to start.";
   if (status === "pending_dropoff") return "Drop at hub desk to activate.";
+  if (status === "approved") return "Staff will move to shelf soon.";
   if (status === "available") return "Wait for buyer or borrower.";
   if (status === "sold") return "Completed. Edits are locked.";
+  if (status === "rejected") return "Listing rejected. No further action.";
   return "Track status updates from this page.";
 }
 
@@ -414,6 +418,7 @@ export default function Marketplace(props?: MarketplaceProps) {
 
   const gridSourcePeerVisible = useMemo(() => {
     return gridSource.filter((l) => {
+      if (l.status === "available") return true;
       if (l.status !== "reserved") return true;
       if (!user) return false;
       return l.borrowerUserId === user.userId || l.ownerId === user.userId;
@@ -431,10 +436,11 @@ export default function Marketplace(props?: MarketplaceProps) {
     if (user && studentMode !== "sell") {
       const uid = user.userId.toLowerCase();
       return gridSourcePeerVisible.filter(
-        (l) => String(l.ownerId).toLowerCase() !== uid,
+        (l) =>
+          String(l.ownerId).toLowerCase() !== uid && l.status === "available",
       );
     }
-    return gridSourcePeerVisible;
+    return gridSourcePeerVisible.filter((l) => l.status === "available");
   }, [gridSourcePeerVisible, studentMode, inShell, user]);
 
   const hubBooksSorted = useMemo(() => {

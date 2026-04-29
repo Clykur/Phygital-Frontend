@@ -382,7 +382,13 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not update request"),
+    onError: (e) => {
+      if (e instanceof ApiError && e.status === 409) {
+        toast.error("Verify the copy on shelf before completing pickup.");
+      } else {
+        toast.error(e instanceof ApiError ? e.message : "Could not update request");
+      }
+    },
   });
 
   const [adminCloseTarget, setAdminCloseTarget] = useState<HubDeskRequestRow | null>(null);
@@ -470,6 +476,21 @@ export default function HubBookRequestsPage() {
       toast.success(data.warning ? "Copy assigned (unverified)." : "Copy assigned.");
     },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : "Assign failed"),
+  });
+
+  const verifyAssignmentReq = useMutation({
+    mutationFn: async (id: string) => {
+      return apiFetch<{ request: HubDeskRequestRow }>(`/api/book-requests/${id}/verify-assignment`, {
+        method: "POST",
+        token: token!,
+        body: JSON.stringify({}),
+      });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
+      toast.success("Assignment verified.");
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Verification failed"),
   });
 
   const releaseAssignmentReq = useMutation({
@@ -691,7 +712,7 @@ export default function HubBookRequestsPage() {
         ) : (
           <ul className="divide-y divide-border">
             {filteredRequests.map((r) => {
-              const pendingPatch =
+                            const pendingPatch =
                 patchDeskRequest.isPending && patchDeskRequest.variables?.id === r.id;
               const hint = deskStaffHint(r.status);
               const nextAction = deskNextAction(r);
@@ -781,7 +802,7 @@ export default function HubBookRequestsPage() {
                             ) : null}
                           </>
                         ) : (
-                          <span className="italic">None yet; use Inventory to link availability</span>
+                          <span className="italic">None yet, use Inventory to link availability</span>
                         )}
                       </p>
                       {r.assignedCopyId && r.assignmentVerified === false ? (
@@ -848,12 +869,6 @@ export default function HubBookRequestsPage() {
                           className="h-9 rounded-md text-xs"
                           disabled={pendingPatch}
                           onClick={() => {
-                            if (
-                              r.assignmentVerified === false &&
-                              !window.confirm("This was not shelf-verified. Continue marking as picked?")
-                            ) {
-                              return;
-                            }
                             patchDeskRequest.mutate({ id: r.id, status: "picked" });
                           }}
                         >
@@ -882,6 +897,18 @@ export default function HubBookRequestsPage() {
                       ) : null}
                       {r.assignedCopyId ? (
                         <>
+                          {r.assignmentVerified === false ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-8 rounded-md text-xs"
+                              disabled={verifyAssignmentReq.isPending}
+                              onClick={() => verifyAssignmentReq.mutate(r.id)}
+                            >
+                              Verify on shelf
+                            </Button>
+                          ) : null}
                           <Button
                             type="button"
                             size="sm"
@@ -1004,6 +1031,14 @@ export default function HubBookRequestsPage() {
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
+              variant="ghost"
+              onClick={() => setAssignTarget(null)}
+              disabled={assignCopyReq.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               disabled={!assignTarget || assignCopyReq.isPending}
               onClick={() => {
@@ -1021,6 +1056,7 @@ export default function HubBookRequestsPage() {
                 assignCopyReq.mutate({ id: assignTarget.id, assignmentVerified: true });
               }}
             >
+              {assignCopyReq.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Verified on shelf
             </Button>
           </DialogFooter>
