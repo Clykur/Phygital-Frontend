@@ -3,7 +3,8 @@ import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { ApiError, apiFetch } from "@/lib/api";
+import { apiFetch, apiPublicUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import {
   ADMIN_HUBS_PATH,
   SUPER_ADMIN_COMMERCE_PATH,
@@ -16,7 +17,6 @@ import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { apiPublicUrl } from "@/lib/api";
 import {
   Table,
   TableBody,
@@ -179,7 +179,7 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
       void qc.invalidateQueries({ queryKey: ["admin", "hubs"] });
       toast.success("Hub enabled.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not enable hub"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const disableHub = useMutation({
@@ -189,7 +189,7 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
       void qc.invalidateQueries({ queryKey: ["admin", "hubs"] });
       toast.success("Hub disabled.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not disable hub"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const deleteHub = useMutation({
@@ -204,7 +204,7 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
       toast.success("Hub deleted.");
       setLocation(ADMIN_HUBS_PATH);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not delete hub"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const submitConfirm = () => {

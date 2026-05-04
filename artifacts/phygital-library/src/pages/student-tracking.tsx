@@ -1,7 +1,8 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { Button } from "@/components/ui/button";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
@@ -311,7 +312,7 @@ export default function StudentTrackingPage() {
       toast.success("Peer borrow returned.");
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const returnBook = useMutation({
@@ -322,7 +323,7 @@ export default function StudentTrackingPage() {
       toast.success("Return recorded drop the copy at your hub desk when you can.");
       void qc.invalidateQueries({ queryKey: ["catalog", "books"] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const onLoan =

@@ -3,7 +3,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { adminUserPath, portalPathsForUser } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
@@ -197,7 +198,7 @@ function AdminUsersContent() {
           </div>
         ) : q.isError ? (
           <p className="px-4 py-10 text-sm text-destructive">
-            {q.error instanceof ApiError ? q.error.message : "Could not load users."}
+            {userFacingErrorMessage(q.error)}
           </p>
         ) : (
           <>

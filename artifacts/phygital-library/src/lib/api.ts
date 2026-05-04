@@ -5,6 +5,8 @@
  *   forwards to the backend and the browser never triggers cross-origin CORS. (`VITE_API_PROXY`
  *   only configures `vite.config.ts` proxy target — do not use it as the client base.)
  */
+import { httpErrorMessage, wrapNetworkFailure } from "./error-messages";
+
 function resolveApiBase(): string {
   const explicit = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (explicit) return explicit.replace(/\/$/, "");
@@ -63,16 +65,22 @@ export async function apiFetch<T>(
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  const res = await fetch(joinUrl(path), { ...rest, headers });
+  let res: Response;
+  try {
+    res = await fetch(joinUrl(path), { ...rest, headers });
+  } catch (e) {
+    throw new ApiError(0, wrapNetworkFailure(e));
+  }
   if (!res.ok) {
-    let msg = res.statusText;
+    let serverMsg = res.statusText;
     try {
-      const j = (await res.json()) as { error?: string };
-      if (j.error) msg = j.error;
+      const j = (await res.json()) as { error?: string; message?: string };
+      if (j.error) serverMsg = j.error;
+      else if (j.message) serverMsg = j.message;
     } catch {
-      /* ignore */
+      /* non-JSON body */
     }
-    throw new ApiError(res.status, msg);
+    throw new ApiError(res.status, httpErrorMessage(res.status, serverMsg));
   }
   if (res.status === 204) {
     return undefined as T;

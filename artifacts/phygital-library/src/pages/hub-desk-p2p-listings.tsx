@@ -14,6 +14,7 @@ import {
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError, apiPublicUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { portalPathsForUser } from "@/lib/app-paths";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
@@ -100,7 +101,7 @@ export default function HubDeskP2pListingsPage() {
       toast.success("Submission status updated.");
     },
     onError: (err) => {
-      toast.error(err.message);
+      toast.error(userFacingErrorMessage(err));
     },
   });
 
@@ -278,7 +279,7 @@ export default function HubDeskP2pListingsPage() {
         </div>
         {listQ.isError ? (
           <p className="px-4 py-10 text-sm text-destructive sm:px-4">
-            {listQ.error instanceof ApiError ? listQ.error.message : "Could not load listings."}
+            {userFacingErrorMessage(listQ.error)}
           </p>
         ) : listQ.isLoading ? (
           <div className="flex justify-center py-24">

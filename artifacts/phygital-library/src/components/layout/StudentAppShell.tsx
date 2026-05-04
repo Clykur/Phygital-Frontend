@@ -17,7 +17,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ProfileAvatar } from "@/components/profile-avatar";
 import { useAuth } from "@/context/auth-context";
-import { ApiError } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { isPremiumOk } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
@@ -114,7 +114,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
       toast.success("Premium active for this demo.");
       setUpgradeOpen(false);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Could not upgrade");
+      toast.error(userFacingErrorMessage(e));
     } finally {
       setUpgradeBusy(false);
     }

@@ -25,7 +25,8 @@ import {
 } from "@/lib/catalog-sort";
 import { hubKindLabel } from "@/lib/hub-display";
 import { ShelfPeerStatusBadge } from "@/lib/status-badges";
-import { apiFetch, apiPublicUrl, ApiError } from "@/lib/api";
+import { apiFetch, apiPublicUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { BookCoverImage } from "@/components/ui/book-cover-image";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/lib/browse-demos";
 import { signInHref } from "@/lib/sign-in-return";
@@ -687,7 +688,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
     },
     onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : "Could not list — check Premium status."),
+      toast.error(userFacingErrorMessage(e)),
   });
 
   const submitDropoff = useMutation({
@@ -704,7 +705,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["hub", "pending-p2p"] });
       setSelected(null);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Drop-off failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   useEffect(() => {
@@ -763,7 +764,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       setEditClearCover(false);
       setSelected(null);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Update failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const deleteListing = useMutation({
@@ -775,7 +776,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
       setSelected(null);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Delete failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const returnPeerBorrow = useMutation({
@@ -787,7 +788,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       invalidateCheckoutQueries();
       setSelected(null);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const canList =
@@ -1146,7 +1147,9 @@ export default function Marketplace(props?: MarketplaceProps) {
         )}
 
         {isBrowseMode && hubBooksEnabled && hubBooksQ.isError && (
-          <p className="mb-6 text-sm text-destructive">Couldn’t load hub catalog. Check the API and try again.</p>
+          <p className="mb-6 text-sm text-destructive">
+            {userFacingErrorMessage(hubBooksQ.error)}
+          </p>
         )}
 
         {peerListingsError && (
@@ -1156,8 +1159,7 @@ export default function Marketplace(props?: MarketplaceProps) {
               <div>
                 <p className="font-medium text-foreground">Couldn’t load peer listings</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Check that the API is running and{" "}
-                  <code className="rounded bg-muted px-1">/api/p2p/listings</code> is reachable.
+                  {userFacingErrorMessage(listingsQ.error)}
                 </p>
               </div>
             </div>

@@ -3,7 +3,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { portalPathsForUser } from "@/lib/app-paths";
@@ -281,9 +282,7 @@ export default function HubCommercePage() {
           </div>
           {commerceQ.isError ? (
             <p className="px-4 py-10 text-sm text-destructive sm:px-4">
-              {commerceQ.error instanceof ApiError
-                ? commerceQ.error.message
-                : "Could not load commerce data."}
+              {userFacingErrorMessage(commerceQ.error)}
             </p>
           ) : commerceQ.isLoading ? (
             <div className="flex justify-center py-24">
@@ -337,9 +336,7 @@ export default function HubCommercePage() {
           </div>
           {commerceQ.isError ? (
             <p className="px-4 py-10 text-sm text-destructive sm:px-4">
-              {commerceQ.error instanceof ApiError
-                ? commerceQ.error.message
-                : "Could not load commerce data."}
+              {userFacingErrorMessage(commerceQ.error)}
             </p>
           ) : commerceQ.isLoading ? (
             <div className="flex justify-center py-24">

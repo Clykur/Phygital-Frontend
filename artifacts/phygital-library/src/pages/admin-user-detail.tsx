@@ -3,7 +3,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { ApiError, apiFetch, apiPublicUrl } from "@/lib/api";
+import { apiFetch, apiPublicUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { adminHubPath, ADMIN_USERS_PATH, hubOverviewPathForUser } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
@@ -158,7 +159,7 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success("User placed on hold.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not hold user"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const deactivateUser = useMutation({
@@ -169,7 +170,7 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success("User deactivated.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not deactivate user"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const deleteUser = useMutation({
@@ -179,7 +180,7 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
       toast.success("User deleted.");
       setLocation(ADMIN_USERS_PATH);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not delete user"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const submitConfirm = () => {

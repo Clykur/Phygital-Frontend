@@ -29,6 +29,7 @@ import {
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError, apiPublicUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { BookCoverImage } from "@/components/ui/book-cover-image";
 import { portalPathsForUser } from "@/lib/app-paths";
 import { hubKindLabel } from "@/lib/hub-display";
@@ -258,8 +259,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["catalog", "books"] });
       void qc.invalidateQueries({ queryKey: ["activity", "timeline"] });
     },
-    onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : "Could not update transfer."),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const markTransferReceived = useMutation({
@@ -277,8 +277,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["catalog", "books"] });
       void qc.invalidateQueries({ queryKey: ["activity", "timeline"] });
     },
-    onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : "Could not complete receipt."),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const adminForceRelease = useMutation({
@@ -295,8 +294,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
       void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
     },
-    onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : "Could not release copy."),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const markCopyUnavailable = useMutation({
@@ -313,7 +311,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
       void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not update copy"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const markCopyAvailable = useMutation({
@@ -331,7 +329,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
     },
     onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : "Could not update copy"),
+      toast.error(userFacingErrorMessage(e)),
   });
 
   const convertP2pToHub = useMutation({
@@ -346,7 +344,7 @@ export default function HubInventoryPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       void qc.invalidateQueries({ queryKey: ["hub", "overview"] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not convert"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const addShelfCopy = useMutation({
@@ -357,7 +355,7 @@ export default function HubInventoryPage() {
       if (addCoverFile) {
         const fd = new FormData();
         fd.append("image", addCoverFile);
-        const promise = apiFetch<{ url:string }>("/api/uploads/book-cover", {
+        const promise = apiFetch<{ url: string }>("/api/uploads/book-cover", {
           method: "POST",
           token: token!,
           body: fd,
@@ -425,7 +423,7 @@ export default function HubInventoryPage() {
       }
     },
     onError: (e) =>
-      toast.error(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "Could not add copy"),
+      toast.error(userFacingErrorMessage(e)),
   });
 
   const topPad = inShell ? "" : "pt-24";
@@ -712,7 +710,7 @@ export default function HubInventoryPage() {
           </div>
         ) : booksQ.isError ? (
           <p className="px-4 py-10 text-sm text-destructive">
-            {booksQ.error instanceof ApiError ? booksQ.error.message : "Could not load inventory."}
+            {userFacingErrorMessage(booksQ.error)}
           </p>
         ) : (
           <>

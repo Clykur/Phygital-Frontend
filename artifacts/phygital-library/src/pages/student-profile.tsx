@@ -11,7 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ApiError, apiFetch, apiUrl } from "@/lib/api";
+import { apiFetch, apiUrl } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { hubKindLabel, hubMembershipRoleLabel } from "@/lib/hub-display";
 import { isHubAccount } from "@/lib/app-paths";
 import { isPremiumOk } from "@/lib/rbac";
@@ -60,7 +61,7 @@ export default function StudentProfilePage() {
       toast.success("Premium active for this demo.");
       setUpgradeOpen(false);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Could not upgrade");
+      toast.error(userFacingErrorMessage(e));
     } finally {
       setUpgradeBusy(false);
     }
@@ -92,7 +93,7 @@ export default function StudentProfilePage() {
       await refreshUser();
       toast.success("Profile photo updated.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      toast.error(userFacingErrorMessage(err));
     } finally {
       setUploadBusy(false);
     }

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useAuth } from "@/context/auth-context";
-import { ApiError } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { isPremiumOk } from "@/lib/rbac";
 import { toast } from "sonner";
 
@@ -58,7 +58,7 @@ export function Navbar() {
       toast.success("Premium active for this demo.");
       setUpgradeOpen(false);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Could not upgrade");
+      toast.error(userFacingErrorMessage(e));
     } finally {
       setUpgradeBusy(false);
     }

@@ -3,7 +3,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { adminHubPath, portalPathsForUser } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
@@ -201,7 +202,7 @@ function AdminHubsContent() {
           </div>
         ) : q.isError ? (
           <p className="px-4 py-10 text-sm text-destructive">
-            {q.error instanceof ApiError ? q.error.message : "Could not load hubs."}
+            {userFacingErrorMessage(q.error)}
           </p>
         ) : (
           <>
