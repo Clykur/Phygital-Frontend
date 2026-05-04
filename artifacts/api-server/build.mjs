@@ -83,6 +83,7 @@ const external = [
   "puppeteer",
   "puppeteer-core",
   "electron",
+  "express",
 ];
 
 function buildOptions(distDir) {
