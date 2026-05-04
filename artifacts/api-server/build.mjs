@@ -105,10 +105,11 @@ function buildOptions(distDir) {
 
 async function main() {
   const isWatch = process.argv.includes("--watch");
-  const distDir = path.resolve(artifactDir, "dist");
-  if (!isWatch) {
-    await rm(distDir, { recursive: true, force: true });
-  }
+const distDir = artifactDir;
+  // No need to remove distDir if it's the artifactDir itself
+  // if (!isWatch) {
+  //   await rm(distDir, { recursive: true, force: true });
+  // }
 
   const opts = buildOptions(distDir);
 
