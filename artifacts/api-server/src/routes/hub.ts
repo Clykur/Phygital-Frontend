@@ -616,7 +616,7 @@ router.post("/books/:bookId/transfer/mark-in-transit", authMiddleware, requireAu
     }
     logger.error(e, "Failed to mark book in transit");
     res.status(500).json({ error: "Something went wrong, please try again later." });
-    return;(err.message === "RACE") {
+    if (err.message === "RACE") {
       res.status(409).json({ error: "Another update just changed this copy. Refresh and try again." });
       return;
     }
