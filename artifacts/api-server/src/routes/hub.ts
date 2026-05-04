@@ -118,24 +118,8 @@ router.put(
       res.json({ success: true });
       return res.json({ success: true });
     } catch (error: any) {
-      if (error.message === "NOT_FOUND") {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      if (error.message === "BAD_STATUS") {
-        return res
-          .status(400)
-          .json({ error: "Listing is not pending drop-off." });
-      }
-      if (error.message === "NO_HUB_ID") {
-        return res.status(400).json({ error: "Listing has no drop-off hub." });
-      }
-      if (error.message === "FORBIDDEN") {
-        return res
-          .status(403)
-          .json({ error: "You are not authorized to manage this submission" });
-      }
       logger.error(error, "Failed to update P2P submission status");
-      return res.status(500).json({ error: "Failed to update submission status" });
+      return res.status(500).json({ error: "Something went wrong, please try again later." });
     }
   },
 );
@@ -232,11 +216,9 @@ router.post("/books", authMiddleware, requireAuth, async (req, res) => {
       res.status(403).json({ error: "This hub is inactive." });
       return;
     }
-    if (err.message === "INSERT_FAILED") {
-      res.status(500).json({ error: "Could not add copy." });
-      return;
-    }
-    throw e;
+    logger.error(e, "Failed to create hub shelf book");
+    res.status(500).json({ error: "Something went wrong, please try again later." });
+    return;
   }
 
   const book = created!;
@@ -418,7 +400,9 @@ router.post("/books/:bookId/scan", authMiddleware, requireAuth, async (req, res)
       });
       return;
     }
-    throw e;
+    logger.error(e, "Failed to scan book");
+    res.status(500).json({ error: "Something went wrong, please try again later." });
+    return;
   }
 
   await logAudit({
@@ -539,7 +523,9 @@ router.post("/books/:bookId/acquire-peer-ownership", authMiddleware, requireAuth
       });
       return;
     }
-    throw e;
+    logger.error(e, "Failed to acquire peer ownership");
+    res.status(500).json({ error: "Something went wrong, please try again later." });
+    return;
   }
 });
 
@@ -628,7 +614,9 @@ router.post("/books/:bookId/transfer/mark-in-transit", authMiddleware, requireAu
       res.status(409).json({ error: "Transfer metadata is inconsistent; contact support." });
       return;
     }
-    if (err.message === "RACE") {
+    logger.error(e, "Failed to mark book in transit");
+    res.status(500).json({ error: "Something went wrong, please try again later." });
+    return;(err.message === "RACE") {
       res.status(409).json({ error: "Another update just changed this copy. Refresh and try again." });
       return;
     }
