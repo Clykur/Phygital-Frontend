@@ -2,6 +2,13 @@
   "version": 2,
   "builds": [
     {
+      "src": "artifacts/phygital-library/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "artifacts/phygital-library/dist/public"
+      }
+    },
+    {
       "src": "artifacts/api-server/package.json",
       "use": "@vercel/node@3.0.12",
       "config": {
@@ -17,6 +24,10 @@
     },
     {
       "src": "/api/(.*)",
+      "dest": "artifacts/api-server/dist/index.mjs"
+    },
+    {
+      "src": "/uploads/(.*)",
       "dest": "artifacts/api-server/dist/index.mjs"
     },
     {
