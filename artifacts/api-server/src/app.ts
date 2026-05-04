@@ -30,7 +30,12 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://phygitallibrary.vercel.app",
+    credentials: true,
+  }),
+);
 /** Cover uploads: flat mount so `POST /api/uploads/book-cover` matches under Express 5. */
 app.use("/api/uploads", authMiddleware, uploadsRouter);
 app.use(express.json());
