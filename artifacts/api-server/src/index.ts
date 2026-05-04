@@ -9,3 +9,4 @@ import { ensurePublicReadableIds } from "./lib/public-ids";
 import { seedIfEmpty } from "./seed";
 
 export default app;
+export const handler = app;

@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/index.mjs",
+      "src": "package.json",
       "use": "@vercel/node@3.0.12",
       "config": {
         "includeFiles": [
