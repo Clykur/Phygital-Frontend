@@ -1,8 +1,9 @@
-import app from './dist/index.mjs';
+import express from 'express';
 
-// Add a temporary test route to confirm the app is running
+const app = express();
+
 app.get('/test-route', (req, res) => {
-  res.send('Hello from Vercel API Test Route!');
+  res.send('Hello from a brand new Express app on Vercel!');
 });
 
 export default app;
