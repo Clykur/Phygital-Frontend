@@ -97,7 +97,7 @@ function buildOptions(distDir) {
     external,
     sourcemap: "linked",
     plugins: [
-      esbuildPluginPino({ transports: ["pino-pretty"] }),
+      esbuildPluginPino(),
     ],
     banner: {
       js: `import { createRequire as __bannerCrReq } from 'node:module';
