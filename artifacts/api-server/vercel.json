@@ -1,13 +1,14 @@
 {
   "version": 2,
-  "functions": {
-    "api.js": {
-      "runtime": "nodejs@20.x",
-      "memory": 1024,
-      "maxDuration": 10,
-      "includeFiles": "dist/**"
+  "builds": [
+    {
+      "src": "api.js",
+      "use": "@vercel/node@3.0.12",
+      "config": {
+        "includeFiles": ["dist/**"]
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
