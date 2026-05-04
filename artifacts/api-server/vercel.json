@@ -6,7 +6,8 @@
       "use": "@vercel/node@3.0.12",
       "config": {
         "buildCommand": "npm run build"
-      }
+      },
+      "includeFiles": ["index.js"]
     }
   ],
   "routes": [
