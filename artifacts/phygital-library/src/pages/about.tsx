@@ -45,7 +45,7 @@ export default function About() {
               <Label htmlFor="message">Message</Label>
               <Textarea id="message" placeholder="How can we help?" rows={4} required className="bg-background resize-none" />
             </div>
-            <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
+            <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-lg mt-4">
               Send Message
             </Button>
           </form>
@@ -58,10 +58,10 @@ export default function About() {
           <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
             <span className="text-amber-600 font-serif italic text-xl mb-6 block">Our Story</span>
             <h1 className="text-5xl md:text-7xl font-serif font-medium tracking-tight leading-[1.05] mb-8">
-              Rewriting the rules <br/> of academic access.
+              Making textbooks affordable and accessible for every student in India.
             </h1>
             <p className="text-xl text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
-              We started PSLN with a simple belief: the cost of textbooks shouldn't be a barrier to education. We're building a sustainable, networked future for students in India.
+              PSLN started with a simple problem: students are spending ₹8,000–₹15,000 every semester on textbooks they barely use. We're building a network where students can find, borrow, and reuse books across campuses instead of buying new ones every time.
             </p>
           </motion.div>
         </div>
@@ -76,7 +76,7 @@ export default function About() {
            transition={{ duration: 1.5, ease: "easeOut" as const }}
            className="w-full h-full"
         >
-          <img src={constellation} alt="Network Constellation" className="w-full h-full object-cover" />
+          <img src={constellation} alt="Interconnected library network" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-slate-950/40 mix-blend-overlay" />
         </motion.div>
       </section>
@@ -91,8 +91,22 @@ export default function About() {
             </div>
             <div className="md:col-span-8">
               <p className="text-2xl font-light leading-relaxed text-foreground">
-                To eliminate the financial burden of academic resources by creating India's largest interconnected phygital library. We bridge the gap between underutilized college infrastructure and urgent student needs.
+                Our mission is to reduce textbook costs for students by 70%+ by turning existing college libraries into a shared, connected network. A shared library network connecting campuses across India.
               </p>
+            </div>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="grid md:grid-cols-12 gap-12 mb-32">
+            <div className="md:col-span-4">
+              <h2 className="text-3xl font-serif font-medium border-b border-border/50 pb-4">What we’re building</h2>
+            </div>
+            <div className="md:col-span-8">
+              <ul className="space-y-4 text-xl font-light leading-relaxed text-foreground list-disc list-inside">
+                <li>A platform to search books across campuses</li>
+                <li>A network of physical pickup hubs inside colleges</li>
+                <li>A peer-to-peer marketplace for student listings</li>
+                <li>A routing system that finds the nearest available copy</li>
+              </ul>
             </div>
           </motion.div>
 
@@ -102,21 +116,34 @@ export default function About() {
             </div>
             <div className="md:col-span-8 grid sm:grid-cols-2 gap-x-8 gap-y-12">
               <div>
-                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Access &gt; Ownership</h3>
-                <p className="text-muted-foreground font-light leading-relaxed">You don't need to own a book to learn from it. We prioritize circulation and shared resources over private collections.</p>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Access over ownership</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">Students shouldn’t have to buy a book to use it for a few months. Shared access makes education more affordable and practical.</p>
               </div>
               <div>
-                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Sustainable Education</h3>
-                <p className="text-muted-foreground font-light leading-relaxed">Reusing books reduces paper waste and environmental impact. Every book borrowed is a tree saved.</p>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Built for reuse, not waste</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">Most textbooks are used once and forgotten. We extend their lifecycle across multiple students.</p>
               </div>
               <div>
-                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Frictionless Experience</h3>
-                <p className="text-muted-foreground font-light leading-relaxed">From the app tap to physical pickup, every step must feel premium, effortless, and instantaneous.</p>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Simple, fast, and reliable</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">From search to pickup, everything is designed to work in minutes - not days.</p>
               </div>
               <div>
-                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Community Driven</h3>
-                <p className="text-muted-foreground font-light leading-relaxed">Our P2P marketplace empowers students to help each other while recovering their own costs safely.</p>
+                <h3 className="font-serif text-xl font-medium mb-3 text-amber-600">Students helping students</h3>
+                <p className="text-muted-foreground font-light leading-relaxed">Our peer marketplace allows students to lend, sell, and recover costs - safely and easily.</p>
               </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="grid md:grid-cols-12 gap-12 mt-32">
+            <div className="md:col-span-4">
+              <h2 className="text-3xl font-serif font-medium border-b border-border/50 pb-4">Where we are today</h2>
+            </div>
+            <div className="md:col-span-8">
+              <ul className="space-y-4 text-xl font-light leading-relaxed text-foreground list-disc list-inside">
+                <li>Live with X books across X campuses</li>
+                <li>Early student adoption and listings growing weekly</li>
+                <li>Actively onboarding partner institutions</li>
+              </ul>
             </div>
           </motion.div>
 
@@ -125,14 +152,11 @@ export default function About() {
 
       {/* Contact Banner */}
       <section className="py-32 bg-slate-950 text-slate-50 text-center px-6 border-t border-slate-800">
-        <h2 className="text-4xl font-serif font-medium mb-6">Let's shape the future.</h2>
-        <p className="text-slate-400 font-light mb-10 max-w-lg mx-auto text-lg">Whether you're an investor, a college admin, or just curious about what we're building, we'd love to chat.</p>
+        <h2 className="text-4xl font-serif font-medium mb-6">Want to be part of this?</h2>
+        <p className="text-slate-400 font-light mb-10 max-w-lg mx-auto text-lg">We’re actively working with students, colleges, and early supporters. If you’d like to collaborate, partner, or learn more - reach out.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a href="mailto:hello@psln.in" className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-amber-500 text-slate-950 font-medium hover:bg-amber-400 transition-colors text-lg shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-105 w-full sm:w-auto">
-            hello@psln.in
-          </a>
-          <Button onClick={() => setContactDialogOpen(true)} variant="outline" className="h-14 px-10 rounded-full border-slate-700 bg-transparent hover:bg-slate-800 text-slate-50 transition-colors text-lg hover:scale-105 w-full sm:w-auto">
-            Get in touch
+          <Button onClick={() => setContactDialogOpen(true)} className="inline-flex items-center justify-center h-14 px-10 rounded-lg bg-amber-500 text-slate-950 font-medium hover:bg-amber-400 transition-colors text-lg shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:scale-105 w-full sm:w-auto">
+            Contact Us
           </Button>
         </div>
       </section>

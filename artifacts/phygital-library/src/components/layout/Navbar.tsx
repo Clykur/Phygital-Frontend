@@ -56,8 +56,6 @@ export function Navbar() {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Library", path: "/library" },
-    { name: "Discover", path: "/marketplace" },
     { name: "Colleges", path: "/colleges" },
     { name: "About", path: "/about" },
   ];
@@ -259,7 +257,7 @@ export function Navbar() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`rounded-full border-amber-500/50 ${onDarkHero ? "border-amber-400/40 bg-white/5 text-slate-50" : ""}`}
+                    className={`rounded-lg border-amber-500/50 ${onDarkHero ? "border-amber-400/40 bg-white/5 text-slate-50" : ""}`}
                     onClick={() => setUpgradeOpen(true)}
                   >
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
@@ -271,7 +269,7 @@ export function Navbar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={`rounded-full ${onDarkHero ? "text-slate-100 hover:bg-white/10" : ""}`}
+                      className={`rounded-lg ${onDarkHero ? "text-slate-100 hover:bg-white/10" : ""}`}
                     >
                       Account
                     </Button>
@@ -281,12 +279,6 @@ export function Navbar() {
                       {user.publicUserId ?? `${user.userId.slice(0, 8)}…`}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/library" className="flex items-center gap-2">
-                        <Library className="h-4 w-4" />
-                        Library
-                      </Link>
-                    </DropdownMenuItem>
                     {showHubDesk && deskNav && (
                       <>
                         <DropdownMenuItem asChild>
@@ -337,12 +329,9 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Button variant="ghost" asChild className={onDarkHero ? "text-slate-200 hover:text-white" : ""}>
-                  <Link href={signInHref(location)}>Sign in</Link>
-                </Button>
                 <Button
                   asChild
-                  className={`rounded-full px-6 shadow-sm ${onDarkHero ? "bg-amber-500 text-slate-950 hover:bg-amber-400" : ""}`}
+                  className={`rounded-lg px-6 shadow-sm ${onDarkHero ? "bg-amber-500 text-slate-950 hover:bg-amber-400" : ""}`}
                 >
                   <Link href={signInHref(location)}>Join</Link>
                 </Button>
@@ -419,16 +408,16 @@ export function Navbar() {
               </div>
               <div className="mt-auto flex flex-col gap-3 border-t border-border pt-8">
                 {user && !isPremiumOk(user) && (
-                  <Button className="rounded-full" onClick={() => { setMobileMenuOpen(false); setUpgradeOpen(true); }}>
+                  <Button className="rounded-lg" onClick={() => { setMobileMenuOpen(false); setUpgradeOpen(true); }}>
                     Upgrade
                   </Button>
                 )}
                 {user ? (
-                  <Button variant="outline" className="rounded-full" onClick={() => { logout(); setMobileMenuOpen(false); }}>
+                  <Button variant="outline" className="rounded-lg" onClick={() => { logout(); setMobileMenuOpen(false); }}>
                     Sign out
                   </Button>
                 ) : (
-                  <Button asChild className="rounded-full">
+                  <Button asChild className="rounded-lg">
                     <Link href={signInHref(location)} onClick={() => setMobileMenuOpen(false)}>
                       Sign in
                     </Link>
@@ -449,7 +438,7 @@ export function Navbar() {
               endpoint later.
             </DialogDescription>
           </DialogHeader>
-          <Button className="w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400" disabled={upgradeBusy} onClick={() => void runUpgrade()}>
+          <Button className="w-full rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400" disabled={upgradeBusy} onClick={() => void runUpgrade()}>
             {upgradeBusy ? "…" : "Activate demo Premium"}
           </Button>
         </DialogContent>

@@ -38,6 +38,7 @@ import { enrichBooksAcquiredFromHubNames } from "../lib/book-acquired-from";
 import { hubInventoryBooksOrderBy } from "../lib/hub-inventory-books-order";
 import { hubP2pPipelineListingsOrderBy } from "../lib/hub-p2p-pipeline-listings-order";
 import { nextBookRefId } from "../lib/public-ids";
+import { success } from "zod/v4";
 
 const router: IRouter = Router();
 
@@ -115,6 +116,7 @@ router.put(
       });
 
       res.json({ success: true });
+      return res.json({ success: true });
     } catch (error: any) {
       if (error.message === "NOT_FOUND") {
         return res.status(404).json({ error: "Listing not found" });
@@ -133,7 +135,7 @@ router.put(
           .json({ error: "You are not authorized to manage this submission" });
       }
       logger.error(error, "Failed to update P2P submission status");
-      res.status(500).json({ error: "Failed to update submission status" });
+      return res.status(500).json({ error: "Failed to update submission status" });
     }
   },
 );

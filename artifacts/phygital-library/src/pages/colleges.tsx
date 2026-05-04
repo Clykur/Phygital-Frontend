@@ -32,16 +32,16 @@ export default function Colleges() {
             <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="lg:col-span-5 lg:col-start-1 order-2 lg:order-1">
               <span className="text-amber-600 font-serif italic text-xl mb-4 block">For Institutions</span>
               <h1 className="text-5xl md:text-6xl font-serif font-medium tracking-tight leading-[1.1] mb-8">
-                Turn your <br/> dusty shelves <br/> into <span className="text-amber-600">active assets.</span>
+                Increase library usage by 4x without buying new books.
               </h1>
               <p className="text-lg text-muted-foreground font-light leading-relaxed mb-10 max-w-md">
-                Join the Phygital Network to digitize your inventory, increase utilization by 4x, and modernize campus infrastructure at zero upfront cost.
+                Digitize your library, improve student access, and maximize ROI - all with zero upfront cost.
               </p>
               
               <Dialog open={partnerDialogOpen} onOpenChange={setPartnerDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" className="h-14 px-8 rounded-full bg-foreground text-background hover:bg-foreground/90 text-base font-medium shadow-lg hover:shadow-xl transition-all">
-                    Partner with us <ArrowRight className="ml-2 w-5 h-5" />
+                  <Button size="lg" className="h-14 px-8 rounded-lg bg-foreground text-background hover:bg-foreground/90 text-base font-medium shadow-lg hover:shadow-xl transition-all">
+                    Schedule a Demo <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md bg-card border-border">
@@ -68,7 +68,7 @@ export default function Colleges() {
                       <Label htmlFor="librarySize">Expected Library Size (Books)</Label>
                       <Input id="librarySize" type="number" placeholder="50000" required className="bg-background" />
                     </div>
-                    <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full mt-4">
+                    <Button type="submit" className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-lg mt-4">
                       Submit Application
                     </Button>
                   </form>
@@ -88,8 +88,9 @@ export default function Colleges() {
                 <img src={aerialShelf} alt="Aerial view of modern library shelves" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -left-12 bottom-12 glass-card bg-card/90 p-6 rounded-xl max-w-xs z-20 shadow-2xl hidden md:block border-l-4 border-l-amber-500">
-                <p className="font-serif text-2xl font-medium mb-2">400%</p>
-                <p className="text-sm text-muted-foreground">Average increase in resource utilization within the first semester.</p>
+                <p className="font-serif text-2xl font-medium mb-2">4x</p>
+                <p className="text-sm text-muted-foreground">increase in book usage within the first semester</p>
+                <p className="text-xs text-muted-foreground mt-1">Proven across early partner campuses</p>
               </div>
             </motion.div>
           </div>
@@ -100,14 +101,14 @@ export default function Colleges() {
       <section className="py-32 bg-muted/30 border-y border-border/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="mb-20">
-             <h2 className="text-4xl md:text-5xl font-serif font-medium max-w-2xl">Why forward-thinking colleges join the network.</h2>
+             <h2 className="text-4xl md:text-5xl font-serif font-medium max-w-2xl">Why colleges are switching to a shared library network</h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-x-12 gap-y-16">
             {[
-              { icon: TrendingUp, title: "Maximize ROI", desc: "Your books currently sit idle 80% of the year. The network ensures your investments are actively used by students who need them." },
-              { icon: Users, title: "Better Experience", desc: "Provide a modern, app-based library experience that matches how today's students actually discover and consume content." },
-              { icon: ShieldCheck, title: "Zero Admin Overhead", desc: "Our software handles tracking, reservations, waitlists, and reminders automatically. Your staff focuses on strategy, not scanning." }
+              { icon: TrendingUp, title: "Increase ROI on existing library investments", desc: "Your books sit unused most of the year. We turn idle inventory into actively borrowed resources across your campus network." },
+              { icon: Users, title: "Meet modern student expectations", desc: "Students expect app-based access. Give them instant discovery, reservations, and pickup - just like any modern platform." },
+              { icon: ShieldCheck, title: "Reduce manual workload for staff", desc: "Automate tracking, reservations, waitlists, and reminders - so your team focuses on operations, not repetitive tasks." }
             ].map((prop, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: i * 0.1 }} className="group hover:-translate-y-2 transition-transform duration-300">
                 <div className="mb-6 w-12 h-12 flex items-center justify-center rounded-full bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-amber-50 transition-colors duration-300">
@@ -126,13 +127,13 @@ export default function Colleges() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-              <h2 className="text-4xl md:text-5xl font-serif font-medium mb-12">Simple, zero-disruption integration.</h2>
+              <h2 className="text-4xl md:text-5xl font-serif font-medium mb-12">Go live in under 14 days - no disruption to your current system</h2>
               <div className="space-y-8">
                 {[
-                  { title: "Catalog Digitization", desc: "We map and digitize your current physical inventory into the cloud." },
-                  { title: "Hub Setup", desc: "We set up a small, efficient physical pickup/drop-off hub on your campus." },
-                  { title: "Network Connection", desc: "Your books enter the shared network, available to your students first." },
-                  { title: "Go Live", desc: "Students borrow via app and scan a QR code to collect instantly." }
+                  { title: "We digitize your existing inventory", desc: "We map and digitize your current physical inventory into the cloud." },
+                  { title: "We set up a lightweight pickup point on campus", desc: "We set up a small, efficient physical pickup/drop-off hub on your campus." },
+                  { title: "Your books become accessible across the network (priority to your students)", desc: "Your books enter the shared network, available to your students first." },
+                  { title: "Students start borrowing via app with QR-based pickup", desc: "Students borrow via app and scan a QR code to collect instantly." }
                 ].map((step, i) => (
                   <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: i * 0.1 }} key={i} className="flex items-start gap-6 group">
                     <div className="w-8 h-8 rounded-full border border-slate-700 flex items-center justify-center shrink-0 mt-1 group-hover:border-amber-500 transition-colors">
@@ -151,12 +152,20 @@ export default function Colleges() {
               <span className="inline-block p-3 rounded-full bg-amber-500/10 text-amber-400 mb-6">
                 <CheckCircle2 className="w-8 h-8" />
               </span>
-              <h3 className="text-3xl font-serif font-medium mb-4">Ready to modernize?</h3>
-              <p className="text-slate-400 font-light text-lg mb-10 leading-relaxed">Setup takes less than 2 weeks. There is absolutely no disruption to your current operations, and zero upfront hardware costs.</p>
+              <h3 className="text-3xl font-serif font-medium mb-4">No upfront cost. No operational risk.</h3>
+              <ul className="list-disc list-inside text-slate-400 font-light text-lg mb-10 leading-relaxed space-y-2">
+                <li>No hardware investment required</li>
+                <li>No change to your existing library system</li>
+                <li>Fully managed onboarding and support</li>
+                <li>Start small - scale anytime</li>
+              </ul>
+              <h3 className="text-3xl font-serif font-medium mb-4">See how your library can increase utilization in 2 weeks</h3>
+              <p className="text-slate-400 font-light text-lg mb-10 leading-relaxed">Get a personalized demo for your campus and see projected impact.</p>
               
-              <Button onClick={() => setPartnerDialogOpen(true)} size="lg" className="w-full h-14 rounded-full bg-slate-50 text-slate-950 hover:bg-slate-200 text-base font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all">
+              <Button onClick={() => setPartnerDialogOpen(true)} size="lg" className="w-full h-14 rounded-lg bg-slate-50 text-slate-950 hover:bg-slate-200 text-base font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all">
                 Schedule a Demo
               </Button>
+              <p className="text-center text-sm text-slate-500 mt-4">Limited onboarding slots available this semester</p>
             </motion.div>
           </div>
         </div>
