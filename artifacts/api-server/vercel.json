@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node@3.0.12"
-    }
-  ],
   "functions": {
     "api.js": {
       "runtime": "nodejs20.x",
