@@ -2,9 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "api.js",
+      "src": "package.json",
       "use": "@vercel/node@3.0.12",
       "config": {
+        "output": "api.js",
         "includeFiles": ["dist/**"]
       }
     }
