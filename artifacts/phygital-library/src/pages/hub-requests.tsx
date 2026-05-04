@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { bookRequestMatchesSearch, normalizeBookTitle } from "@/lib/title-match";
@@ -374,8 +375,8 @@ export default function HubBookRequestsPage() {
         (old) =>
           old
             ? {
-                requests: old.requests.map((r) => (r.id === data.request.id ? data.request : r)),
-              }
+              requests: old.requests.map((r) => (r.id === data.request.id ? data.request : r)),
+            }
             : old,
       );
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
@@ -386,7 +387,7 @@ export default function HubBookRequestsPage() {
       if (e instanceof ApiError && e.status === 409) {
         toast.error("Verify the copy on shelf before completing pickup.");
       } else {
-        toast.error(e instanceof ApiError ? e.message : "Could not update request");
+        toast.error(userFacingErrorMessage(e));
       }
     },
   });
@@ -417,7 +418,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Request closed (audit log updated).");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Close failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const adminReassignReq = useMutation({
@@ -439,7 +440,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books", "available-titles"] });
       toast.success("Request moved to the selected hub (audit).");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Reassign failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const adminOverrideStatus = useMutation({
@@ -457,7 +458,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Status updated (audit).");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Override failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const assignCopyReq = useMutation({
@@ -475,7 +476,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success(data.warning ? "Copy assigned (unverified)." : "Copy assigned.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Assign failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const verifyAssignmentReq = useMutation({
@@ -490,7 +491,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
       toast.success("Assignment verified.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Verification failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const releaseAssignmentReq = useMutation({
@@ -507,7 +508,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Assignment released.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Release failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const topPad = inShell ? "" : "pt-24";
@@ -695,9 +696,7 @@ export default function HubBookRequestsPage() {
         </div>
         {deskRequestsQ.isError ? (
           <p className="px-4 py-10 text-sm text-destructive sm:px-4">
-            {deskRequestsQ.error instanceof ApiError
-              ? deskRequestsQ.error.message
-              : "Could not load requests."}
+            {userFacingErrorMessage(deskRequestsQ.error)}
           </p>
         ) : deskRequestsQ.isLoading ? (
           <div className="flex justify-center py-24">
@@ -712,7 +711,7 @@ export default function HubBookRequestsPage() {
         ) : (
           <ul className="divide-y divide-border">
             {filteredRequests.map((r) => {
-                            const pendingPatch =
+              const pendingPatch =
                 patchDeskRequest.isPending && patchDeskRequest.variables?.id === r.id;
               const hint = deskStaffHint(r.status);
               const nextAction = deskNextAction(r);
@@ -746,269 +745,269 @@ export default function HubBookRequestsPage() {
                       )}
                     >
                       <div className="min-w-0 flex-1 space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-[15px] font-semibold text-foreground">
-                          {r.bookTitle?.trim() || "Book request"}
-                        </h3>
-                        <DeskRequestStatusBadge status={r.status} />
-                        {(ACTIVE_PIPELINE as readonly string[]).includes(r.status) &&
-                        r.createdAt &&
-                        requestAgeIsPriority(r.createdAt) ? (
-                          <Badge variant="destructive" className="text-[10px] font-semibold">
-                            Past SLA
-                          </Badge>
-                        ) : null}
-                      </div>
-                      {r.createdAt ? (
-                        <p className="text-[11px] text-muted-foreground">
-                          Open{" "}
-                          <time dateTime={r.createdAt} className="text-foreground/90">
-                            {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
-                          </time>
-                        </p>
-                      ) : null}
-                      {r.notes?.trim() ? (
-                        <p className="rounded-md border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-                          {r.notes}
-                        </p>
-                      ) : null}
-                      <div className="grid gap-2 rounded-md border border-border bg-muted/[0.2] px-3 py-2.5 text-[11px] sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="space-y-0.5">
-                          <p className="text-muted-foreground">Member</p>
-                          <p className="font-mono text-foreground/90">{r.requesterPublicId ?? "Student"}</p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-muted-foreground">Hub</p>
-                          <p className="truncate text-foreground/90">{hubName(r.hubId)}</p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-muted-foreground">Updated</p>
-                          <p className="text-foreground/90">{fmtDeskReqDate(r.updatedAt ?? r.createdAt)}</p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-muted-foreground">Ready at</p>
-                          <p className="text-foreground/90">{r.readyAt ? fmtDeskReqDate(r.readyAt) : "—"}</p>
-                        </div>
-                      </div>
-                      <p className="rounded-md border border-border/70 bg-background/70 px-3 py-2 text-[11px] text-muted-foreground">
-                        <span className="font-medium text-foreground">Assigned copy: </span>
-                        {r.assignedCopyId ? (
-                          <>
-                            <span className="font-mono text-foreground/90">{r.assignedCopyRefId ?? "Linked copy"}</span>
-                            {r.assignmentVerified === false ? (
-                              <Badge variant="outline" className="ml-2 border-amber-500/50 text-[10px] text-amber-700">
-                                Unverified
-                              </Badge>
-                            ) : null}
-                          </>
-                        ) : (
-                          <span className="italic">None yet, use Inventory to link availability</span>
-                        )}
-                      </p>
-                      {r.assignedCopyId && r.assignmentVerified === false ? (
-                        <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100">
-                          Not shelf verified - pickup may fail.
-                        </p>
-                      ) : null}
-                      {(ACTIVE_PIPELINE as readonly string[]).includes(r.status) && r.bookTitle?.trim() ? (
-                        <p className="rounded-md border border-border/70 bg-background/70 px-3 py-2 text-[11px] text-muted-foreground">
-                          <span className="font-medium text-foreground">Available matches on shelf: </span>
-                          {matchBooksQ.isLoading
-                            ? "…"
-                            : !r.assignedCopyId
-                              ? matchAvailableForRequest(r)
-                              : "—"}{" "}
-                          <span className="text-muted-foreground/80">
-                            (unassigned, available copies this hub / title; capped at 500 rows loaded)
-                          </span>
-                        </p>
-                      ) : null}
-                      <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                        <DeskRequestProgress status={r.status} />
-                      </div>
-                      {nextAction ? (
-                        <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2 text-[12px] leading-snug text-foreground dark:bg-amber-500/[0.08]">
-                          <span className="font-semibold text-amber-950 dark:text-amber-100">Next: </span>
-                          {nextAction}
-                        </div>
-                      ) : null}
-                      {hint ? (
-                        <p className="text-[12px] leading-relaxed text-muted-foreground">{hint}</p>
-                      ) : null}
-                      </div>
-                      {showActionColumn ? (
-                      <div className="flex flex-col items-stretch gap-2 lg:min-w-[14rem] lg:max-w-[14rem]">
-                      {r.status === "requested" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          className="h-9 rounded-md text-xs font-medium"
-                          disabled={pendingPatch}
-                          onClick={() => patchDeskRequest.mutate({ id: r.id, status: "routed" })}
-                        >
-                          Start helping
-                        </Button>
-                      ) : null}
-                      {r.status === "fulfilled" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-9 rounded-md text-xs"
-                          disabled={pendingPatch}
-                          onClick={() => patchDeskRequest.mutate({ id: r.id, status: "ready" })}
-                        >
-                          Mark ready
-                        </Button>
-                      ) : null}
-                      {r.status === "ready" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          className="h-9 rounded-md text-xs"
-                          disabled={pendingPatch}
-                          onClick={() => {
-                            patchDeskRequest.mutate({ id: r.id, status: "picked" });
-                          }}
-                        >
-                          Mark complete
-                        </Button>
-                      ) : null}
-                      {canAssignFromRow ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          className="h-9 rounded-md text-xs"
-                          onClick={() => setAssignTarget(r)}
-                          disabled={assignCopyReq.isPending}
-                        >
-                          Assign copy
-                        </Button>
-                      ) : null}
-                      {!r.assignedCopyId &&
-                      (r.status === "requested" || r.status === "routed") &&
-                      !!r.bookTitle?.trim() &&
-                      matchAvailableForRequest(r) === 0 ? (
-                        <p className="rounded-md border border-border/70 bg-background/70 px-2.5 py-2 text-[10px] text-muted-foreground">
-                          No available copies - add to inventory or wait.
-                        </p>
-                      ) : null}
-                      {r.assignedCopyId ? (
-                        <>
-                          {r.assignmentVerified === false ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-8 rounded-md text-xs"
-                              disabled={verifyAssignmentReq.isPending}
-                              onClick={() => verifyAssignmentReq.mutate(r.id)}
-                            >
-                              Verify on shelf
-                            </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-[15px] font-semibold text-foreground">
+                            {r.bookTitle?.trim() || "Book request"}
+                          </h3>
+                          <DeskRequestStatusBadge status={r.status} />
+                          {(ACTIVE_PIPELINE as readonly string[]).includes(r.status) &&
+                            r.createdAt &&
+                            requestAgeIsPriority(r.createdAt) ? (
+                            <Badge variant="destructive" className="text-[10px] font-semibold">
+                              Past SLA
+                            </Badge>
                           ) : null}
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-8 rounded-md text-xs"
-                            disabled={releaseAssignmentReq.isPending}
-                            onClick={() => releaseAssignmentReq.mutate(r.id)}
-                          >
-                            Release assignment
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-8 rounded-md text-xs"
-                            disabled={releaseAssignmentReq.isPending}
-                            onClick={async () => {
-                              try {
-                                await releaseAssignmentReq.mutateAsync(r.id);
-                                await apiFetch(`/api/hub/books/${r.assignedCopyId}/scan`, {
-                                  method: "POST",
-                                  token: token!,
-                                  body: JSON.stringify({ status: "unavailable" }),
-                                });
-                                toast.success("Marked copy unavailable and released assignment.");
-                                void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
-                                void qc.invalidateQueries({ queryKey: ["hub", "books"] });
-                              } catch (e) {
-                                toast.error(e instanceof ApiError ? e.message : "Could not mark unavailable");
-                              }
-                            }}
-                          >
-                            Mark copy unavailable
-                          </Button>
-                        </>
-                      ) : null}
-                      {showInventoryCta ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-9 rounded-md text-xs font-medium"
-                          asChild
-                        >
-                          <Link href={deskInventoryHref(deskPaths!.inventory, r.hubId, r.bookTitle)}>Open inventory</Link>
-                        </Button>
-                      ) : null}
-                      {isSuperAdmin && !["expired", "cancelled", "picked"].includes(r.status) ? (
-                        <div className="mt-1 rounded-md border border-border bg-muted/[0.2] p-2.5">
-                          <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
-                            Platform admin
+                        </div>
+                        {r.createdAt ? (
+                          <p className="text-[11px] text-muted-foreground">
+                            Open{" "}
+                            <time dateTime={r.createdAt} className="text-foreground/90">
+                              {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
+                            </time>
                           </p>
-                          <div className="mt-2 flex flex-col gap-1.5">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-8 w-full justify-start text-xs"
-                              onClick={() => setAdminCloseTarget(r)}
-                            >
-                              Close request…
-                            </Button>
-                            {isSuperAdmin && !r.assignedCopyId && (r.status === "requested" || r.status === "routed") ? (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="secondary"
-                                className="h-8 w-full justify-start text-xs"
-                                onClick={() => {
-                                  setReassignTarget(r);
-                                  setReassignHubId("");
-                                  setReassignReason("");
-                                }}
-                              >
-                                Reassign hub…
-                              </Button>
-                            ) : null}
-                            {r.status === "fulfilled" || r.status === "ready" || r.status === "routed" || r.status === "requested" ? (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="secondary"
-                                className="h-8 w-full justify-start text-xs"
-                                onClick={() => {
-                                  if (r.status === "fulfilled") setOverrideTo("ready");
-                                  else if (r.status === "ready") setOverrideTo("picked");
-                                  else if (r.status === "routed") setOverrideTo("requested");
-                                  else setOverrideTo("routed");
-                                  setOverrideTarget(r);
-                                }}
-                              >
-                                Override status…
-                              </Button>
-                            ) : null}
+                        ) : null}
+                        {r.notes?.trim() ? (
+                          <p className="rounded-md border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                            {r.notes}
+                          </p>
+                        ) : null}
+                        <div className="grid gap-2 rounded-md border border-border bg-muted/[0.2] px-3 py-2.5 text-[11px] sm:grid-cols-2 lg:grid-cols-4">
+                          <div className="space-y-0.5">
+                            <p className="text-muted-foreground">Member</p>
+                            <p className="font-mono text-foreground/90">{r.requesterPublicId ?? "Student"}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-muted-foreground">Hub</p>
+                            <p className="truncate text-foreground/90">{hubName(r.hubId)}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-muted-foreground">Updated</p>
+                            <p className="text-foreground/90">{fmtDeskReqDate(r.updatedAt ?? r.createdAt)}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-muted-foreground">Ready at</p>
+                            <p className="text-foreground/90">{r.readyAt ? fmtDeskReqDate(r.readyAt) : "—"}</p>
                           </div>
                         </div>
-                      ) : null}
+                        <p className="rounded-md border border-border/70 bg-background/70 px-3 py-2 text-[11px] text-muted-foreground">
+                          <span className="font-medium text-foreground">Assigned copy: </span>
+                          {r.assignedCopyId ? (
+                            <>
+                              <span className="font-mono text-foreground/90">{r.assignedCopyRefId ?? "Linked copy"}</span>
+                              {r.assignmentVerified === false ? (
+                                <Badge variant="outline" className="ml-2 border-amber-500/50 text-[10px] text-amber-700">
+                                  Unverified
+                                </Badge>
+                              ) : null}
+                            </>
+                          ) : (
+                            <span className="italic">None yet, use Inventory to link availability</span>
+                          )}
+                        </p>
+                        {r.assignedCopyId && r.assignmentVerified === false ? (
+                          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100">
+                            Not shelf verified - pickup may fail.
+                          </p>
+                        ) : null}
+                        {(ACTIVE_PIPELINE as readonly string[]).includes(r.status) && r.bookTitle?.trim() ? (
+                          <p className="rounded-md border border-border/70 bg-background/70 px-3 py-2 text-[11px] text-muted-foreground">
+                            <span className="font-medium text-foreground">Available matches on shelf: </span>
+                            {matchBooksQ.isLoading
+                              ? "…"
+                              : !r.assignedCopyId
+                                ? matchAvailableForRequest(r)
+                                : "—"}{" "}
+                            <span className="text-muted-foreground/80">
+                              (unassigned, available copies this hub / title; capped at 500 rows loaded)
+                            </span>
+                          </p>
+                        ) : null}
+                        <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                          <DeskRequestProgress status={r.status} />
+                        </div>
+                        {nextAction ? (
+                          <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2 text-[12px] leading-snug text-foreground dark:bg-amber-500/[0.08]">
+                            <span className="font-semibold text-amber-950 dark:text-amber-100">Next: </span>
+                            {nextAction}
+                          </div>
+                        ) : null}
+                        {hint ? (
+                          <p className="text-[12px] leading-relaxed text-muted-foreground">{hint}</p>
+                        ) : null}
                       </div>
+                      {showActionColumn ? (
+                        <div className="flex flex-col items-stretch gap-2 lg:min-w-[14rem] lg:max-w-[14rem]">
+                          {r.status === "requested" ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-9 rounded-md text-xs font-medium"
+                              disabled={pendingPatch}
+                              onClick={() => patchDeskRequest.mutate({ id: r.id, status: "routed" })}
+                            >
+                              Start helping
+                            </Button>
+                          ) : null}
+                          {r.status === "fulfilled" ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="h-9 rounded-md text-xs"
+                              disabled={pendingPatch}
+                              onClick={() => patchDeskRequest.mutate({ id: r.id, status: "ready" })}
+                            >
+                              Mark ready
+                            </Button>
+                          ) : null}
+                          {r.status === "ready" ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-9 rounded-md text-xs"
+                              disabled={pendingPatch}
+                              onClick={() => {
+                                patchDeskRequest.mutate({ id: r.id, status: "picked" });
+                              }}
+                            >
+                              Mark complete
+                            </Button>
+                          ) : null}
+                          {canAssignFromRow ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="h-9 rounded-md text-xs"
+                              onClick={() => setAssignTarget(r)}
+                              disabled={assignCopyReq.isPending}
+                            >
+                              Assign copy
+                            </Button>
+                          ) : null}
+                          {!r.assignedCopyId &&
+                            (r.status === "requested" || r.status === "routed") &&
+                            !!r.bookTitle?.trim() &&
+                            matchAvailableForRequest(r) === 0 ? (
+                            <p className="rounded-md border border-border/70 bg-background/70 px-2.5 py-2 text-[10px] text-muted-foreground">
+                              No available copies - add to inventory or wait.
+                            </p>
+                          ) : null}
+                          {r.assignedCopyId ? (
+                            <>
+                              {r.assignmentVerified === false ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 rounded-md text-xs"
+                                  disabled={verifyAssignmentReq.isPending}
+                                  onClick={() => verifyAssignmentReq.mutate(r.id)}
+                                >
+                                  Verify on shelf
+                                </Button>
+                              ) : null}
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-8 rounded-md text-xs"
+                                disabled={releaseAssignmentReq.isPending}
+                                onClick={() => releaseAssignmentReq.mutate(r.id)}
+                              >
+                                Release assignment
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-8 rounded-md text-xs"
+                                disabled={releaseAssignmentReq.isPending}
+                                onClick={async () => {
+                                  try {
+                                    await releaseAssignmentReq.mutateAsync(r.id);
+                                    await apiFetch(`/api/hub/books/${r.assignedCopyId}/scan`, {
+                                      method: "POST",
+                                      token: token!,
+                                      body: JSON.stringify({ status: "unavailable" }),
+                                    });
+                                    toast.success("Marked copy unavailable and released assignment.");
+                                    void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
+                                    void qc.invalidateQueries({ queryKey: ["hub", "books"] });
+                                  } catch (e) {
+                                    toast.error(userFacingErrorMessage(e));
+                                  }
+                                }}
+                              >
+                                Mark copy unavailable
+                              </Button>
+                            </>
+                          ) : null}
+                          {showInventoryCta ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-9 rounded-md text-xs font-medium"
+                              asChild
+                            >
+                              <Link href={deskInventoryHref(deskPaths!.inventory, r.hubId, r.bookTitle)}>Open inventory</Link>
+                            </Button>
+                          ) : null}
+                          {isSuperAdmin && !["expired", "cancelled", "picked"].includes(r.status) ? (
+                            <div className="mt-1 rounded-md border border-border bg-muted/[0.2] p-2.5">
+                              <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
+                                Platform admin
+                              </p>
+                              <div className="mt-2 flex flex-col gap-1.5">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 w-full justify-start text-xs"
+                                  onClick={() => setAdminCloseTarget(r)}
+                                >
+                                  Close request…
+                                </Button>
+                                {isSuperAdmin && !r.assignedCopyId && (r.status === "requested" || r.status === "routed") ? (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    className="h-8 w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setReassignTarget(r);
+                                      setReassignHubId("");
+                                      setReassignReason("");
+                                    }}
+                                  >
+                                    Reassign hub…
+                                  </Button>
+                                ) : null}
+                                {r.status === "fulfilled" || r.status === "ready" || r.status === "routed" || r.status === "requested" ? (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    className="h-8 w-full justify-start text-xs"
+                                    onClick={() => {
+                                      if (r.status === "fulfilled") setOverrideTo("ready");
+                                      else if (r.status === "ready") setOverrideTo("picked");
+                                      else if (r.status === "routed") setOverrideTo("requested");
+                                      else setOverrideTo("routed");
+                                      setOverrideTarget(r);
+                                    }}
+                                  >
+                                    Override status…
+                                  </Button>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
                       ) : null}
-                  </div>
+                    </div>
                   </div>
                 </li>
               );

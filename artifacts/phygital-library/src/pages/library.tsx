@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { DEMO_LIBRARY_ROWS } from "@/lib/browse-demos";
 import { signInHref } from "@/lib/sign-in-return";
 import { isHubAccount, portalPathsForUser } from "@/lib/app-paths";
@@ -558,8 +559,7 @@ export default function LibraryPage() {
               <div>
                 <p className="font-medium text-foreground">Couldn’t load the catalog</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Check that the API is running and <code className="rounded bg-muted px-1">/api</code>{" "}
-                  is reachable from this app.
+                  {userFacingErrorMessage(hubsQ.error ?? booksQ.error)}
                 </p>
               </div>
             </div>
@@ -847,7 +847,7 @@ export function RequestBookSection({
         setLocation(portalPathsForUser(user).activity);
       }
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Request failed");
+      toast.error(userFacingErrorMessage(err));
     }
   };
 

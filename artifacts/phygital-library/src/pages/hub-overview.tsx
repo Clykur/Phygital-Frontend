@@ -12,6 +12,7 @@ import {
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { hubKindLabel } from "@/lib/hub-display";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
@@ -466,7 +467,7 @@ export default function HubOverviewPage() {
           </div>
         ) : overviewQ.isError ? (
           <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            Could not load overview.
+            {userFacingErrorMessage(overviewQ.error)}
           </p>
         ) : ov ? (
           <div className="space-y-6">

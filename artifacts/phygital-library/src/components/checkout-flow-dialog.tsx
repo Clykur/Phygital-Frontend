@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { STUDENT_CARD_CHROME } from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -129,7 +130,7 @@ export function CheckoutFlowDialog({
       setStep("success");
       onComplete();
     } catch (e) {
-      setPayError(e instanceof ApiError ? e.message : "Payment could not be completed.");
+      setPayError(userFacingErrorMessage(e));
     } finally {
       setPending(false);
     }

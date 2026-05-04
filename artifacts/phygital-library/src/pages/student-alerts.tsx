@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -186,7 +187,7 @@ export default function StudentAlertsPage() {
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : notifQ.isError ? (
                 <p className="text-sm text-destructive">
-                  {notifQ.error instanceof ApiError ? notifQ.error.message : "Could not load notifications."}
+                  {userFacingErrorMessage(notifQ.error)}
                 </p>
               ) : notifications.length === 0 ? (
                 <p className="text-sm text-muted-foreground">

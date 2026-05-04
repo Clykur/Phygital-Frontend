@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { ApiError, apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { userFacingErrorMessage } from "@/lib/error-messages";
 import { SUPER_ADMIN_OVERVIEW_PATH } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
@@ -158,7 +159,7 @@ function SuperAdminOperationsContent() {
       void qc.invalidateQueries({ queryKey: ["admin", "notification-deliveries"] });
       toast.success("Retry queued.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Retry failed"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const assignAnyM = useMutation({
@@ -173,7 +174,7 @@ function SuperAdminOperationsContent() {
       toast.success("Assigned matching copy.");
       setAssignIssue(null);
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not assign copy"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const releaseM = useMutation({
@@ -187,7 +188,7 @@ function SuperAdminOperationsContent() {
       void qc.invalidateQueries({ queryKey: ["admin", "system-health"] });
       toast.success("Reserved copy released.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not release copy"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const closeM = useMutation({
@@ -201,7 +202,7 @@ function SuperAdminOperationsContent() {
       void qc.invalidateQueries({ queryKey: ["admin", "system-health"] });
       toast.success("Request closed.");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not close request"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const reassignM = useMutation({
@@ -217,7 +218,7 @@ function SuperAdminOperationsContent() {
       setReassignIssue(null);
       setTargetHubId("");
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Could not reassign request"),
+    onError: (e) => toast.error(userFacingErrorMessage(e)),
   });
 
   const issues = useMemo(() => {
@@ -317,7 +318,7 @@ function SuperAdminOperationsContent() {
             </div>
           ) : healthQ.isError ? (
             <p className="p-4 text-sm text-destructive">
-              {healthQ.error instanceof ApiError ? healthQ.error.message : "Could not load issues"}
+              {userFacingErrorMessage(healthQ.error)}
             </p>
           ) : sortedIssues.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">No actionable issues in scope.</p>
@@ -380,7 +381,9 @@ function SuperAdminOperationsContent() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : notifQ.isError ? (
-            <p className="p-4 text-sm text-destructive">Could not load notifications</p>
+            <p className="p-4 text-sm text-destructive">
+              {userFacingErrorMessage(notifQ.error)}
+            </p>
           ) : notifications.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">No recent events in scope.</p>
           ) : (
