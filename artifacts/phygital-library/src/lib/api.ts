@@ -10,7 +10,7 @@ function resolveApiBase(): string {
   if (explicit) return explicit.replace(/\/$/, "");
 
   const proxyTarget = (import.meta.env.VITE_API_PROXY as string | undefined)?.trim();
-  if (import.meta.env.DEV && proxyTarget) return proxyTarget.replace(/\/$/, "");
+  if (proxyTarget) return proxyTarget.replace(/\/$/, "");
 
   return "";
 }
