@@ -1,10 +1,10 @@
 {
   "builds": [
     {
-      "src": "artifacts/phygital-library/package.json",
+      "src": "artifacts/phygital-library",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist/public"
+        "distDir": "artifacts/phygital-library/dist/public"
       }
     }
   ]
