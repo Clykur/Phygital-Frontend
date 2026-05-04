@@ -84,6 +84,7 @@ const external = [
   "puppeteer-core",
   "electron",
   "express",
+  "dotenv",
 ];
 
 function buildOptions(distDir) {
