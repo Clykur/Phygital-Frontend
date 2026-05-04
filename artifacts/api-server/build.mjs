@@ -90,18 +90,15 @@ function buildOptions(distDir) {
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     platform: "node",
     bundle: true,
-    format: "esm",
+    format: "cjs",
     outdir: distDir,
-    outExtension: { ".js": ".mjs" },
+    outExtension: { ".js": ".js" },
     logLevel: "info",
     external,
     sourcemap: "linked",
     plugins: [
       esbuildPluginPino(),
     ],
-    footer: {
-      js: 'export default exports.default || exports;'
-    }
   };
 }
 
