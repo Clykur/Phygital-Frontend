@@ -1,15 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api.js",
-      "use": "@vercel/node@3.0.12",
-      "config": {
-        "buildCommand": "npm run build"
-      },
+  "functions": {
+    "api.js": {
+      "runtime": "@vercel/node@3.0.12",
       "includeFiles": ["index.js"]
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
