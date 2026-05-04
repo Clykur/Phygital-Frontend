@@ -1,16 +1,13 @@
 /**
  * API origin without trailing slash.
- * - Set `VITE_API_URL` in production (and local if you want an explicit origin).
- * - In **dev**, if `VITE_API_URL` is empty and `VITE_API_PROXY` is set, we call the API
- *   directly. That avoids `POST /api/uploads/...` hitting only Vite (404) when the dev
- *   proxy does not forward the request; CORS is enabled on the API.
+ * - Set `VITE_API_URL` when the app must call an absolute origin (production, or explicit local API URL).
+ * - When unset, use same-origin relative paths (`/api`, `/uploads`) so the Vite dev server proxy
+ *   forwards to the backend and the browser never triggers cross-origin CORS. (`VITE_API_PROXY`
+ *   only configures `vite.config.ts` proxy target — do not use it as the client base.)
  */
 function resolveApiBase(): string {
   const explicit = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (explicit) return explicit.replace(/\/$/, "");
-
-  const proxyTarget = (import.meta.env.VITE_API_PROXY as string | undefined)?.trim();
-  if (proxyTarget) return proxyTarget.replace(/\/$/, "");
 
   return "";
 }
