@@ -99,7 +99,9 @@ function buildOptions(distDir) {
     plugins: [
       esbuildPluginPino(),
     ],
-
+    footer: {
+      js: 'export default exports.default || exports;'
+    }
   };
 }
 
