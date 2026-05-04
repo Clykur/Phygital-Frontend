@@ -12,6 +12,15 @@ const app: Express = express();
 const uploadDir = ensureUploadDir();
 
 app.use(
+  cors({
+    origin: "https://phygitallibrary.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+app.use(
   pinoHttp({
     logger,
     serializers: {
@@ -28,12 +37,6 @@ app.use(
         };
       },
     },
-  }),
-);
-app.use(
-  cors({
-    origin: "https://phygitallibrary.vercel.app",
-    credentials: true,
   }),
 );
 /** Cover uploads: flat mount so `POST /api/uploads/book-cover` matches under Express 5. */
