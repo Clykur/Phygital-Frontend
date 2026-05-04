@@ -5,8 +5,7 @@
       "src": "api.js",
       "use": "@vercel/node@3.0.12",
       "config": {
-        "buildCommand": "npm run build",
-        "includeFiles": ["./dist/**"]
+        "buildCommand": "npm run build"
       }
     }
   ],
