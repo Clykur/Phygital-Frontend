@@ -1,6 +1,7 @@
-import app from './index.mjs';
+import { handler } from './index.mjs';
 
-console.log('Vercel API.js: Attempting to load app from index.mjs');
+// The console.log was for debugging deployment issues, can be removed now.
+// console.log('Vercel API.js: Attempting to load app from index.mjs');
 
-export default app;
-export const handler = app;
+export default handler;
+export { handler };
