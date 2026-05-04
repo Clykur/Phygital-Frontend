@@ -6,7 +6,7 @@
       "src": "api.js",
       "use": "@vercel/node@3.0.12",
       "config": {
-        "includeFiles": ["dist/**"]
+        "includeFiles": ["./dist/**"]
       }
     }
   ],
