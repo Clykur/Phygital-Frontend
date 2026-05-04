@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform, animate } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import {
@@ -11,6 +11,10 @@ import {
   Smartphone,
   Users,
   ArrowRight,
+  Wallet,
+  Search,
+  Zap,
+  Recycle,
 } from "lucide-react";
 import libraryDusk from "@/assets/images/library-dusk.png";
 import booksGlow from "@/assets/images/books-glow.png";
@@ -33,41 +37,7 @@ const staggerContainer = {
   },
 };
 
-const HERO_LIVE_METRICS = [
-  {
-    idx: "01",
-    kicker: "Trusted by",
-    note: "Campuses across India",
-    from: 0,
-    to: 50,
-    suffix: "+",
-    prefix: "",
-    kickerClass: "text-amber-400",
-    delay: 0.1,
-  },
-  {
-    idx: "02",
-    kicker: "Books in circulation",
-    note: "And growing every semester",
-    from: 0,
-    to: 120,
-    suffix: "k",
-    prefix: "",
-    kickerClass: "text-sky-400",
-    delay: 0.18,
-  },
-  {
-    idx: "03",
-    kicker: "Average savings",
-    note: "Per student, per year",
-    from: 0,
-    to: 12,
-    suffix: "k+",
-    prefix: "₹",
-    kickerClass: "text-emerald-400",
-    delay: 0.26,
-  },
-] as const;
+
 
 function Counter({
   from,
@@ -172,27 +142,18 @@ export default function Home() {
               className="lg:col-span-8 flex flex-col items-start"
             >
               <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl md:text-7xl lg:text-[85px] font-serif font-medium leading-[1.05] tracking-tight mb-8 mt-4">
-                Knowledge should <br className="hidden md:block" />
-                be <span className="italic font-light text-amber-400">accessible</span>, <br className="hidden md:block" />
-                not owned.
+                Stop spending ₹10,000+ <br className="hidden md:block" />
+                every semester <br className="hidden md:block" />
+                on <span className="italic font-light text-amber-400">textbooks.</span>
               </motion.h1>
               
               <motion.p variants={fadeInUp} className="text-lg md:text-xl text-slate-300 max-w-xl font-light leading-relaxed mb-10 border-l-2 border-amber-500/50 pl-6">
-                Discover, borrow, and pick up textbooks at local campus hubs. A seamless network bridging digital convenience with physical books.
+                Borrow what you need, when you need it - right on campus. Find, reserve, and pick up textbooks from nearby campus hubs in minutes.
               </motion.p>
               
               <motion.div variants={fadeInUp} className="flex flex-col flex-wrap gap-4 sm:flex-row">
-                <Link href="/marketplace" className="h-14 px-8 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 text-base font-medium transition-all hover:scale-105 inline-flex items-center justify-center">
-                  Explore Network <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-                <Link href="/library" className="h-14 px-8 rounded-full border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all inline-flex items-center justify-center">
-                  Browse catalog
-                </Link>
-                <Link href="/colleges" className="h-14 px-8 rounded-full border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-50 backdrop-blur-md text-base transition-all inline-flex items-center justify-center">
-                  For Colleges
-                </Link>
               </motion.div>
-              {catalogTeaser.data && (
+              {/* {catalogTeaser.data && (
                 <motion.p
                   variants={fadeInUp}
                   className="mt-8 max-w-xl text-sm leading-relaxed text-slate-400"
@@ -218,78 +179,9 @@ export default function Home() {
                   >
                     {catalogTeaser.data.listings} peer listings
                   </Link>
-                  <span className="text-slate-500"> — no sign-in to browse.</span>
+                  <span className="text-slate-500"> no sign-in to browse.</span>
                 </motion.p>
-              )}
-            </motion.div>
-
-            {/* Hero metrics — minimal stack, high contrast, no decoration noise */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] as const }}
-              className="lg:col-span-4 w-full lg:self-center"
-            >
-              {/* Mobile: simple vertical list */}
-              <div className="mt-14 divide-y divide-white/10 border-t border-white/15 lg:hidden">
-                {HERO_LIVE_METRICS.map((row) => (
-                  <div key={row.kicker} className="py-9 first:pt-0 last:pb-0">
-                    <p className="font-mono text-[11px] tabular-nums tracking-wider text-slate-400">
-                      {row.idx}
-                    </p>
-                    <p
-                      className={`mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] ${row.kickerClass}`}
-                    >
-                      {row.kicker}
-                    </p>
-                    <Counter
-                      from={row.from}
-                      to={row.to}
-                      prefix={row.prefix}
-                      suffix={row.suffix}
-                      className="mt-3 block font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50"
-                    />
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-300">
-                      {row.note}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop: one hairline + calm typography */}
-              <div className="mt-4 hidden flex-col gap-12 border-l border-white/20 pl-8 lg:flex">
-                {HERO_LIVE_METRICS.map((row) => (
-                  <motion.div
-                    key={row.kicker}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.65,
-                      delay: 0.5 + row.delay,
-                      ease: [0.16, 1, 0.3, 1] as const,
-                    }}
-                  >
-                    <p className="font-mono text-[11px] tabular-nums tracking-wider text-slate-400">
-                      {row.idx}
-                    </p>
-                    <p
-                      className={`mt-2 text-[11px] font-semibold uppercase tracking-[0.22em] ${row.kickerClass}`}
-                    >
-                      {row.kicker}
-                    </p>
-                    <Counter
-                      from={row.from}
-                      to={row.to}
-                      prefix={row.prefix}
-                      suffix={row.suffix}
-                      className="mt-3 block font-serif text-5xl xl:text-6xl font-light tabular-nums tracking-tight text-slate-50"
-                    />
-                    <p className="mt-3 max-w-[17rem] text-sm leading-relaxed text-slate-300">
-                      {row.note}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
+              )} */}
             </motion.div>
           </div>
         </div>
@@ -298,42 +190,77 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
       </section>
 
-      {/* The Problem — Editorial Split */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            <motion.div 
+      {/* Value Proposition */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-16">
+            <motion.h2 
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-              className="lg:col-span-5 lg:col-start-2 relative"
+              className="text-4xl md:text-5xl font-serif font-medium text-slate-900 leading-tight"
             >
-              <div className="relative aspect-[3/4] rounded-sm overflow-hidden shadow-2xl">
-                <img src={booksGlow} alt="Stack of books" className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-700" />
-                <div className="absolute inset-0 border border-foreground/10 mix-blend-overlay" />
-              </div>
-              <div className="absolute -bottom-8 -right-8 w-48 h-48 bg-background p-6 rounded-full border border-border flex flex-col justify-center items-center shadow-xl">
-                <span className="text-5xl font-serif font-bold text-amber-600 mb-1">
-                  <Counter from={0} to={85} suffix="%" />
-                </span>
-                <span className="text-xs text-muted-foreground uppercase tracking-widest text-center">Books discarded after 1 year</span>
-              </div>
-            </motion.div>
+              Save money. Skip the hassle.
+            </motion.h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 max-w-4xl mx-auto">
+            {[
+              { icon: Wallet, text: "Save up to ₹12,000 per semester" },
+              { icon: Search, text: "No more searching across libraries" },
+              { icon: Zap, text: "Get books near you, instantly" },
+              { icon: Recycle, text: "Help reuse books instead of buying new" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-4"
+              >
+                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                  <item.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-700">{item.text}</h3>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            <motion.div 
-              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-              className="lg:col-span-5 lg:col-start-8 flex flex-col justify-center"
-            >
-              <h2 className="text-3xl md:text-4xl font-serif font-medium leading-tight mb-8">
-                Education is evolving, but access to textbooks remains stuck in the past.
-              </h2>
-              <div className="space-y-6">
-                <p className="text-lg text-muted-foreground leading-relaxed font-light">
-                  Textbooks are prohibitively expensive and often left unused after a single semester. Selling them back is a hassle, leading to wasted money and environmental resources.
-                </p>
-                <p className="text-lg text-muted-foreground leading-relaxed font-light">
-                  Meanwhile, physical libraries are underutilized. Outdated inventory and inefficient tracking systems make it hard to provide students with the resources they actually need.
-                </p>
+      {/* How it Works */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif font-medium text-slate-900 leading-tight">Get your textbook in under 5 minutes - here’s how:</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            {/* Step 1: Discover */}
+            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-6">
+                <Smartphone className="w-8 h-8" />
               </div>
-            </motion.div>
+              <h3 className="text-2xl font-semibold text-slate-800 mb-3">1. Search Instantly</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Search for your textbook across all nearby campuses instantly.
+              </p>
+            </div>
+            {/* Step 2: Borrow */}
+            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-sky-100 text-sky-600 mb-6">
+                <MapPin className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-semibold text-slate-800 mb-3">2. Reserve & Pick Up</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Reserve the closest available copy and pick your campus hub.
+              </p>
+            </div>
+            {/* Step 3: Return */}
+            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-6">
+                <RefreshCw className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-semibold text-slate-800 mb-3">3. Return Anywhere</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Return it at any hub - no stress, no deadlines pressure.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -372,9 +299,9 @@ export default function Home() {
                 </span>
               </div>
               <h2 className="font-serif text-[2.125rem] font-light leading-[1.12] tracking-[-0.02em] sm:text-5xl md:text-[3.25rem]">
-                One nervous system
+                One system that connects
                 <span className="mt-3 block font-serif text-[#c9a227] italic">
-                  for digital, physical, and networked books.
+                  all campus books into a single, searchable network.
                 </span>
               </h2>
             </motion.div>
@@ -396,7 +323,7 @@ export default function Home() {
             {[
               {
                 step: "I",
-                title: "Glass interface",
+                title: "Search & Reserve Instantly",
                 subtitle: "Reserve from anywhere",
                 body: "Search once across the union catalog. Hold, renew, and see live ETAs without calling a desk.",
                 Icon: Smartphone,
@@ -406,7 +333,7 @@ export default function Home() {
               },
               {
                 step: "II",
-                title: "Curated hubs",
+                title: "Easy Pickup Points on Campus",
                 subtitle: "Physical custody, refined",
                 body: "Human-scale pickup rooms with calibrated lighting and QR handoff so that dignity is maintained in the last meter.",
                 Icon: MapPin,
@@ -416,7 +343,7 @@ export default function Home() {
               },
               {
                 step: "III",
-                title: "Mesh inventory",
+                title: "Shared Books Across Campuses",
                 subtitle: "Many shelves, one ledger",
                 body: "Pooling stock across partner campuses expands what any single library could ever hold alone.",
                 Icon: RefreshCw,
@@ -467,112 +394,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works — full-bleed runway, zero cards */}
-      <section className="relative bg-[#050505] text-[#f4f1ea]">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.15),transparent),radial-gradient(ellipse_60%_40%_at_100%_100%,rgba(56,189,248,0.06),transparent)]"
-          aria-hidden
-        />
 
-        <div className="relative z-10 mx-auto max-w-7xl border-b border-white/[0.08] px-6 py-20 lg:px-12 lg:py-28">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] as const }}
-              className="max-w-3xl"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90">
-                How it works
-              </p>
-              <h2 className="mt-5 font-serif text-[2.25rem] font-light leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-[3.35rem]">
-                Four beats.
-                <span className="mt-1 block font-serif italic text-amber-400/95">One straight line to the shelf.</span>
-              </h2>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.65, delay: 0.08, ease: [0.16, 1, 0.3, 1] as const }}
-              className="max-w-md text-[15px] leading-[1.75] text-slate-400"
-            >
-              Nothing boxed in modals or hidden states so that just the path your book takes from search to handoff.
-            </motion.p>
-          </div>
-
-          <div
-            className="mt-14 flex gap-1 lg:mt-20"
-            aria-hidden
-          >
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-px flex-1 bg-gradient-to-r from-amber-500/50 via-amber-500/20 to-transparent opacity-50" />
-            ))}
-          </div>
-        </div>
-
-        {(
-          [
-            {
-              mark: "01",
-              title: "Discover",
-              desc: "Title, author, or ISBN, one search spans every participating shelf.",
-              bar: "from-amber-400 to-amber-600/20",
-            },
-            {
-              mark: "02",
-              title: "Commit",
-              desc: "Borrow for the term or buy outright; pricing and return windows stay transparent.",
-              bar: "from-sky-400 to-sky-600/20",
-            },
-            {
-              mark: "03",
-              title: "Route",
-              desc: "The mesh picks the nearest copy with a valid hold window and stages it to your hub.",
-              bar: "from-emerald-400 to-emerald-600/20",
-            },
-            {
-              mark: "04",
-              title: "Release",
-              desc: "Scan, collect, leave. The ledger closes the moment the QR clears.",
-              bar: "from-amber-400 via-fuchsia-400/80 to-transparent",
-            },
-          ] as const
-        ).map((step, i) => (
-          <motion.div
-            key={step.mark}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] as const }}
-            className="relative border-b border-white/[0.06]"
-          >
-            <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-14 sm:py-16 lg:grid-cols-12 lg:items-start lg:gap-10 lg:px-12 lg:py-20">
-              <div className="flex gap-5 lg:col-span-2 lg:flex-col lg:gap-4">
-                <div
-                  className={`h-full min-h-[3.5rem] w-px shrink-0 bg-gradient-to-b ${step.bar} lg:min-h-[4.5rem]`}
-                  aria-hidden
-                />
-                <span className="font-mono text-[11px] font-medium tabular-nums tracking-[0.35em] text-slate-500">
-                  {step.mark}
-                </span>
-              </div>
-
-              <div className="lg:col-span-4">
-                <h3 className="font-serif text-[1.85rem] font-light tracking-[-0.02em] sm:text-3xl lg:text-[2.125rem] lg:leading-[1.12]">
-                  {step.title}
-                </h3>
-              </div>
-
-              <p className="text-base leading-[1.8] text-slate-400 sm:text-[17px] lg:col-span-6 lg:pt-1">
-                {step.desc}
-              </p>
-            </div>
-
-          </motion.div>
-        ))}
-      </section>
 
       {/* Features Bento */}
       <section className="py-32">
@@ -616,80 +438,50 @@ export default function Home() {
       </section>
 
       {/* Impact — same language as hero metrics & runway */}
-      <section className="relative border-y border-white/[0.06] bg-[#050505] text-[#f4f1ea]">
+      {/* Impact */}
+      <section className="relative border-y border-white/[0.06] bg-[#050505] text-[#f4f1ea] py-24 sm:py-32">
         <div
           className="pointer-events-none absolute inset-0 opacity-35 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(212,175,55,0.08),transparent),radial-gradient(ellipse_50%_35%_at_100%_100%,rgba(56,189,248,0.05),transparent)]"
           aria-hidden
         />
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
-          <p className="pt-16 text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/85 lg:pt-20">
-            Impact
-          </p>
-          <div className="mt-6 grid grid-cols-1 divide-y divide-white/10 md:grid-cols-3 md:divide-x md:divide-y-0 md:divide-white/10">
-            {(
-              [
-                {
-                  bar: "from-amber-400 to-amber-700/10",
-                  label: "Savings per student",
-                  counter: (
-                    <Counter
-                      from={0}
-                      to={12}
-                      prefix="₹"
-                      suffix="k+"
-                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
-                    />
-                  ),
-                  delay: 0,
-                },
-                {
-                  bar: "from-sky-400 to-sky-700/10",
-                  label: "Campuses Connected",
-                  counter: (
-                    <Counter
-                      from={0}
-                      to={50}
-                      suffix="+"
-                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
-                    />
-                  ),
-                  delay: 0.08,
-                },
-                {
-                  bar: "from-emerald-400 to-emerald-700/10",
-                  label: "Resource Reuse Rate",
-                  counter: (
-                    <Counter
-                      from={0}
-                      to={80}
-                      suffix="%"
-                      className="font-serif text-5xl font-light tabular-nums tracking-tight text-slate-50 sm:text-6xl lg:text-7xl"
-                    />
-                  ),
-                  delay: 0.16,
-                },
-              ] as const
-            ).map((row) => (
-              <motion.div
-                key={row.label}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.65, delay: row.delay, ease: [0.16, 1, 0.3, 1] as const }}
-                className="flex gap-6 py-14 md:py-16 md:pl-10 md:pr-8 lg:pl-12 lg:pr-10"
-              >
-                <div
-                  className={`w-px shrink-0 self-stretch bg-gradient-to-b ${row.bar} opacity-90`}
-                  aria-hidden
-                />
-                <div className="min-w-0 flex-1">
-                  {row.counter}
-                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                    {row.label}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <h2 className="text-4xl md:text-5xl font-serif font-medium text-white leading-tight">
+              Making a tangible difference.
+            </h2>
+            <p className="mt-6 text-lg text-slate-400">
+              Our network isn't just about convenience; it's about creating sustainable, cost-effective access to knowledge for every student.
+            </p>
+          </motion.div>
+
+          <div className="mt-20 grid grid-cols-1 gap-8 md:grid-cols-2">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="rounded-2xl bg-white/5 p-8 text-center"
+            >
+              <p className="font-serif text-6xl font-medium text-sky-400">
+                <Counter from={0} to={12000} prefix="₹" />+
+              </p>
+              <p className="mt-4 text-lg text-slate-300">Saved by students per semester</p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className="rounded-2xl bg-white/5 p-8 text-center"
+            >
+              <p className="font-serif text-6xl font-medium text-amber-400">
+                <Counter from={0} to={80} suffix="%" />
+              </p>
+              <p className="mt-4 text-lg text-slate-300">Of network books reused instead of wasted</p>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -711,32 +503,38 @@ export default function Home() {
               Join the network
             </p>
             <h2 className="mt-6 font-serif text-[2.35rem] font-light leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-6xl">
-              Ready to open
-              <span className="mt-2 block font-serif italic text-amber-400">the next chapter?</span>
+              Start saving on textbooks today.
             </h2>
             <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-slate-400">
-              Students save on books; colleges keep shelves alive. Pick the path that fits you.
+              Find books near you, list your own, or partner with us to bring Phygital Library to your campus.
             </p>
             <div className="mt-12 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-5">
               <Button
-                onClick={() => setLocation("/sign-in")}
+                asChild
                 size="lg"
-                className="h-14 rounded-full border-0 bg-amber-500 px-10 text-base font-medium text-slate-950 shadow-[0_0_0_1px_rgba(251,191,36,0.35)] transition-all hover:scale-[1.02] hover:bg-amber-400"
+                className="h-14 rounded-lg border-0 bg-amber-500 px-10 text-base font-medium text-slate-950 shadow-[0_0_0_1px_rgba(251,191,36,0.35)] transition-all hover:scale-[1.02] hover:bg-amber-400"
               >
-                Join as Student
+                <Link href="/sign-in?as=student">Find Books Near Me</Link>
               </Button>
               <Button
-                onClick={() => setLocation("/sign-in")}
+                asChild
                 size="lg"
                 variant="outline"
-                className="h-14 rounded-full border border-white/20 bg-transparent px-10 text-base font-medium text-slate-50 transition-all hover:scale-[1.02] hover:border-amber-400/50 hover:bg-white/[0.04]"
+                className="h-14 rounded-lg border border-white/20 bg-transparent px-10 text-base font-medium text-slate-50 transition-all hover:scale-[1.02] hover:border-amber-400/50 hover:bg-white/[0.04]"
               >
-                Partner as College
+                <Link href="/sign-in">List a Book</Link>
+              </Button>
+            </div>
+            <div className="mt-6">
+              <Button asChild variant="link" size="lg" className="h-14 rounded-lg px-8 text-slate-400 hover:text-amber-400">
+                <Link href="/colleges">Partner Your Campus</Link>
               </Button>
             </div>
           </motion.div>
         </div>
       </section>
+
+
     </div>
   );
 }

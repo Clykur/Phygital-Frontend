@@ -11,7 +11,6 @@ import Colleges from "@/pages/colleges";
 import Marketplace from "@/pages/marketplace";
 import About from "@/pages/about";
 import SignInPage from "@/pages/sign-in";
-import LibraryPage from "@/pages/library";
 import HubOverviewPage from "@/pages/hub-overview";
 import HubInventoryPage from "@/pages/hub-inventory";
 import HubBookRequestsPage from "@/pages/hub-requests";
@@ -279,7 +278,6 @@ function PublicRoutes() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/sign-in" component={SignInPage} />
-        <Route path="/library" component={LibraryPage} />
         <Route path="/student/borrow">
           <Marketplace studentMode="browse" />
         </Route>
@@ -333,9 +331,6 @@ function LoggedInRoutes() {
         <Route path={STUDENT_LIBRARY_PATH} component={StudentLibraryPage} />
         <Route path={STUDENT_ALERTS_PATH} component={StudentAlertsRoute} />
         <Route path="/student/profile" component={StudentProfileRoute} />
-        <Route path="/student/discover">
-          <Redirect to={STUDENT_BORROW_PATH} />
-        </Route>
         <Route path="/student/tracking">
           <Redirect to={STUDENT_ACTIVITY_PATH} />
         </Route>

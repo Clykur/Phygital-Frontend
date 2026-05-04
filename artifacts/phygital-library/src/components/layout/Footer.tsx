@@ -43,68 +43,49 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-7 lg:gap-8">
-            <div>
-              <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Platform</p>
-              <ul className="space-y-3.5 text-[15px]">
-                <li>
-                  <Link href="/library" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Library
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/colleges" className="text-slate-300 transition-colors hover:text-amber-400">
-                    For Colleges
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/marketplace" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Discover
-                  </Link>
-                </li>
-              </ul>
-            </div>
+          <div className="lg:col-span-7 flex justify-end">
+            <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:gap-8">
+              <div className="col-span-2 sm:col-span-1">
+                <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Company</p>
+                <ul className="space-y-3.5 text-[15px]">
+                  <li>
+                    <Link href="/about" className="text-slate-300 transition-colors hover:text-amber-400">
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
+                      Careers
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:hello@phygitallibrary.com" className="text-slate-300 transition-colors hover:text-amber-400">
+                      Contact
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <div>
-              <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Company</p>
-              <ul className="space-y-3.5 text-[15px]">
-                <li>
-                  <Link href="/about" className="text-slate-300 transition-colors hover:text-amber-400">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:hello@phygitallibrary.com" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Connect</p>
-              <ul className="space-y-3.5 text-[15px]">
-                <li>
-                  <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                    LinkedIn
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                    Instagram
-                  </a>
-                </li>
-              </ul>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Connect</p>
+                <ul className="space-y-3.5 text-[15px]">
+                  <li>
+                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
+                      Twitter
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
+                      LinkedIn
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
+                      Instagram
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

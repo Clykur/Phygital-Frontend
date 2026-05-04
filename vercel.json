@@ -1,7 +1,17 @@
 {
   "version": 2,
   "builds": [
-    { "src": "artifacts/api-server/package.json", "use": "@vercel/node" },
-    { "src": "artifacts/phygital-library/package.json", "use": "@vercel/static-build" }
+    {
+      "src": "artifacts/api-server/package.json",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "artifacts/phygital-library/package.json",
+      "use": "@vercel/static-build",
+      "config": { "zeroConfig": true }
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/artifacts/api-server/dist/index.mjs" }
   ]
 }
