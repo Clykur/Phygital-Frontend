@@ -17,6 +17,9 @@ const strictPort = process.env.PORT !== undefined;
 
 export default defineConfig({
   base: basePath,
+    css: {
+    transformer: "postcss",
+  },
   plugins: [
     react(),
     tailwindcss(),

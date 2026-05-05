@@ -23,8 +23,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch } from "@/lib/api";
-import { userFacingErrorMessage } from "@/lib/error-messages";
+import { apiFetch, ApiError } from "@/lib/api";
 import { DEMO_LIBRARY_ROWS } from "@/lib/browse-demos";
 import { signInHref } from "@/lib/sign-in-return";
 import { isHubAccount, portalPathsForUser } from "@/lib/app-paths";
@@ -155,9 +154,9 @@ export function CatalogBookCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className={cn(STUDENT_CARD_SURFACE, "group relative h-full")}
+      className="group relative flex w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm"
     >
-      <div className="relative h-full min-h-[200px] w-full overflow-hidden bg-muted">
+      <div className="relative w-full overflow-hidden bg-muted sm:h-full sm:min-h-[200px]" style={{ aspectRatio: "3/4" }}>
         {!isSample && (pipelineListingStatus || shelfStatus) ? (
           <div className="absolute right-2 top-2 z-10 max-w-[min(100%,12rem)]">
             {pipelineListingStatus ? (
@@ -174,19 +173,19 @@ export function CatalogBookCard({
         />
 
         {/* Resting label */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent px-3 pb-3 pt-16 transition-opacity duration-300 group-hover:opacity-0 group-focus-within:opacity-0">
-          <p className="font-serif text-[0.95rem] font-medium leading-snug text-white drop-shadow-sm line-clamp-2">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4 pt-24 transition-opacity duration-300 group-hover:opacity-0 group-focus-within:opacity-0">
+          <p className="font-serif text-[1.1rem] font-bold leading-snug text-white drop-shadow-md line-clamp-2">
             {title}
           </p>
           {!isSample && fromHubName ? (
-            <p className="mt-1 text-[10px] leading-snug text-white/70 line-clamp-1">
+            <p className="mt-1.5 text-xs font-medium leading-snug text-white/90 line-clamp-1">
               From: {fromHubName}
             </p>
           ) : null}
-          {isSample && <span className={cn(shelfFilterChipOnDarkClass, "mt-1.5")}>Sample</span>}
+          {isSample && <span className={cn(shelfFilterChipOnDarkClass, "mt-2")}>Sample</span>}
         </div>
 
-        {/* Hover / focus overlay */}
+        {/* Hover / focus overlay — desktop only (hidden on touch) */}
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/92 via-black/55 to-black/25 opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
           <div className="space-y-3 p-4 pt-10 text-white">
             <div>
@@ -230,6 +229,13 @@ export function CatalogBookCard({
             <div className="pt-1">{action}</div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile action strip — always visible on touch devices */}
+      <div className="flex w-full flex-col p-4 md:hidden">
+        <p className="truncate font-serif text-lg font-bold leading-snug text-foreground">{title}</p>
+        <p className="mt-1 truncate text-sm text-muted-foreground">{hubName}</p>
+        <div className="mt-3 w-full space-y-2">{action}</div>
       </div>
     </motion.article>
   );
@@ -559,7 +565,8 @@ export default function LibraryPage() {
               <div>
                 <p className="font-medium text-foreground">Couldn’t load the catalog</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {userFacingErrorMessage(hubsQ.error ?? booksQ.error)}
+                  Check that the API is running and <code className="rounded bg-muted px-1">/api</code>{" "}
+                  is reachable from this app.
                 </p>
               </div>
             </div>
@@ -600,7 +607,7 @@ export default function LibraryPage() {
           </div>
         ) : fetchError ? null : (
           <>
-            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 sm:items-stretch sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
               {showSampleLayout
                 ? DEMO_LIBRARY_ROWS.map((b, idx) => (
                   <CatalogBookCard
@@ -847,7 +854,7 @@ export function RequestBookSection({
         setLocation(portalPathsForUser(user).activity);
       }
     } catch (err) {
-      toast.error(userFacingErrorMessage(err));
+      toast.error(err instanceof ApiError ? err.message : "Request failed");
     }
   };
 
@@ -888,48 +895,48 @@ export function RequestBookSection({
                 </Button>
               </PopoverTrigger>
               <Portal>
-  <PopoverContent
-    className="z-[9999] w-[var(--radix-popover-trigger-width)] p-0"
-    align="start"
-    sideOffset={4}
-    onCloseAutoFocus={(e) => e.preventDefault()}
-  >
-    <div className="max-h-[240px] overflow-y-auto">
-  <Command>
-    <CommandInput placeholder="Search hubs…" />
-    <CommandList>
-      <CommandEmpty>No hub matches.</CommandEmpty>
-      <CommandGroup className="flex-1 overflow-y-auto">
-        {hubs.map((h) => (
-          <CommandItem
-            key={h.id}
-            value={[h.name, h.location, h.id].filter(Boolean).join(" ")}
-            onSelect={() => {
-              setHubId(h.id);
-              setHubPickerOpen(false);
-            }}
-          >
-            <Check
-              className={cn(
-                "mt-0.5 h-4 w-4 shrink-0 self-start",
-                hubId === h.id ? "opacity-100" : "opacity-0",
-              )}
-            />
-            <span className="flex min-w-0 flex-col gap-0.5 text-left">
-              <span className="truncate font-medium">{h.name}</span>
-              {h.location ? (
-                <span className="truncate text-xs text-muted-foreground">
-                  {h.location}
-                </span>
-              ) : null}
-            </span>
-          </CommandItem>
-        ))}
-      </CommandGroup>
-    </CommandList>
-                </Command>
-                </div>
-              </PopoverContent>
+                <PopoverContent
+                  className="z-[9999] w-[var(--radix-popover-trigger-width)] p-0"
+                  align="start"
+                  sideOffset={4}
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
+                  <div className="max-h-[240px] overflow-y-auto">
+                    <Command>
+                      <CommandInput placeholder="Search hubs…" />
+                      <CommandList>
+                        <CommandEmpty>No hub matches.</CommandEmpty>
+                        <CommandGroup className="flex-1 overflow-y-auto">
+                          {hubs.map((h) => (
+                            <CommandItem
+                              key={h.id}
+                              value={[h.name, h.location, h.id].filter(Boolean).join(" ")}
+                              onSelect={() => {
+                                setHubId(h.id);
+                                setHubPickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mt-0.5 h-4 w-4 shrink-0 self-start",
+                                  hubId === h.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              <span className="flex min-w-0 flex-col gap-0.5 text-left">
+                                <span className="truncate font-medium">{h.name}</span>
+                                {h.location ? (
+                                  <span className="truncate text-xs text-muted-foreground">
+                                    {h.location}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </div>
+                </PopoverContent>
               </Portal>
             </Popover>
           </div>
