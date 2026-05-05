@@ -24,7 +24,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError } from "@/lib/api";
-import { userFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { bookRequestMatchesSearch, normalizeBookTitle } from "@/lib/title-match";
@@ -387,7 +386,7 @@ export default function HubBookRequestsPage() {
       if (e instanceof ApiError && e.status === 409) {
         toast.error("Verify the copy on shelf before completing pickup.");
       } else {
-        toast.error(userFacingErrorMessage(e));
+        toast.error(e instanceof ApiError ? e.message : "Could not update request");
       }
     },
   });
@@ -418,7 +417,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Request closed (audit log updated).");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Close failed"),
   });
 
   const adminReassignReq = useMutation({
@@ -440,7 +439,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books", "available-titles"] });
       toast.success("Request moved to the selected hub (audit).");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Reassign failed"),
   });
 
   const adminOverrideStatus = useMutation({
@@ -458,7 +457,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Status updated (audit).");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Override failed"),
   });
 
   const assignCopyReq = useMutation({
@@ -476,7 +475,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success(data.warning ? "Copy assigned (unverified)." : "Copy assigned.");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Assign failed"),
   });
 
   const verifyAssignmentReq = useMutation({
@@ -491,7 +490,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
       toast.success("Assignment verified.");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Verification failed"),
   });
 
   const releaseAssignmentReq = useMutation({
@@ -508,7 +507,7 @@ export default function HubBookRequestsPage() {
       void qc.invalidateQueries({ queryKey: ["hub", "books"] });
       toast.success("Assignment released.");
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Release failed"),
   });
 
   const topPad = inShell ? "" : "pt-24";
@@ -696,7 +695,9 @@ export default function HubBookRequestsPage() {
         </div>
         {deskRequestsQ.isError ? (
           <p className="px-4 py-10 text-sm text-destructive sm:px-4">
-            {userFacingErrorMessage(deskRequestsQ.error)}
+            {deskRequestsQ.error instanceof ApiError
+              ? deskRequestsQ.error.message
+              : "Could not load requests."}
           </p>
         ) : deskRequestsQ.isLoading ? (
           <div className="flex justify-center py-24">
@@ -936,7 +937,7 @@ export default function HubBookRequestsPage() {
                                     void qc.invalidateQueries({ queryKey: ["book-requests", "hub"] });
                                     void qc.invalidateQueries({ queryKey: ["hub", "books"] });
                                   } catch (e) {
-                                    toast.error(userFacingErrorMessage(e));
+                                    toast.error(e instanceof ApiError ? e.message : "Could not mark unavailable");
                                   }
                                 }}
                               >

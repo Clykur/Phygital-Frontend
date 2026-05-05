@@ -9,15 +9,15 @@
     "scripts"
   ],
   "scripts": {
-    "build": "npm run typecheck && npm run build --workspaces --if-present",
     "typecheck:libs": "tsc --build",
-    "typecheck": "npm run typecheck:libs && npm run typecheck --workspaces --if-present",
-    "dev": "npm run dev -w @workspace/phygital-library",
-    "dev:web": "npm run dev -w @workspace/phygital-library",
-    "dev:sandbox": "npm run dev -w @workspace/mockup-sandbox",
-    "db:generate": "npm run generate -w @workspace/db",
-    "db:migrate": "npm run migrate -w @workspace/db",
-    "db:push": "npm run push -w @workspace/db"
+    "build": "pnpm run typecheck && pnpm run build --filter ./artifacts/** --filter ./lib/** --filter ./scripts --if-present",
+    "typecheck": "pnpm run typecheck:libs && pnpm run typecheck --filter ./artifacts/** --filter ./lib/** --filter ./scripts --if-present",
+  "dev": "pnpm --filter @workspace/phygital-library run dev",
+"dev:web": "pnpm --filter @workspace/phygital-library run dev",
+"dev:sandbox": "pnpm --filter @workspace/mockup-sandbox run dev",
+    "db:generate": "pnpm --filter @workspace/db exec generate",
+    "db:migrate": "pnpm --filter @workspace/db exec migrate",
+    "db:push": "pnpm --filter @workspace/db exec push"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

@@ -602,8 +602,8 @@ export default function HubInventoryPage() {
           ) : null}
         </div>
 
-        <div className="mt-4 flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-end sm:gap-3">
-          <div className="flex min-w-0 w-full flex-[3] flex-col gap-1.5 sm:min-w-[20rem] lg:min-w-[28rem]">
+        <div className="mt-4 flex w-full min-w-0 flex-row overflow-x-auto pb-2 gap-3 sm:flex-nowrap sm:items-end sm:gap-3">
+          <div className="flex min-w-[14rem] shrink-0 flex-col gap-1.5 sm:w-full sm:flex-[3] sm:min-w-[20rem] lg:min-w-[28rem]">
             <Label htmlFor="hub-inv-search" className="text-[10px] font-bold uppercase tracking-wide text-foreground">
               Search title or ref
             </Label>
@@ -619,7 +619,7 @@ export default function HubInventoryPage() {
             />
           </div>
           {user.hubStaffHubIds.length > 1 ? (
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex min-w-[10rem] shrink-0 flex-1 flex-col gap-1.5">
               <Label
                 htmlFor="hub-inv-scope"
                 className="text-[10px] font-bold uppercase tracking-wide text-foreground"
@@ -647,7 +647,7 @@ export default function HubInventoryPage() {
               </Select>
             </div>
           ) : null}
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex min-w-[10rem] shrink-0 flex-1 flex-col gap-1.5">
             <Label htmlFor="hub-inv-source" className="text-[10px] font-bold uppercase tracking-wide text-foreground">
               Source
             </Label>
@@ -668,7 +668,7 @@ export default function HubInventoryPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex min-w-[10rem] shrink-0 flex-1 flex-col gap-1.5">
             <Label htmlFor="hub-inv-status" className="text-[10px] font-bold uppercase tracking-wide text-foreground">
               Status
             </Label>
@@ -695,7 +695,7 @@ export default function HubInventoryPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-10 w-full shrink-0 rounded-md sm:min-w-[6.5rem] sm:w-auto"
+            className="h-10 shrink-0 rounded-md sm:min-w-[6.5rem]"
             onClick={clearInventoryFilters}
           >
             Reset filters
@@ -710,7 +710,7 @@ export default function HubInventoryPage() {
           </div>
         ) : booksQ.isError ? (
           <p className="px-4 py-10 text-sm text-destructive">
-            {userFacingErrorMessage(booksQ.error)}
+            {booksQ.error instanceof ApiError ? booksQ.error.message : "Could not load inventory."}
           </p>
         ) : (
           <>
@@ -753,7 +753,7 @@ export default function HubInventoryPage() {
                 ) : null}
               </div>
             ) : (
-              <div className="grid grid-cols-2 items-stretch gap-5 p-4 sm:gap-6 sm:p-6 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 items-start gap-6 p-4 sm:grid-cols-2 sm:items-stretch sm:gap-6 sm:p-6 md:grid-cols-3 lg:grid-cols-4">
                 {rows.map((b) => {
                   const hubName =
                     hubsQ.data?.hubs.find((h) => h.id === b.hubId)?.name ?? "Managed hub";
@@ -840,9 +840,9 @@ export default function HubInventoryPage() {
                         isSample={false}
                         shelfStatus={b.status}
                         action={
-                          <div className="space-y-2 text-left text-xs text-white/90">
+                          <div className="mt-3 w-full space-y-2 text-left text-xs text-foreground md:text-white/90">
                             {inInterHubTransfer && b.targetHubName ? (
-                              <p className="font-medium leading-snug text-amber-200/95">
+                              <p className="font-medium leading-snug text-amber-600 md:text-amber-200/95">
                                 Transferring to {b.targetHubName}
                               </p>
                             ) : null}
@@ -851,11 +851,13 @@ export default function HubInventoryPage() {
                               {b.buyPrice.toLocaleString("en-IN")} buy
                             </p>
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className={shelfFilterChipOnDarkClass}>
+                              <span className="inline-flex h-5 items-center rounded-sm bg-muted px-1.5 text-[9px] font-medium uppercase tracking-wide text-foreground md:bg-black/40 md:text-white/90">
                                 {sourceLabel(b.source)}
                               </span>
-                              <span className={shelfFilterChipOnDarkClass}>{b.condition.replace(/_/g, " ")}</span>
-                              <span className={shelfFilterChipOnDarkClass}>
+                              <span className="inline-flex h-5 items-center rounded-sm bg-muted px-1.5 text-[9px] font-medium uppercase tracking-wide text-foreground md:bg-black/40 md:text-white/90">
+                                {b.condition.replace(/_/g, " ")}
+                              </span>
+                              <span className="inline-flex h-5 items-center rounded-sm bg-muted px-1.5 text-[9px] font-medium uppercase tracking-wide text-foreground md:bg-black/40 md:text-white/90">
                                 {b.status === "available"
                                   ? "Available"
                                   : b.status === "reserved"
@@ -877,7 +879,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-white/25 bg-white/10 text-[11px] text-white hover:bg-white/20"
+                                className="w-full rounded-md bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
                                 disabled={markTransferInTransit.isPending}
                                 onClick={() => markTransferInTransit.mutate(b.id)}
                               >
@@ -888,7 +890,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-emerald-400/40 bg-emerald-500/20 text-[11px] text-white hover:bg-emerald-500/30"
+                                className="w-full rounded-md bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
                                 disabled={markTransferReceived.isPending}
                                 onClick={() => markTransferReceived.mutate(b.id)}
                               >
@@ -899,7 +901,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-amber-300/50 bg-amber-500/25 text-[11px] text-white hover:bg-amber-500/35"
+                                className="w-full rounded-md bg-amber-500 text-amber-950 hover:bg-amber-400"
                                 disabled={adminForceRelease.isPending}
                                 onClick={() => {
                                   if (
@@ -921,7 +923,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-rose-400/40 bg-rose-500/20 text-[11px] text-white hover:bg-rose-500/30"
+                                className="w-full rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 disabled={markCopyUnavailable.isPending}
                                 onClick={() => {
                                   if (
@@ -943,7 +945,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-emerald-400/40 bg-emerald-500/20 text-[11px] text-white hover:bg-emerald-500/30"
+                                className="w-full rounded-md bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
                                 disabled={markCopyAvailable.isPending}
                                 onClick={() => {
                                   if (window.confirm("Mark this copy available again?")) {
@@ -958,7 +960,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-8 w-full rounded-md border border-sky-400/40 bg-sky-500/20 text-[11px] text-white hover:bg-sky-500/30"
+                                className="h-8 w-full rounded-md border border-sky-400/40 bg-sky-500/20 text-[11px] text-black sm:text-white hover:bg-sky-500/30"
                                 disabled={convertP2pToHub.isPending}
                                 onClick={() => {
                                   if (

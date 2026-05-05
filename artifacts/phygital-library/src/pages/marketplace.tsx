@@ -25,7 +25,7 @@ import {
 } from "@/lib/catalog-sort";
 import { hubKindLabel } from "@/lib/hub-display";
 import { ShelfPeerStatusBadge } from "@/lib/status-badges";
-import { apiFetch, apiPublicUrl } from "@/lib/api";
+import { ApiError, apiFetch, apiPublicUrl } from "@/lib/api";
 import { userFacingErrorMessage } from "@/lib/error-messages";
 import { BookCoverImage } from "@/components/ui/book-cover-image";
 import { DEMO_MARKETPLACE_LISTINGS } from "@/lib/browse-demos";
@@ -184,7 +184,7 @@ function GridPagination({
 function CopyLifecycleStrip({ status }: { status: string }) {
   if (["sold", "unavailable", "transfer_pending", "in_transit"].includes(status)) {
     return (
-      <p className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
         Lifecycle: {status.replace(/_/g, " ")}
       </p>
     );
@@ -196,17 +196,17 @@ function CopyLifecycleStrip({ status }: { status: string }) {
       className="flex w-full flex-wrap items-center justify-start gap-1.5 text-left"
       title="On shelf to set aside (reserved) to out on loan."
     >
-      {["Available", "Set aside (reserved)", "Out (on loan)"].map((label, i) => (
+      {["Available", "Set aside", "Out"].map((label, i) => (
         <span key={label} className="flex items-center gap-1.5">
-          {i > 0 ? <span className="text-[8px] text-muted-foreground/50">{"->"}</span> : null}
+          {i > 0 ? <span className="text-[10px] font-bold text-muted-foreground/30">›</span> : null}
           <span
             className={cn(
-              "max-w-[10rem] truncate rounded px-1 py-0.5 text-[9px] font-medium",
+              "max-w-[10rem] truncate rounded-md px-2 py-0.5 text-[10px] font-semibold transition-colors",
               i < idx
-                ? "text-emerald-800/80 dark:text-emerald-200/80"
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                 : i === idx
-                  ? "bg-amber-500/20 text-amber-950 dark:text-amber-100"
-                  : "text-muted-foreground/50",
+                  ? "bg-amber-500 text-amber-950 shadow-sm dark:bg-amber-400 dark:text-amber-950"
+                  : "text-muted-foreground/40 opacity-60",
             )}
           >
             {label}
@@ -395,21 +395,21 @@ export default function Marketplace(props?: MarketplaceProps) {
   const gridSource = useMemo((): P2pListing[] => {
     const raw = !useDemoPreview
       ? live.map((l) => ({
-          ...l,
-          borrowPrice: typeof l.borrowPrice === "number" ? l.borrowPrice : 0,
-        }))
+        ...l,
+        borrowPrice: typeof l.borrowPrice === "number" ? l.borrowPrice : 0,
+      }))
       : DEMO_MARKETPLACE_LISTINGS.map((d, i) => ({
-          id: `demo-${i}`,
-          ownerId: "__demo__",
-          bookTitle: d.bookTitle,
-          coverImageUrl: d.coverImageUrl,
-          price: d.price,
-          borrowPrice: d.borrowPrice,
-          status: "available",
-          hubId: "__demo_hub__",
-          dropoffHubId: "__demo_hub__",
-          buyerId: null,
-        }));
+        id: `demo-${i}`,
+        ownerId: "__demo__",
+        bookTitle: d.bookTitle,
+        coverImageUrl: d.coverImageUrl,
+        price: d.price,
+        borrowPrice: d.borrowPrice,
+        status: "available",
+        hubId: "__demo_hub__",
+        dropoffHubId: "__demo_hub__",
+        buyerId: null,
+      }));
     return raw.filter(
       (listing) =>
         isDemoListingId(listing.id) ||
@@ -688,7 +688,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
     },
     onError: (e) =>
-      toast.error(userFacingErrorMessage(e)),
+      toast.error(e instanceof ApiError ? e.message : "Could not list — check Premium status."),
   });
 
   const submitDropoff = useMutation({
@@ -705,7 +705,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["hub", "pending-p2p"] });
       setSelected(null);
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Drop-off failed"),
   });
 
   useEffect(() => {
@@ -764,7 +764,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       setEditClearCover(false);
       setSelected(null);
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Update failed"),
   });
 
   const deleteListing = useMutation({
@@ -776,7 +776,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
       setSelected(null);
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Delete failed"),
   });
 
   const returnPeerBorrow = useMutation({
@@ -788,7 +788,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       invalidateCheckoutQueries();
       setSelected(null);
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
   });
 
   const canList =
@@ -828,45 +828,45 @@ export default function Marketplace(props?: MarketplaceProps) {
   const hero = isBrowseMode
     ? hubDesk
       ? {
-          kicker: "Hub catalog",
-          title: "Network sourcing",
-          accent: "Browse, compare, acquire.",
-          body: inShell
-            ? "Use the union catalog to find titles for members, fill gaps, or buy/borrow as this hub login. Inventory remains the system of record for what you physically hold; this view is for discovery and checkout."
-            : "Browse hub and peer copies to support members. Sign in for the full desk experience.",
-        }
+        kicker: "Hub catalog",
+        title: "Network sourcing",
+        accent: "Browse, compare, acquire.",
+        body: inShell
+          ? "Use the union catalog to find titles for members, fill gaps, or buy/borrow as this hub login. Inventory remains the system of record for what you physically hold; this view is for discovery and checkout."
+          : "Browse hub and peer copies to support members. Sign in for the full desk experience.",
+      }
       : {
-          kicker: "Browse books",
-          title: "Browse books",
-          accent: "Together in one place.",
-          body: inShell
-            ? "Use the filters and search to focus on shelf copies, student sellers, or both. Premium unlocks checkout and purchases after hub approval."
-            : "Browse hub and peer copies in one view. Sign in for checkout, requests, and purchases.",
-        }
+        kicker: "Browse books",
+        title: "Browse books",
+        accent: "Together in one place.",
+        body: inShell
+          ? "Use the filters and search to focus on shelf copies, student sellers, or both. Premium unlocks checkout and purchases after hub approval."
+          : "Browse hub and peer copies in one view. Sign in for checkout, requests, and purchases.",
+      }
     : studentMode === "sell"
       ? hubDesk
         ? {
-            kicker: "Consignment",
-            title: "Peer shelf at your hub",
-            accent: "Drop-offs & approvals.",
-            body: inShell
-              ? "Track listings that name your hub for drop-off. Members still own their listings—you facilitate shelf space and desk pickup."
-              : "Consignment flows use your hub as the handoff point.",
-          }
+          kicker: "Consignment",
+          title: "Peer shelf at your hub",
+          accent: "Drop-offs & approvals.",
+          body: inShell
+            ? "Track listings that name your hub for drop-off. Members still own their listings—you facilitate shelf space and desk pickup."
+            : "Consignment flows use your hub as the handoff point.",
+        }
         : {
-            kicker: "Sell",
-            title: inShell ? "Your peer listings" : "List on the peer shelf",
-            accent: inShell ? "Only books you’ve listed appear here." : "One copy, campus pickup.",
-            body: inShell
-              ? "Publish a listing, submit drop-off at a hub, and track status until it sells. Use List a book to add another title."
-              : "Set a fair price, drop the book at your hub for approval, and buyers collect it from the desk when it’s ready.",
-          }
+          kicker: "Sell",
+          title: inShell ? "Your peer listings" : "List on the peer shelf",
+          accent: inShell ? "Only books you’ve listed appear here." : "One copy, campus pickup.",
+          body: inShell
+            ? "Publish a listing, submit drop-off at a hub, and track status until it sells. Use List a book to add another title."
+            : "Set a fair price, drop the book at your hub for approval, and buyers collect it from the desk when it’s ready.",
+        }
       : {
-          kicker: "Discover",
-          title: "Peer shelf",
-          accent: "browse every listing.",
-          body: "Explore listings without signing in. Listing, drop-off, and purchase need an account (buying also needs Premium after the hub approves the copy).",
-        };
+        kicker: "Discover",
+        title: "Peer shelf",
+        accent: "browse every listing.",
+        body: "Explore listings without signing in. Listing, drop-off, and purchase need an account (buying also needs Premium after the hub approves the copy).",
+      };
 
   const showListCta = studentMode === "sell" || !studentMode;
 
@@ -1018,29 +1018,29 @@ export default function Marketplace(props?: MarketplaceProps) {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-2">
-                <div className="space-y-2">
+                    <div className="space-y-2">
                       <Label>Hub</Label>
                       <Select
                         value={newListHubId || undefined}
                         onValueChange={setNewListHubId}
                         disabled={!hubsQ.data?.hubs.length}
                       >
-                    <SelectTrigger>
+                        <SelectTrigger>
                           <SelectValue placeholder={hubsQ.isLoading ? "Loading hubs…" : "Choose hub"} />
-                    </SelectTrigger>
-                    <SelectContent>
+                        </SelectTrigger>
+                        <SelectContent>
                           {(hubsQ.data?.hubs ?? []).map((h) => (
                             <SelectItem key={h.id} value={h.id}>
                               {`${h.name} · ${hubKindLabel(h.kind)}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
                       <Label>Title</Label>
                       <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-                </div>
+                    </div>
                     <div className="space-y-2">
                       <Label>Buy price (₹)</Label>
                       <Input
@@ -1053,8 +1053,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                       {!newListingPriceValid && newPrice.trim() !== "" && (
                         <p className="text-xs text-destructive">Enter a whole number of ₹1 or more.</p>
                       )}
-                </div>
-                <div className="space-y-2">
+                    </div>
+                    <div className="space-y-2">
                       <Label>Borrow fee (₹)</Label>
                       <Input
                         inputMode="numeric"
@@ -1066,7 +1066,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       {!newListingBorrowValid && newBorrowPrice.trim() !== "" && (
                         <p className="text-xs text-destructive">Enter a whole number ₹0 or more.</p>
                       )}
-                </div>
+                    </div>
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <ImagePlus className="h-4 w-4" aria-hidden />
@@ -1110,8 +1110,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                       onClick={() => createListing.mutate()}
                     >
                       Publish listing
-                </Button>
-              </div>
+                    </Button>
+                  </div>
                 </DialogContent>
               </Dialog>
             ) : null}
@@ -1142,14 +1142,12 @@ export default function Marketplace(props?: MarketplaceProps) {
                 </Link>{" "}
                 to list, drop off, or buy after hub approval.
               </>
-          )}
-        </div>
+            )}
+          </div>
         )}
 
         {isBrowseMode && hubBooksEnabled && hubBooksQ.isError && (
-          <p className="mb-6 text-sm text-destructive">
-            {userFacingErrorMessage(hubBooksQ.error)}
-          </p>
+          <p className="mb-6 text-sm text-destructive">Couldn’t load hub catalog. Check the API and try again.</p>
         )}
 
         {peerListingsError && (
@@ -1159,7 +1157,8 @@ export default function Marketplace(props?: MarketplaceProps) {
               <div>
                 <p className="font-medium text-foreground">Couldn’t load peer listings</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {userFacingErrorMessage(listingsQ.error)}
+                  Check that the API is running and{" "}
+                  <code className="rounded bg-muted px-1">/api/p2p/listings</code> is reachable.
                 </p>
               </div>
             </div>
@@ -1180,7 +1179,7 @@ export default function Marketplace(props?: MarketplaceProps) {
             Showing sample covers so guests see how Discover looks — start the API with seeding (e.g.{" "}
             <code className="rounded bg-muted px-1 text-xs">AUTO_SEED=1</code>) or publish a listing
             after signing in.
-                    </div>
+          </div>
         )}
 
         <div
@@ -1191,163 +1190,163 @@ export default function Marketplace(props?: MarketplaceProps) {
         >
           {isBrowseMode && !superAdminShellBrowse ? (
             <>
-            <div
-              className={cn(
-                "flex flex-col gap-3 md:flex-row md:gap-4",
-                hubDesk && isBrowseMode && inShell && "sm:flex-row sm:flex-wrap sm:items-end",
-              )}
-            >
-              <div className="flex min-w-0 flex-1 flex-col">
-                <Label
-                  className={cn(
-                    "text-[10px] text-muted-foreground",
-                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
-                  )}
-                >
-                  Search
-                </Label>
-                {hubDesk && isBrowseMode && inShell ? (
-                  <div className="mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm">
-                    <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search titles…"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="min-w-0 flex-1 border-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                      aria-label="Search catalog titles"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className={cn(
-                      studentShellBrowse
-                        ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
-                        : studentShellFlat
-                          ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
-                          : "mt-1 flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
-                    )}
-                  >
-                    <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
-                    <input
-                      type="text"
-                      placeholder="Search titles…"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="min-w-0 flex-1 border-none bg-transparent py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:text-[15px]"
-                      aria-label="Search catalog titles"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex w-full shrink-0 flex-col md:w-36">
-                <Label
-                  className={cn(
-                    "text-[10px] text-muted-foreground",
-                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
-                  )}
-                >
-                  {hubDesk ? "Source" : "Catalog"}
-                </Label>
-                <Select
-                  value={sourceFilter}
-                  onValueChange={(v) => setSourceFilter(v as "all" | "hub" | "peers")}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      "mt-1 w-full shrink-0",
-                      hubDesk && isBrowseMode && inShell
-                        ? "h-10 rounded-md border-border bg-background px-2.5 text-sm"
-                        : studentShellBrowse
-                          ? "h-10 rounded-md border border-border bg-background px-2.5 text-sm"
-                          : "h-11 rounded-xl border border-border/60 bg-background/80 px-2.5 text-sm sm:h-12",
-                    )}
-                    aria-label={hubDesk ? "Browse source" : "Catalog source"}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="hub">Hubs</SelectItem>
-                    <SelectItem value="peers">Peers</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div
                 className={cn(
-                  "flex w-full shrink-0 flex-col",
-                  hubDesk && isBrowseMode && inShell ? "md:max-w-[12rem] md:justify-self-end" : "md:w-auto",
+                  "flex flex-col gap-3 md:flex-row md:gap-4",
+                  hubDesk && isBrowseMode && inShell && "sm:flex-row sm:flex-wrap sm:items-end",
                 )}
               >
-                <Label
-                  className={cn(
-                    "text-[10px] text-muted-foreground",
-                    hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
-                  )}
-                >
-                  Request
-                </Label>
-                <div className="mt-1.5 sm:mt-1">
-                  {user && token ? (
-                    <RequestBookSection
-                      token={token}
-                      hubs={hubsQ.data?.hubs ?? []}
-                      user={user}
-                      onDone={() => {
-                        void qc.invalidateQueries({ queryKey: ["book-requests"] });
-                        void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
-                      }}
-                      trigger={
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className={cn(
-                            "w-full gap-2 font-medium",
-                            hubDesk && isBrowseMode && inShell
-                              ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                              : studentShellBrowse
-                                ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                                : studentShellFlat
-                                  ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                                  : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
-                          )}
-                        >
-                          <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          Request a book
-                        </Button>
-                      }
-                    />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <Label
+                    className={cn(
+                      "text-[10px] text-muted-foreground",
+                      hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                    )}
+                  >
+                    Search
+                  </Label>
+                  {hubDesk && isBrowseMode && inShell ? (
+                    <div className="mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm">
+                      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search titles…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="min-w-0 flex-1 border-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                        aria-label="Search catalog titles"
+                      />
+                    </div>
                   ) : (
-                    <Button
-                      asChild
-                      variant="secondary"
+                    <div
                       className={cn(
-                        "w-full gap-2 font-medium",
-                        hubDesk && isBrowseMode && inShell
-                          ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                          : studentShellBrowse
-                            ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                            : studentShellFlat
-                              ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                              : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                        studentShellBrowse
+                          ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                          : studentShellFlat
+                            ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
+                            : "mt-1 flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
                       )}
                     >
-                      <Link href={signInHref(inShell ? portalPaths.borrow : "/marketplace")}>
-                        <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        Request a book
-                      </Link>
-                    </Button>
+                      <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
+                      <input
+                        type="text"
+                        placeholder="Search titles…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="min-w-0 flex-1 border-none bg-transparent py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:text-[15px]"
+                        aria-label="Search catalog titles"
+                      />
+                    </div>
                   )}
                 </div>
+
+                <div className="flex w-full shrink-0 flex-col md:w-36">
+                  <Label
+                    className={cn(
+                      "text-[10px] text-muted-foreground",
+                      hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                    )}
+                  >
+                    {hubDesk ? "Source" : "Catalog"}
+                  </Label>
+                  <Select
+                    value={sourceFilter}
+                    onValueChange={(v) => setSourceFilter(v as "all" | "hub" | "peers")}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        "mt-1 w-full shrink-0",
+                        hubDesk && isBrowseMode && inShell
+                          ? "h-10 rounded-md border-border bg-background px-2.5 text-sm"
+                          : studentShellBrowse
+                            ? "h-10 rounded-md border border-border bg-background px-2.5 text-sm"
+                            : "h-11 rounded-xl border border-border/60 bg-background/80 px-2.5 text-sm sm:h-12",
+                      )}
+                      aria-label={hubDesk ? "Browse source" : "Catalog source"}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="hub">Hubs</SelectItem>
+                      <SelectItem value="peers">Peers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div
+                  className={cn(
+                    "flex w-full shrink-0 flex-col",
+                    hubDesk && isBrowseMode && inShell ? "md:max-w-[12rem] md:justify-self-end" : "md:w-auto",
+                  )}
+                >
+                  <Label
+                    className={cn(
+                      "text-[10px] text-muted-foreground",
+                      hubDesk && isBrowseMode && inShell && "font-bold uppercase tracking-wide text-foreground",
+                    )}
+                  >
+                    Request
+                  </Label>
+                  <div className="mt-1.5 sm:mt-1">
+                    {user && token ? (
+                      <RequestBookSection
+                        token={token}
+                        hubs={hubsQ.data?.hubs ?? []}
+                        user={user}
+                        onDone={() => {
+                          void qc.invalidateQueries({ queryKey: ["book-requests"] });
+                          void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
+                        }}
+                        trigger={
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className={cn(
+                              "w-full gap-2 font-medium",
+                              hubDesk && isBrowseMode && inShell
+                                ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                : studentShellBrowse
+                                  ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                  : studentShellFlat
+                                    ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                    : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                            )}
+                          >
+                            <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            Request a book
+                          </Button>
+                        }
+                      />
+                    ) : (
+                      <Button
+                        asChild
+                        variant="secondary"
+                        className={cn(
+                          "w-full gap-2 font-medium",
+                          hubDesk && isBrowseMode && inShell
+                            ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                            : studentShellBrowse
+                              ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                              : studentShellFlat
+                                ? "h-10 rounded-md border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                        )}
+                      >
+                        <Link href={signInHref(inShell ? portalPaths.borrow : "/marketplace")}>
+                          <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          Request a book
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            {hubDesk && !inShell ? (
-              <p className="mt-2 max-w-xl text-[11px] leading-relaxed text-muted-foreground">
-                Your managed shelf is in Inventory; this catalog shows peers and other campuses for sourcing.
-              </p>
-            ) : null}
+              {hubDesk && !inShell ? (
+                <p className="mt-2 max-w-xl text-[11px] leading-relaxed text-muted-foreground">
+                  Your managed shelf is in Inventory; this catalog shows peers and other campuses for sourcing.
+                </p>
+              ) : null}
             </>
           ) : isBrowseMode && superAdminShellBrowse ? (
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -1445,312 +1444,313 @@ export default function Marketplace(props?: MarketplaceProps) {
         {isBrowseMode && !superAdminShellBrowse
           ? browseLoading
             ? (
+              <div className="flex justify-center py-24">
+                <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              </div>
+            )
+            : (
+              <>
+                <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {browseRows.map((row) => {
+                    if (row.kind === "hub") {
+                      const b = row.book;
+                      const canCheckout =
+                        !!user &&
+                        authorize(user, ACTIONS.CHECKOUT_BOOK, {
+                          type: "book",
+                          hubId: b.hubId,
+                          bookId: b.id,
+                        });
+                      const isAvailable = b.status === "available";
+                      const upgradeWhere = inShell ? "sidebar" : "header";
+                      const refShort = catalogRefLabel(b.refId ?? b.id, null);
+                      return (
+                        <div
+                          key={row.key}
+                          className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}
+                          data-book-id={b.id}
+                          data-book-ref-id={b.refId ?? undefined}
+                        >
+                          {studentShellBrowse ? (
+                            <div className="mb-2 space-y-1.5 px-1">
+                              <div className="flex flex-col items-start gap-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                  {b.source === "p2p" ? "From student" : "From hub"}
+                                </span>
+                                <span
+                                  className="font-mono text-[10.5px] font-medium tracking-wide text-muted-foreground/70"
+                                  title={b.refId ?? b.id}
+                                >
+                                  {refShort}
+                                </span>
+                              </div>
+                              <CopyLifecycleStrip status={b.status} />
+                              <p className="text-[10.5px] text-muted-foreground/90">
+                                Pickup hub: <span className="font-medium text-foreground">{hubNameBorrow(b.hubId) || "Hub"}</span>
+                              </p>
+                            </div>
+                          ) : null}
+                          <CatalogBookCard
+                            title={b.title}
+                            coverUrl={b.coverImageUrl ? apiPublicUrl(b.coverImageUrl) : b.coverImageUrl}
+                            hubName={hubNameBorrow(b.hubId)}
+                            fromHubName={b.acquiredFromHubName ?? undefined}
+                            refDisplay={refShort}
+                            addedText={addedLabel(b.createdAt)}
+                            addedAtTitle={
+                              b.createdAt ? new Date(b.createdAt).toLocaleString() : undefined
+                            }
+                            fullIdForTitle={b.refId ?? b.id}
+                            isSample={false}
+                            shelfStatus={b.status}
+                            action={
+                              <>
+                                {!user && (
+                                  <Button
+                                    size="sm"
+                                    className={cn(
+                                      "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                                      studentShellFlat ? "rounded-md" : "rounded-full",
+                                    )}
+                                    asChild
+                                  >
+                                    <Link href={signInHref(portalPaths.borrow)}>
+                                      <BookOpen className="mr-2 h-4 w-4" />
+                                      Sign in to borrow
+                                    </Link>
+                                  </Button>
+                                )}
+                                {user && token && !isAvailable && (
+                                  <div className="space-y-2">
+                                    <p className="text-left text-[11px] text-muted-foreground">
+                                      Why unavailable? {unavailableReason(b.status)}.
+                                    </p>
+                                    <RequestBookSection
+                                      token={token}
+                                      hubs={hubsQ.data?.hubs ?? []}
+                                      user={user}
+                                      defaultHubId={b.hubId}
+                                      initialBookTitle={b.title}
+                                      redirectToActivityAfterSubmit
+                                      onDone={() => {
+                                        void qc.invalidateQueries({ queryKey: ["book-requests"] });
+                                        void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
+                                      }}
+                                      trigger={
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          className={cn(
+                                            "w-full border border-border bg-muted/50 hover:bg-muted/70",
+                                            studentShellFlat ? "rounded-md" : "rounded-full",
+                                          )}
+                                        >
+                                          Request from hub
+                                        </Button>
+                                      }
+                                    />
+                                  </div>
+                                )}
+                                {user && isAvailable && !canCheckout && (
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className={cn("w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                                    onClick={() =>
+                                      toast.message(
+                                        `Premium unlocks borrow and buy. Use Upgrade in the ${upgradeWhere}.`,
+                                      )
+                                    }
+                                  >
+                                    <BookOpen className="mr-2 h-4 w-4" />
+                                    Borrow
+                                  </Button>
+                                )}
+                                {user && isAvailable && canCheckout && token && (
+                                  <Button
+                                    size="sm"
+                                    className={cn(
+                                      "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
+                                      studentShellFlat ? "rounded-md" : "rounded-full",
+                                    )}
+                                    onClick={() =>
+                                    (pushRecentViewedTitle(b.title),
+                                      setCheckout({
+                                        item: {
+                                          kind: "hub",
+                                          bookId: b.id,
+                                          title: b.title,
+                                          hubName: hubNameBorrow(b.hubId),
+                                          buyPrice: b.buyPrice ?? 0,
+                                          borrowPrice: b.borrowPrice ?? 0,
+                                        },
+                                        initialMode: "borrow",
+                                      }))
+                                    }
+                                  >
+                                    <BookOpen className="mr-2 h-4 w-4" />
+                                    Borrow or buy
+                                  </Button>
+                                )}
+                              </>
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                    const listing = row.listing;
+                    const peerRefShort = catalogRefLabel(listing.id, null);
+                    return (
+                      <div key={row.key} className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}>
+                        {studentShellBrowse ? (
+                          <div className="mb-2 space-y-1.5 px-1">
+                            <div className="flex flex-col items-start gap-0.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                From student
+                              </span>
+                              <span
+                                className="font-mono text-[10.5px] font-medium tracking-wide text-muted-foreground/70"
+                                title={listing.id}
+                              >
+                                {peerRefShort}
+                              </span>
+                            </div>
+                            <CopyLifecycleStrip status={peerStatusToLifecycle(listing.status)} />
+                            <p className="text-[10.5px] text-muted-foreground/90">
+                              Pickup hub:{" "}
+                              <span className="font-medium text-foreground">
+                                {hubsQ.data?.hubs.find((h) => h.id === (listing.hubId ?? listing.dropoffHubId))
+                                  ?.name ?? "Hub"}
+                              </span>
+                            </p>
+                          </div>
+                        ) : null}
+                        <MarketplacePeerCard
+                          listing={listing}
+                          onSelect={setSelected}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <GridPagination
+                  page={browsePage}
+                  totalPages={browseTotalPages}
+                  onPageChange={setBrowsePage}
+                  label="Borrow and buy pagination"
+                />
+                {studentShellBrowse ? (
+                  <section className="mt-8 space-y-4">
+                    <div className="rounded-md border border-border bg-card/60 p-5">
+                      <h3 className="text-base font-semibold tracking-tight text-foreground">Smart recommendations</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Quick picks based on your browsing and hub activity.
+                      </p>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-md border border-border/70 bg-background p-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Similar books
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {(similarBooks.length ? similarBooks : searchSuggestions.slice(0, 4)).map((t) => (
+                              <Button
+                                key={`sim-${t}`}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                onClick={() => setSearch(t)}
+                              >
+                                {t}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="rounded-md border border-border/70 bg-background p-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Popular at your hub
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {(popularAtHub.length ? popularAtHub : searchSuggestions.slice(0, 4)).map((t) => (
+                              <Button
+                                key={`pop-${t}`}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                onClick={() => setSearch(t)}
+                              >
+                                {t}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="rounded-md border border-border/70 bg-background p-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Recently requested
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {(recentRequestedTitles.length ? recentRequestedTitles : searchSuggestions.slice(0, 4)).map((t) => (
+                              <Button
+                                key={`req-${t}`}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                onClick={() => setSearch(t)}
+                              >
+                                {t}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                ) : null}
+              </>
+            )
+          : !isBrowseMode
+            ? listingsQ.isLoading
+              ? (
                 <div className="flex justify-center py-24">
                   <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
                 </div>
               )
-            : (
-            <>
-              <div className="grid grid-cols-2 items-stretch gap-5 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {browseRows.map((row) => {
-                if (row.kind === "hub") {
-                  const b = row.book;
-                  const canCheckout =
-                    !!user &&
-                    authorize(user, ACTIONS.CHECKOUT_BOOK, {
-                      type: "book",
-                      hubId: b.hubId,
-                      bookId: b.id,
-                    });
-                  const isAvailable = b.status === "available";
-                  const upgradeWhere = inShell ? "sidebar" : "header";
-                  const refShort = catalogRefLabel(b.refId ?? b.id, null);
-                  return (
-                    <div
-                      key={row.key}
-                      className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}
-                      data-book-id={b.id}
-                      data-book-ref-id={b.refId ?? undefined}
-                    >
-                      {studentShellBrowse ? (
-                        <>
-                        <div className="flex min-w-0 items-start justify-between gap-2">
-                          <span className="max-w-full min-w-0 shrink truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
-                              {b.source === "p2p" ? "From student" : "From hub"}
-                            </span>
-                            <span
-                              className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground"
-                              title={b.refId ?? b.id}
-                            >
-                              {refShort}
-                            </span>
-                          </div>
-                          <CopyLifecycleStrip status={b.status} />
-                          <p className="text-[10px] text-muted-foreground">
-                            Pickup hub: {hubNameBorrow(b.hubId) || "Hub"}
-                          </p>
-                        </>
-                      ) : null}
-                      <CatalogBookCard
-                        title={b.title}
-                        coverUrl={b.coverImageUrl ? apiPublicUrl(b.coverImageUrl) : b.coverImageUrl}
-                        hubName={hubNameBorrow(b.hubId)}
-                        fromHubName={b.acquiredFromHubName ?? undefined}
-                        refDisplay={refShort}
-                        addedText={addedLabel(b.createdAt)}
-                        addedAtTitle={
-                          b.createdAt ? new Date(b.createdAt).toLocaleString() : undefined
-                        }
-                        fullIdForTitle={b.refId ?? b.id}
-                        isSample={false}
-                        shelfStatus={b.status}
-                        action={
-                          <>
-                            {!user && (
-                              <Button
-                                size="sm"
-                                className={cn(
-                                  "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                                  studentShellFlat ? "rounded-md" : "rounded-full",
-                                )}
-                                asChild
-                              >
-                                <Link href={signInHref(portalPaths.borrow)}>
-                                  <BookOpen className="mr-2 h-4 w-4" />
-                                  Sign in to borrow
-                                </Link>
-                              </Button>
-                            )}
-                            {user && token && !isAvailable && (
-                              <div className="space-y-2">
-                                <p className="text-left text-[11px] text-muted-foreground">
-                                  Why unavailable? {unavailableReason(b.status)}.
-                                </p>
-                                <RequestBookSection
-                                  token={token}
-                                  hubs={hubsQ.data?.hubs ?? []}
-                                  user={user}
-                                  defaultHubId={b.hubId}
-                                  initialBookTitle={b.title}
-                                  redirectToActivityAfterSubmit
-                                  onDone={() => {
-                                    void qc.invalidateQueries({ queryKey: ["book-requests"] });
-                                    void qc.invalidateQueries({ queryKey: ["notifications", "mine"] });
-                                  }}
-                                  trigger={
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      className={cn(
-                                        "w-full border border-border bg-muted/50 hover:bg-muted/70",
-                                        studentShellFlat ? "rounded-md" : "rounded-full",
-                                      )}
-                                    >
-                                      Request from hub
-                                    </Button>
-                                  }
-                                />
-                              </div>
-                            )}
-                            {user && isAvailable && !canCheckout && (
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                className={cn("w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
-                                onClick={() =>
-                                  toast.message(
-                                    `Premium unlocks borrow and buy. Use Upgrade in the ${upgradeWhere}.`,
-                                  )
-                                }
-                              >
-                                <BookOpen className="mr-2 h-4 w-4" />
-                                Borrow
-                              </Button>
-                            )}
-                            {user && isAvailable && canCheckout && token && (
-                              <Button
-                                size="sm"
-                                className={cn(
-                                  "w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                                  studentShellFlat ? "rounded-md" : "rounded-full",
-                                )}
-                                onClick={() =>
-                                  (pushRecentViewedTitle(b.title),
-                                  setCheckout({
-                                    item: {
-                                      kind: "hub",
-                                      bookId: b.id,
-                                      title: b.title,
-                                      hubName: hubNameBorrow(b.hubId),
-                                      buyPrice: b.buyPrice ?? 0,
-                                      borrowPrice: b.borrowPrice ?? 0,
-                                    },
-                                    initialMode: "borrow",
-                                  }))
-                                }
-                              >
-                                <BookOpen className="mr-2 h-4 w-4" />
-                                Borrow or buy
-                              </Button>
-                            )}
-                          </>
-                        }
-                      />
-                    </div>
-                  );
-                }
-                const listing = row.listing;
-                const peerRefShort = catalogRefLabel(listing.id, null);
-                return (
-                  <div key={row.key} className={cn(studentShellBrowse ? "flex min-w-0 flex-col gap-1.5" : "")}>
-                    {studentShellBrowse ? (
-                      <>
-                        <div className="flex min-w-0 items-start justify-between gap-2">
-                          <span className="max-w-full min-w-0 shrink truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
-                            From students
-                          </span>
-                          <span
-                            className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground"
-                            title={listing.id}
-                          >
-                            {peerRefShort}
-                          </span>
-                        </div>
-                        <CopyLifecycleStrip status={peerStatusToLifecycle(listing.status)} />
-                        <p className="text-[10px] text-muted-foreground">
-                          Pickup hub:{" "}
-                          {hubsQ.data?.hubs.find((h) => h.id === (listing.hubId ?? listing.dropoffHubId))
-                            ?.name ?? "Hub"}
-                        </p>
-                      </>
-                    ) : null}
-                    <MarketplacePeerCard
-                      listing={listing}
-                      onSelect={setSelected}
-                    />
-                  </div>
-                );
-                })}
-              </div>
-              <GridPagination
-                page={browsePage}
-                totalPages={browseTotalPages}
-                onPageChange={setBrowsePage}
-                label="Borrow and buy pagination"
-              />
-              {studentShellBrowse ? (
-                <section className="mt-8 space-y-4">
-                  <div className="rounded-md border border-border bg-card/60 p-5">
-                    <h3 className="text-base font-semibold tracking-tight text-foreground">Smart recommendations</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Quick picks based on your browsing and hub activity.
-                    </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-md border border-border/70 bg-background p-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Similar books
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {(similarBooks.length ? similarBooks : searchSuggestions.slice(0, 4)).map((t) => (
-                            <Button
-                              key={`sim-${t}`}
-                              size="sm"
-                              variant="outline"
-                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
-                              onClick={() => setSearch(t)}
-                            >
-                              {t}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="rounded-md border border-border/70 bg-background p-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Popular at your hub
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {(popularAtHub.length ? popularAtHub : searchSuggestions.slice(0, 4)).map((t) => (
-                            <Button
-                              key={`pop-${t}`}
-                              size="sm"
-                              variant="outline"
-                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
-                              onClick={() => setSearch(t)}
-                            >
-                              {t}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="rounded-md border border-border/70 bg-background p-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Recently requested
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {(recentRequestedTitles.length ? recentRequestedTitles : searchSuggestions.slice(0, 4)).map((t) => (
-                            <Button
-                              key={`req-${t}`}
-                              size="sm"
-                              variant="outline"
-                              className="h-7 rounded-md border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
-                              onClick={() => setSearch(t)}
-                            >
-                              {t}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              ) : null}
-            </>
-              )
-          : !isBrowseMode
-            ? listingsQ.isLoading
-              ? (
-                  <div className="flex justify-center py-24">
-                    <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-                  </div>
-                )
               : peerListingsError
                 ? null
                 : (
-                    <>
-                      <div className="grid grid-cols-2 items-stretch gap-5 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                        {peerGridRows.map((l) => (
-                          <div key={l.id} className={cn(studentMode === "sell" && inShell ? "flex min-w-0 flex-col gap-1.5" : "")}>
-                            {studentMode === "sell" && inShell ? (
-                              <div className="space-y-1">
-                                <div className="flex min-w-0 items-start justify-between gap-2">
-                                  <span className="truncate text-left text-xs font-semibold uppercase tracking-wide text-foreground">
-                                    {listingStatusLabel(l.status)}
-                                  </span>
-                                  <span className="font-mono text-[10px] text-muted-foreground">
-                                    {catalogRefLabel(l.id, null)}
-                                  </span>
-                                </div>
-                                <p className="text-[10px] text-muted-foreground">
-                                  Pickup hub:{" "}
-                                  {hubsQ.data?.hubs.find((h) => h.id === (l.dropoffHubId ?? l.hubId))?.name ?? "Not selected"}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  Next step: {listingNextStep(l.status)}
-                                </p>
+                  <>
+                    <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {peerGridRows.map((l) => (
+                        <div key={l.id} className={cn(studentMode === "sell" && inShell ? "flex min-w-0 flex-col gap-1.5" : "")}>
+                          {studentMode === "sell" && inShell ? (
+                            <div className="mb-2 space-y-1.5 px-1">
+                              <div className="flex flex-col items-start gap-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                  {listingStatusLabel(l.status)}
+                                </span>
+                                <span className="font-mono text-[10.5px] font-medium tracking-wide text-muted-foreground/70">
+                                  {catalogRefLabel(l.id, null)}
+                                </span>
                               </div>
-                            ) : null}
-                            <MarketplacePeerCard listing={l} onSelect={setSelected} />
-                          </div>
-                        ))}
-                      </div>
-                      <GridPagination
-                        page={peerGridPage}
-                        totalPages={peerGridTotalPages}
-                        onPageChange={setPeerGridPage}
-                        label="Listings pagination"
-                      />
-                    </>
-                  )
+                              <p className="text-[10.5px] text-muted-foreground/90">
+                                Pickup hub: <span className="font-medium text-foreground">{hubsQ.data?.hubs.find((h) => h.id === (l.dropoffHubId ?? l.hubId))?.name ?? "Not selected"}</span>
+                              </p>
+                              <p className="text-[10.5px] text-amber-700/90 dark:text-amber-300/90">
+                                Next step: {listingNextStep(l.status)}
+                              </p>
+                            </div>
+                          ) : null}
+                          <MarketplacePeerCard listing={l} onSelect={setSelected} />
+                        </div>
+                      ))}
+                    </div>
+                    <GridPagination
+                      page={peerGridPage}
+                      totalPages={peerGridTotalPages}
+                      onPageChange={setPeerGridPage}
+                      label="Listings pagination"
+                    />
+                  </>
+                )
             : null}
 
         {isBrowseMode &&
@@ -1787,12 +1787,12 @@ export default function Marketplace(props?: MarketplaceProps) {
                         className={cn(studentShellFlat ? "rounded-md px-5" : "rounded-full px-6")}
                       >
                         Request this book
-            </Button>
+                      </Button>
                     }
                   />
-          </div>
-        )}
-      </div>
+                </div>
+              )}
+            </div>
           )}
 
         {!isBrowseMode && !listingsQ.isLoading && !peerListingsError && peerShelfOrdered.length === 0 && (
@@ -1831,12 +1831,12 @@ export default function Marketplace(props?: MarketplaceProps) {
                     onClick={() => setListOpen(true)}
                   >
                     List a book
-                      </Button>
+                  </Button>
                 )}
                 {user && !isPremiumOk(user) && (
                   <p className="text-xs">Premium is required to create listings.</p>
                 )}
-                </div>
+              </div>
             ) : (
               <p className="text-muted-foreground">
                 {search.trim()
@@ -1844,9 +1844,9 @@ export default function Marketplace(props?: MarketplaceProps) {
                   : "No peer listings to show yet."}
               </p>
             )}
-                  </div>
+          </div>
         )}
-                    </div>
+      </div>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent
@@ -1859,7 +1859,7 @@ export default function Marketplace(props?: MarketplaceProps) {
             <>
               <div className="border-b border-border/70 bg-gradient-to-b from-muted/50 to-muted/20 px-6 pb-5 pt-6">
                 <DialogHeader className="space-y-3 text-left">
-                    <DialogDescription className="sr-only">
+                  <DialogDescription className="sr-only">
                     Peer listing {selected.bookTitle}, buy ₹{selected.price.toLocaleString("en-IN")},
                     borrow ₹{selected.borrowPrice.toLocaleString("en-IN")}, status {selected.status}.
                   </DialogDescription>
@@ -1891,7 +1891,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     )}
                   </div>
                 </DialogHeader>
-                </div>
+              </div>
 
               <div className="max-h-[calc(min(90vh,720px)-8.5rem)] overflow-y-auto px-6 py-5">
                 <div className="space-y-6">
@@ -1932,14 +1932,14 @@ export default function Marketplace(props?: MarketplaceProps) {
                           "space-y-4 rounded-xl border border-border/80 bg-card/60 p-4 shadow-sm",
                         )}
                       >
-                    <div>
+                        <div>
                           <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
                             Your listing
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             Edit or delete until the hub approves the copy.
                           </p>
-                    </div>
+                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="edit-listing-title">Title</Label>
                           <Input
@@ -1948,7 +1948,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             onChange={(e) => setEditTitle(e.target.value)}
                             className="h-11"
                           />
-                  </div>
+                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="edit-listing-price">Buy price (₹)</Label>
                           <Input
@@ -1963,8 +1963,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                             <p className="text-xs text-destructive">
                               Enter a whole number of ₹1 or more.
                             </p>
-        )}
-                    </div>
+                          )}
+                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="edit-listing-borrow">Borrow fee (₹)</Label>
                           <Input
@@ -2015,7 +2015,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                           </p>
                           {(selected.coverImageUrl || editCoverPreview) && (
                             <Button
-                  type="button"
+                              type="button"
                               variant="ghost"
                               size="sm"
                               className="h-9 px-0 text-xs text-muted-foreground hover:text-destructive"
@@ -2031,7 +2031,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                               Remove photo from listing
                             </Button>
                           )}
-              </div>
+                        </div>
                         <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
                           <Button
                             className={cn(studentShellFlat ? "rounded-md sm:flex-1" : "rounded-full sm:flex-1")}
@@ -2057,8 +2057,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                           >
                             Delete listing
                           </Button>
-                </div>
-                  </div>
+                        </div>
+                      </div>
                     )}
 
                   {user &&
@@ -2071,14 +2071,14 @@ export default function Marketplace(props?: MarketplaceProps) {
                           "space-y-4 rounded-xl border border-border/80 bg-card/40 p-4 shadow-sm",
                         )}
                       >
-                    <div>
+                        <div>
                           <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
                             Drop-off
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             Choose a hub desk so staff can verify your copy.
                           </p>
-                    </div>
+                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="dropoff-hub">Hub</Label>
                           <Select value={dropHubId || undefined} onValueChange={setDropHubId}>
@@ -2093,7 +2093,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                               ))}
                             </SelectContent>
                           </Select>
-                  </div>
+                        </div>
                         <Button
                           className={cn(
                             "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
@@ -2106,7 +2106,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         >
                           Submit drop-off
                         </Button>
-                </div>
+                      </div>
                     )}
 
                   {user &&
@@ -2150,7 +2150,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         Sign in to borrow or buy · Buy ₹{selected.price.toLocaleString("en-IN")} · Borrow ₹
                         {selected.borrowPrice.toLocaleString("en-IN")}
                       </Link>
-                  </Button>
+                    </Button>
                   )}
 
                   {selected.status === "available" && !user && isDemoListingId(selected.id) && (
@@ -2162,7 +2162,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       )}
                     >
                       <Link href={signInHref("/marketplace")}>Sign in for real listings</Link>
-                  </Button>
+                    </Button>
                   )}
 
                   {user &&
@@ -2225,8 +2225,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                           onClick={() => openPeerCheckout(selected, "buy")}
                         >
                           Buy for ₹{selected.price.toLocaleString("en-IN")}
-                  </Button>
-                </div>
+                        </Button>
+                      </div>
                     )}
 
                   {user &&
@@ -2254,8 +2254,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                         &quot;available&quot; on the shelf).
                       </p>
                     )}
+                </div>
               </div>
-            </div>
             </>
           )}
         </DialogContent>

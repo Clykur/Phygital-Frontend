@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/auth-context";
-import { userFacingErrorMessage } from "@/lib/error-messages";
+import { ApiError } from "@/lib/api";
 import { HUB_KIND_OPTIONS, type HubKindValue } from "@/lib/hub-display";
 import { afterAuthPath, afterHubRegisterPath } from "@/lib/sign-in-return";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export default function SignInPage() {
       toast.success("Signed in");
       setLocation(afterAuthPath(signedIn));
     } catch (err) {
-      toast.error(userFacingErrorMessage(err));
+      toast.error(err instanceof ApiError ? err.message : "Sign in failed");
     } finally {
       setBusy(false);
     }
@@ -76,7 +76,7 @@ export default function SignInPage() {
         setLocation(afterAuthPath(created));
       }
     } catch (err) {
-      toast.error(userFacingErrorMessage(err));
+      toast.error(err instanceof ApiError ? err.message : "Could not register");
     } finally {
       setBusy(false);
     }
