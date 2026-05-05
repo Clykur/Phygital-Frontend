@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
-import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context"; 
 import { apiFetch, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
