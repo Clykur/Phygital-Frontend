@@ -1,8 +1,7 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch } from "@/lib/api";
-import { userFacingErrorMessage } from "@/lib/error-messages";
+import { apiFetch, ApiError } from "@/lib/api";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { Button } from "@/components/ui/button";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
@@ -312,7 +311,7 @@ export default function StudentTrackingPage() {
       toast.success("Peer borrow returned.");
       void qc.invalidateQueries({ queryKey: ["p2p-listings"] });
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
   });
 
   const returnBook = useMutation({
@@ -323,7 +322,7 @@ export default function StudentTrackingPage() {
       toast.success("Return recorded drop the copy at your hub desk when you can.");
       void qc.invalidateQueries({ queryKey: ["catalog", "books"] });
     },
-    onError: (e) => toast.error(userFacingErrorMessage(e)),
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : "Return failed"),
   });
 
   const onLoan =
@@ -353,9 +352,9 @@ export default function StudentTrackingPage() {
     p2pQ.data?.listings
       .filter((l) => l.ownerId === user?.userId && ["sold", "cancelled", "rejected"].includes(l.status))
       .sort((a, b) => {
-      const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-      const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-      return tb - ta;
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return tb - ta;
       }) ?? [];
   const myPeerBorrows =
     p2pQ.data?.listings.filter(
@@ -490,28 +489,30 @@ export default function StudentTrackingPage() {
             description="Personal totals only. Commerce is the hub-wide ledger; Inventory lists physical copies on the shelf."
           />
           <section className={cn(outline, "mt-4 overflow-hidden")} aria-label="Summary totals">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead className="pl-5">History borrows</TableHead>
-                  <TableHead>Hub buys</TableHead>
-                  <TableHead>Peer buys</TableHead>
-                  <TableHead>Peer borrows</TableHead>
-                  <TableHead>Requests</TableHead>
-                  <TableHead className="pr-5">Alerts</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow className={rowStripe}>
-                  <TableCell className="pl-5 text-lg font-semibold tabular-nums">0</TableCell>
-                  <TableCell className="text-lg font-semibold tabular-nums">{hubPurchases.length}</TableCell>
-                  <TableCell className="text-lg font-semibold tabular-nums">{myPurchases.length}</TableCell>
-                  <TableCell className="text-lg font-semibold tabular-nums">0</TableCell>
-                  <TableCell className="text-lg font-semibold tabular-nums">{requestsByRecent.length}</TableCell>
-                  <TableCell className="pr-5 text-lg font-semibold tabular-nums">{unreadAlerts}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="pl-5">History borrows</TableHead>
+                    <TableHead>Hub buys</TableHead>
+                    <TableHead>Peer buys</TableHead>
+                    <TableHead>Peer borrows</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead className="pr-5">Alerts</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow className={rowStripe}>
+                    <TableCell className="pl-5 text-lg font-semibold tabular-nums">0</TableCell>
+                    <TableCell className="text-lg font-semibold tabular-nums">{hubPurchases.length}</TableCell>
+                    <TableCell className="text-lg font-semibold tabular-nums">{myPurchases.length}</TableCell>
+                    <TableCell className="text-lg font-semibold tabular-nums">0</TableCell>
+                    <TableCell className="text-lg font-semibold tabular-nums">{requestsByRecent.length}</TableCell>
+                    <TableCell className="pr-5 text-lg font-semibold tabular-nums">{unreadAlerts}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </section>
         </section>
         <Separator className="my-8" />
@@ -680,27 +681,48 @@ export default function StudentTrackingPage() {
                     description="Completed purchases, sorted by most recent."
                     isLoading={booksQ.isLoading || p2pQ.isLoading}
                   >
+                    {/* Mobile: card list */}
+                    <div className="space-y-2 px-4 sm:hidden">
+                      {purchaseRows.map((row) => {
+                        const isHub = row.kind === "hub";
+                        const title = isHub ? row.hub.title : row.peer.bookTitle;
+                        const amount = isHub ? (row.hub.buyPrice ?? 0) : row.peer.price;
+                        const when = isHub ? row.hub.soldAt : row.peer.soldAt;
+                        const key = isHub ? `hub-p-${row.hub.id}` : `peer-p-${row.peer.id}`;
+                        return (
+                          <div
+                            key={key}
+                            className="rounded-lg border border-border bg-card/60 p-3 text-sm"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <p className="font-medium text-foreground line-clamp-2 flex-1">{title}</p>
+                              <FlatStatus label={isHub ? "Hub purchase" : "Peer purchase"} tone="neutral" />
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              <span>Paid: <span className="font-semibold text-foreground tabular-nums">₹{fmtInr(amount)}</span></span>
+                              {fmtDateShort(when) && <span>{fmtDateShort(when)}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Desktop: table */}
                     {tableShell(
-                      <Table>
+                      <Table className="hidden sm:table">
                         <TableHeader>
                           <TableRow className="border-border/50 hover:bg-transparent">
                             <TableHead className="w-[150px] pl-5">Channel</TableHead>
                             <TableHead>Title</TableHead>
                             <TableHead className="hidden md:table-cell">Hub / pickup</TableHead>
                             <TableHead className="whitespace-nowrap text-right">Paid ₹</TableHead>
-                            <TableHead className="whitespace-nowrap pr-5 text-right">
-                              When
-                            </TableHead>
+                            <TableHead className="whitespace-nowrap pr-5 text-right">When</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {purchaseRows.map((row) =>
                             row.kind === "hub" ? (
-                              <TableRow
-                                key={`hub-p-${row.hub.id}`}
-                                className={rowStripe}
-                                data-purchase-id={row.hub.id}
-                              >
+                              <TableRow key={`hub-p-${row.hub.id}`} className={rowStripe} data-purchase-id={row.hub.id}>
                                 <TableCell className="pl-5 align-top">
                                   <FlatStatus label="Hub purchase" tone="neutral" />
                                 </TableCell>
@@ -719,20 +741,13 @@ export default function StudentTrackingPage() {
                                   ₹{fmtInr(row.hub.buyPrice ?? 0)}
                                 </TableCell>
                                 <TableCell className="pr-5 align-top text-right">
-                                  <time
-                                    dateTime={row.hub.soldAt ?? undefined}
-                                    className="text-xs tabular-nums text-muted-foreground"
-                                  >
+                                  <time dateTime={row.hub.soldAt ?? undefined} className="text-xs tabular-nums text-muted-foreground">
                                     {fmtDateShort(row.hub.soldAt) || null}
                                   </time>
                                 </TableCell>
                               </TableRow>
                             ) : (
-                              <TableRow
-                                key={`peer-p-${row.peer.id}`}
-                                className={rowStripe}
-                                data-purchase-id={row.peer.id}
-                              >
+                              <TableRow key={`peer-p-${row.peer.id}`} className={rowStripe} data-purchase-id={row.peer.id}>
                                 <TableCell className="pl-5 align-top">
                                   <FlatStatus label="Peer purchase" tone="neutral" />
                                 </TableCell>
@@ -845,18 +860,52 @@ export default function StudentTrackingPage() {
                     description="Closed listing outcomes only."
                     isLoading={p2pQ.isLoading}
                   >
+                    {/* Mobile: card list */}
+                    <div className="space-y-2 px-4 sm:hidden">
+                      {myListings.map((l) => (
+                        <div
+                          key={l.id}
+                          className="rounded-lg border border-border bg-card/60 p-3 text-sm"
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <p className="font-medium text-foreground line-clamp-2 flex-1">{l.bookTitle}</p>
+                            <FlatStatus
+                              label={
+                                l.status === "listed"
+                                  ? "Draft"
+                                  : l.status === "pending_dropoff"
+                                    ? "Pending drop-off"
+                                    : l.status === "available"
+                                      ? "On shelf"
+                                      : l.status === "sold"
+                                        ? "Sold"
+                                        : l.status.replace(/_/g, " ")
+                              }
+                              tone={l.status === "sold" ? "emerald" : "destructive"}
+                            />
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span>Buy: <span className="font-medium text-foreground tabular-nums">₹{fmtInr(l.price)}</span></span>
+                            <span>Borrow: <span className="font-medium text-foreground tabular-nums">₹{fmtInr(l.borrowPrice ?? 0)}</span></span>
+                            {l.refId && <span className="font-mono">{l.refId}</span>}
+                            {fmtDateShort(l.updatedAt) && <span>{fmtDateShort(l.updatedAt)}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop: table */}
                     {tableShell(
-                      <Table className="w-full table-fixed">
+                      <Table className="hidden w-full table-fixed sm:table">
                         <TableHeader>
                           <TableRow className="border-border/50 hover:bg-transparent">
-                            <TableHead className="w-[23%] pl-5">Title</TableHead>
-                            <TableHead className="w-[15%]">Ref ID</TableHead>
-                            <TableHead className="w-[8%] whitespace-nowrap text-right">Buy ₹</TableHead>
-                            <TableHead className="w-[8%] whitespace-nowrap text-right">Borrow ₹</TableHead>
+                            <TableHead className="w-[30%] pl-5">Title</TableHead>
+                            <TableHead className="hidden w-[15%] sm:table-cell">Ref ID</TableHead>
+                            <TableHead className="w-[10%] whitespace-nowrap text-right">Buy ₹</TableHead>
+                            <TableHead className="w-[10%] whitespace-nowrap text-right">Borrow ₹</TableHead>
                             <TableHead className="hidden w-[16%] md:table-cell">Drop-off hub</TableHead>
-                            <TableHead className="hidden w-[10%] whitespace-nowrap sm:table-cell">Listed</TableHead>
                             <TableHead className="hidden w-[10%] whitespace-nowrap lg:table-cell">Updated</TableHead>
-                            <TableHead className="w-[10%] pr-5 text-right">Status</TableHead>
+                            <TableHead className="w-[14%] pr-5 text-right">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -865,7 +914,7 @@ export default function StudentTrackingPage() {
                               <TableCell className="min-w-0 pl-5 align-top font-medium">
                                 <span className="line-clamp-2">{l.bookTitle}</span>
                               </TableCell>
-                              <TableCell className="align-top font-mono text-[11px] text-muted-foreground">
+                              <TableCell className="hidden align-top font-mono text-[11px] text-muted-foreground sm:table-cell">
                                 {l.refId ?? "—"}
                               </TableCell>
                               <TableCell className="align-top text-right tabular-nums">₹{fmtInr(l.price)}</TableCell>
@@ -874,9 +923,6 @@ export default function StudentTrackingPage() {
                               </TableCell>
                               <TableCell className="hidden align-top text-sm text-muted-foreground md:table-cell">
                                 {hubLabel(l.dropoffHubId) || null}
-                              </TableCell>
-                              <TableCell className="hidden align-top text-xs text-muted-foreground sm:table-cell">
-                                {fmtDateShort(l.createdAt) || null}
                               </TableCell>
                               <TableCell className="hidden align-top text-xs text-muted-foreground lg:table-cell">
                                 {fmtDateShort(l.updatedAt) || null}
@@ -919,14 +965,17 @@ export default function StudentTrackingPage() {
               <p className="mt-1 text-xs text-muted-foreground">
                 Start with one of these actions.
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" className="rounded-md" asChild>
-                  <Link href={portalPaths.borrow}>Browse books</Link>
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+                <Button size="sm" className="w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 sm:w-auto" asChild>
+                  <Link href={portalPaths.borrow}>Borrow a book</Link>
                 </Button>
-                <Button size="sm" variant="outline" className="rounded-md" asChild>
+                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
+                  <Link href={portalPaths.sell}>Buy from a peer</Link>
+                </Button>
+                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
                   <Link href={`${portalPaths.borrow}?request=1`}>Request a title</Link>
                 </Button>
-                <Button size="sm" variant="outline" className="rounded-md" asChild>
+                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
                   <Link href={portalPaths.sell}>List a book</Link>
                 </Button>
               </div>

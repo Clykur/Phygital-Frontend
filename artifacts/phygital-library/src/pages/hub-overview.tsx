@@ -12,7 +12,6 @@ import {
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
-import { userFacingErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import { hubKindLabel } from "@/lib/hub-display";
 import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
@@ -376,423 +375,423 @@ export default function HubOverviewPage() {
 
   return (
     <div className={cn(topPad)}>
-        {/* Title + filters scroll with the page (not sticky) */}
-        <div className="mb-6 border-b border-border pb-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
-            <div className="min-w-0 flex-1">
-              <p
-                className={cn(
-                  "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                  "text-amber-600/90 dark:text-amber-400/90",
-                )}
-              >
-                {isSuperAdmin ? "Super admin" : "Hub portal"}
-              </p>
-              <h1 className="mt-1 font-serif text-lg font-light text-foreground">
-                {isSuperAdmin ? "Network overview" : "Command center"}
-              </h1>
-              {isSuperAdmin ? (
-                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-                  Prioritized queues, network KPIs, and rates. Not a product catalog. Use{" "}
-                  <span className="font-semibold text-foreground">Scope</span> to focus one hub.
-                </p>
-              ) : null}
-            </div>
-
-            <div
+      {/* Title + filters scroll with the page (not sticky) */}
+      <div className="mb-6 border-b border-border pb-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+          <div className="min-w-0 flex-1">
+            <p
               className={cn(
-                "grid w-full gap-3 shrink-0",
-                user.hubStaffHubIds.length > 1
-                  ? "grid-cols-1 sm:grid-cols-2 sm:min-w-[22rem] lg:min-w-[24rem] lg:max-w-[min(32rem,100%)]"
-                  : "grid-cols-1 sm:max-w-[11rem] sm:justify-self-end",
+                "text-[10px] font-semibold uppercase tracking-[0.35em]",
+                "text-amber-600/90 dark:text-amber-400/90",
               )}
             >
+              {isSuperAdmin ? "Super admin" : "Hub portal"}
+            </p>
+            <h1 className="mt-1 font-serif text-lg font-light text-foreground">
+              {isSuperAdmin ? "Network overview" : "Command center"}
+            </h1>
+            {isSuperAdmin ? (
+              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                Prioritized queues, network KPIs, and rates. Not a product catalog. Use{" "}
+                <span className="font-semibold text-foreground">Scope</span> to focus one hub.
+              </p>
+            ) : null}
+          </div>
+
+          <div
+            className={cn(
+              "grid w-full gap-3 shrink-0",
+              user.hubStaffHubIds.length > 1
+                ? "grid-cols-1 sm:grid-cols-2 sm:min-w-[22rem] lg:min-w-[24rem] lg:max-w-[min(32rem,100%)]"
+                : "grid-cols-1 sm:max-w-[11rem] sm:justify-self-end",
+            )}
+          >
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <Label
+                htmlFor="hub-overview-period"
+                className="text-[10px] font-bold uppercase tracking-wide text-foreground"
+              >
+                Period
+              </Label>
+              <Select
+                value={overviewRange}
+                onValueChange={(v) => setOverviewRange(v as OverviewRange)}
+              >
+                <SelectTrigger
+                  id="hub-overview-period"
+                  className="h-10 w-full rounded-md border-border bg-background"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">Week</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {user.hubStaffHubIds.length > 1 ? (
               <div className="flex min-w-0 flex-col gap-1.5">
                 <Label
-                  htmlFor="hub-overview-period"
+                  htmlFor="hub-overview-scope"
                   className="text-[10px] font-bold uppercase tracking-wide text-foreground"
                 >
-                  Period
+                  Network scope
                 </Label>
-                <Select
-                  value={overviewRange}
-                  onValueChange={(v) => setOverviewRange(v as OverviewRange)}
-                >
+                <Select value={overviewHubId} onValueChange={setOverviewHubId}>
                   <SelectTrigger
-                    id="hub-overview-period"
+                    id="hub-overview-scope"
                     className="h-10 w-full rounded-md border-border bg-background"
                   >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="week">Week</SelectItem>
-                    <SelectItem value="month">Month</SelectItem>
+                    <SelectItem value="all">All hubs ({user.hubStaffHubIds.length})</SelectItem>
+                    {user.hubStaffHubIds.map((id) => (
+                      <SelectItem key={id} value={id}>
+                        {hubsQ.data?.hubs.find((h) => h.id === id)?.name ?? id.slice(0, 8) + "…"}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              {user.hubStaffHubIds.length > 1 ? (
-                <div className="flex min-w-0 flex-col gap-1.5">
-                  <Label
-                    htmlFor="hub-overview-scope"
-                    className="text-[10px] font-bold uppercase tracking-wide text-foreground"
-                  >
-                    Network scope
-                  </Label>
-                  <Select value={overviewHubId} onValueChange={setOverviewHubId}>
-                    <SelectTrigger
-                      id="hub-overview-scope"
-                      className="h-10 w-full rounded-md border-border bg-background"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All hubs ({user.hubStaffHubIds.length})</SelectItem>
-                      {user.hubStaffHubIds.map((id) => (
-                        <SelectItem key={id} value={id}>
-                          {hubsQ.data?.hubs.find((h) => h.id === id)?.name ?? id.slice(0, 8) + "…"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
+      </div>
 
-        {overviewQ.isLoading ? (
-          <div className="flex justify-center py-24">
-            <Loader2 className="h-9 w-9 animate-spin text-muted-foreground" />
-          </div>
-        ) : overviewQ.isError ? (
-          <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            {userFacingErrorMessage(overviewQ.error)}
-          </p>
-        ) : ov ? (
-          <div className="space-y-6">
-            {isSuperAdmin && network && executive ? (
-              <>
-                <section className={cn(outline, "px-4 py-3")} aria-label="System health strip">
-                  <SectionLabel>System health</SectionLabel>
-                  <div className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
-                    <p className="text-muted-foreground">
-                      Queue backlog: <span className="font-mono text-foreground">{execFunnel.needAction}</span>
-                    </p>
-                    <p className="text-muted-foreground">
-                      Failed events:{" "}
-                      <span className="font-mono text-foreground">
-                        {sortedAlerts.filter((a) => a.severity === "critical").length}
-                      </span>
-                    </p>
-                    <p className="text-muted-foreground">
-                      Stale requests:{" "}
-                      <span className="font-mono text-foreground">{ov.requestBreakdown["expired"] ?? 0}</span>
-                    </p>
-                  </div>
-                </section>
-                <header className={cn(outline, "p-4 md:p-5")}>
-                  <h1 className="text-lg font-bold tracking-tight text-foreground md:text-xl">
-                    Business control tower
-                  </h1>
-                  <div className="mt-2 max-w-full overflow-x-auto overflow-y-hidden pb-0.5">
-                    <p className="w-max whitespace-nowrap text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">{ov.hubScope.label}</span>
-                      {" · "}
-                      {rangeLabel}. Queue scores rank hubs by pending desk, ready pickup, and peer drop-off backlog.
-                    </p>
-                  </div>
-                </header>
+      {overviewQ.isLoading ? (
+        <div className="flex justify-center py-24">
+          <Loader2 className="h-9 w-9 animate-spin text-muted-foreground" />
+        </div>
+      ) : overviewQ.isError ? (
+        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Could not load overview.
+        </p>
+      ) : ov ? (
+        <div className="space-y-6">
+          {isSuperAdmin && network && executive ? (
+            <>
+              <section className={cn(outline, "px-4 py-3")} aria-label="System health strip">
+                <SectionLabel>System health</SectionLabel>
+                <div className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                  <p className="text-muted-foreground">
+                    Queue backlog: <span className="font-mono text-foreground">{execFunnel.needAction}</span>
+                  </p>
+                  <p className="text-muted-foreground">
+                    Failed events:{" "}
+                    <span className="font-mono text-foreground">
+                      {sortedAlerts.filter((a) => a.severity === "critical").length}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground">
+                    Stale requests:{" "}
+                    <span className="font-mono text-foreground">{ov.requestBreakdown["expired"] ?? 0}</span>
+                  </p>
+                </div>
+              </section>
+              <header className={cn(outline, "p-4 md:p-5")}>
+                <h1 className="text-lg font-bold tracking-tight text-foreground md:text-xl">
+                  Business control tower
+                </h1>
+                <div className="mt-2 max-w-full overflow-x-auto overflow-y-hidden pb-0.5">
+                  <p className="w-max whitespace-nowrap text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{ov.hubScope.label}</span>
+                    {" · "}
+                    {rangeLabel}. Queue scores rank hubs by pending desk, ready pickup, and peer drop-off backlog.
+                  </p>
+                </div>
+              </header>
 
-                <section aria-label="Network footprint" className={cn(outline, "overflow-hidden")}>
+              <section aria-label="Network footprint" className={cn(outline, "overflow-hidden")}>
+                <div className="border-b border-border px-4 py-3">
+                  <SectionLabel>Network</SectionLabel>
+                </div>
+                <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-3 lg:grid-cols-6">
+                  <StatCell label="Hubs live" value={`${network.hubsActive}/${network.hubsTotal}`} sub="active / total" />
+                  <StatCell label="Users" value={network.usersTotal} sub="all roles" />
+                  <StatCell label="Students" value={network.studentAccounts} />
+                  <StatCell label="Hub operators" value={network.hubOperatorAccounts} />
+                  <StatCell label="Premium" value={network.activePremiumSubscribers} sub="active subs" />
+                  <StatCell label="Super admins" value={network.superAdmins} />
+                </div>
+              </section>
+
+              <section aria-label="Derived KPIs" className={cn(outline, "overflow-hidden")}>
+                <div className="border-b border-border px-4 py-3">
+                  <SectionLabel>Health · {rangeLabel.toLowerCase()}</SectionLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Terminal desk success = picked ÷ (picked + expired + cancelled).
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4">
+                  <StatCell
+                    label="Throughput"
+                    value={executive.derivatives.transactionsPerDay.toFixed(1)}
+                    sub={`tx/day · ${ov.metrics.transactionsInRange} in ${executive.derivatives.periodLabelDays}d`}
+                  />
+                  <StatCell
+                    label="Shelf in use"
+                    value={`${executive.derivatives.shelfUtilizationPct}%`}
+                    sub="out ÷ (avail+res+out)"
+                  />
+                  <StatCell
+                    label="Desk success"
+                    value={
+                      executive.derivatives.requestTerminalSuccessPct == null
+                        ? "—"
+                        : `${executive.derivatives.requestTerminalSuccessPct}%`
+                    }
+                    sub="picked ÷ closed"
+                  />
+                  <StatCell
+                    label="Peer drop-off share"
+                    value={`${Math.round(executive.derivatives.p2pDropoffBacklogRatio * 100)}%`}
+                    sub="pending ÷ peer queue"
+                  />
+                </div>
+                <div className="grid grid-cols-2 divide-x divide-y divide-border border-t border-border md:grid-cols-4">
+                  <StatCell label="Open desk queue" value={execFunnel.needAction} sub="req + routed" />
+                  <StatCell label="Fulfilment prep" value={execFunnel.inPrep} sub="fulfilled + ready" />
+                  <StatCell label="Completed" value={execFunnel.completed} sub="picked" />
+                  <StatCell label="Closed" value={execFunnel.closed} sub="expired + withdrawn" />
+                </div>
+              </section>
+
+              {executive.hubAttention.length > 0 ? (
+                <section className={cn(outline, "overflow-hidden")} aria-label="Hubs by operational load">
                   <div className="border-b border-border px-4 py-3">
-                    <SectionLabel>Network</SectionLabel>
-                  </div>
-                  <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-3 lg:grid-cols-6">
-                    <StatCell label="Hubs live" value={`${network.hubsActive}/${network.hubsTotal}`} sub="active / total" />
-                    <StatCell label="Users" value={network.usersTotal} sub="all roles" />
-                    <StatCell label="Students" value={network.studentAccounts} />
-                    <StatCell label="Hub operators" value={network.hubOperatorAccounts} />
-                    <StatCell label="Premium" value={network.activePremiumSubscribers} sub="active subs" />
-                    <StatCell label="Super admins" value={network.superAdmins} />
-                  </div>
-                </section>
-
-                <section aria-label="Derived KPIs" className={cn(outline, "overflow-hidden")}>
-                  <div className="border-b border-border px-4 py-3">
-                    <SectionLabel>Health · {rangeLabel.toLowerCase()}</SectionLabel>
+                    <SectionLabel>Where to act first</SectionLabel>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Terminal desk success = picked ÷ (picked + expired + cancelled).
+                      Score = 3×pending + 2×ready + 2×P2P drop-off (higher = more load).
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4">
-                    <StatCell
-                      label="Throughput"
-                      value={executive.derivatives.transactionsPerDay.toFixed(1)}
-                      sub={`tx/day · ${ov.metrics.transactionsInRange} in ${executive.derivatives.periodLabelDays}d`}
-                    />
-                    <StatCell
-                      label="Shelf in use"
-                      value={`${executive.derivatives.shelfUtilizationPct}%`}
-                      sub="out ÷ (avail+res+out)"
-                    />
-                    <StatCell
-                      label="Desk success"
-                      value={
-                        executive.derivatives.requestTerminalSuccessPct == null
-                          ? "—"
-                          : `${executive.derivatives.requestTerminalSuccessPct}%`
-                      }
-                      sub="picked ÷ closed"
-                    />
-                    <StatCell
-                      label="Peer drop-off share"
-                      value={`${Math.round(executive.derivatives.p2pDropoffBacklogRatio * 100)}%`}
-                      sub="pending ÷ peer queue"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 divide-x divide-y divide-border border-t border-border md:grid-cols-4">
-                    <StatCell label="Open desk queue" value={execFunnel.needAction} sub="req + routed" />
-                    <StatCell label="Fulfilment prep" value={execFunnel.inPrep} sub="fulfilled + ready" />
-                    <StatCell label="Completed" value={execFunnel.completed} sub="picked" />
-                    <StatCell label="Closed" value={execFunnel.closed} sub="expired + withdrawn" />
-                  </div>
-                </section>
-
-                {executive.hubAttention.length > 0 ? (
-                  <section className={cn(outline, "overflow-hidden")} aria-label="Hubs by operational load">
-                    <div className="border-b border-border px-4 py-3">
-                      <SectionLabel>Where to act first</SectionLabel>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Score = 3×pending + 2×ready + 2×P2P drop-off (higher = more load).
-                      </p>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[40rem] text-sm">
-                        <thead>
-                          <tr className="border-b border-border text-left text-[10px] font-bold uppercase tracking-wide text-foreground">
-                            <th className="px-4 py-2">Hub</th>
-                            <th className="px-4 py-2">Score</th>
-                            <th className="px-4 py-2">Pending</th>
-                            <th className="px-4 py-2">Ready</th>
-                            <th className="px-4 py-2">P2P</th>
-                            <th className="px-4 py-2">Shelf</th>
-                            <th className="px-4 py-2">Util</th>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[40rem] text-sm">
+                      <thead>
+                        <tr className="border-b border-border text-left text-[10px] font-bold uppercase tracking-wide text-foreground">
+                          <th className="px-4 py-2">Hub</th>
+                          <th className="px-4 py-2">Score</th>
+                          <th className="px-4 py-2">Pending</th>
+                          <th className="px-4 py-2">Ready</th>
+                          <th className="px-4 py-2">P2P</th>
+                          <th className="px-4 py-2">Shelf</th>
+                          <th className="px-4 py-2">Util</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {executive.hubAttention.map((row) => (
+                          <tr key={row.hubId} className="border-b border-border last:border-0">
+                            <td className="px-4 py-2 align-top">
+                              <div className="text-foreground">{row.hubName}</div>
+                              <div className="text-[10px] text-muted-foreground">
+                                {hubKindLabel(row.kind)}
+                                {row.isActive ? "" : " · inactive"}
+                              </div>
+                            </td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.attentionScore}</td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.pendingDesk}</td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.readyPickup}</td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.p2pDropoffsPending}</td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.onShelfCopies}</td>
+                            <td className="px-4 py-2 font-mono tabular-nums">{row.shelfUtilizationPct}%</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {executive.hubAttention.map((row) => (
-                            <tr key={row.hubId} className="border-b border-border last:border-0">
-                              <td className="px-4 py-2 align-top">
-                                <div className="text-foreground">{row.hubName}</div>
-                                <div className="text-[10px] text-muted-foreground">
-                                  {hubKindLabel(row.kind)}
-                                  {row.isActive ? "" : " · inactive"}
-                                </div>
-                              </td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.attentionScore}</td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.pendingDesk}</td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.readyPickup}</td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.p2pDropoffsPending}</td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.onShelfCopies}</td>
-                              <td className="px-4 py-2 font-mono tabular-nums">{row.shelfUtilizationPct}%</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </section>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              ) : null}
+
+              <section aria-label="Operations">
+                <SectionLabel>Operations</SectionLabel>
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <DeskQuickLink
+                    href={d.requests}
+                    title="Requests"
+                    hint="Triage the desk queue"
+                    icon={ClipboardList}
+                  />
+                  <DeskQuickLink
+                    href={d.inventory}
+                    title="Inventory"
+                    hint="Stock & status"
+                    icon={Package}
+                  />
+                  <DeskQuickLink
+                    href={d.commerce}
+                    title="Commerce"
+                    hint="Revenue & borrows"
+                    icon={Wallet}
+                  />
+                </div>
+              </section>
+
+            </>
+          ) : !isSuperAdmin ? (
+            <>
+              <header className={cn(outline, "p-4 md:p-5")}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <h1 className="text-lg font-bold tracking-tight text-foreground md:text-xl">
+                    {ov.hub?.name ?? ov.hubScope.label}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {ov.hub ? (
+                      <>
+                        <span className="text-sm text-muted-foreground">{hubKindLabel(ov.hub.kind)}</span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "h-7 rounded-md px-3 text-[11px] font-semibold uppercase tracking-wide",
+                            ov.hub.isActive
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
+                              : "border-border bg-muted/30 text-muted-foreground",
+                          )}
+                        >
+                          {ov.hub.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">All locations in scope</span>
+                    )}
+                  </div>
+                </div>
+                {ov.hub?.description ? (
+                  <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
+                    {ov.hub.description}
+                  </p>
                 ) : null}
+              </header>
 
-                <section aria-label="Operations">
-                  <SectionLabel>Operations</SectionLabel>
-                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <DeskQuickLink
+              <section aria-label="Desk shortcuts">
+                <SectionLabel>Jump in</SectionLabel>
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                  <DeskQuickLink
+                    href={d.requests}
+                    title="Requests"
+                    hint="Lifecycle & next steps"
+                    icon={ClipboardList}
+                  />
+                  <DeskQuickLink
+                    href={d.inventory}
+                    title="Inventory"
+                    hint="Availability · assignments"
+                    icon={Package}
+                  />
+                  <DeskQuickLink
+                    href={d.catalog}
+                    title="Catalog"
+                    hint="Browse & acquire"
+                    icon={BookOpen}
+                  />
+                  <DeskQuickLink
+                    href={d.activity}
+                    title="Activity"
+                    hint="Loans & requests"
+                    icon={History}
+                  />
+                  <DeskQuickLink
+                    href={d.commerce}
+                    title="Commerce"
+                    hint="Hub ledger"
+                    icon={Wallet}
+                  />
+                </div>
+              </section>
+              <section className={cn(outline, "px-4 py-3")} aria-label="What to do next">
+                <SectionLabel>What to do next</SectionLabel>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {ov.metrics.pendingRequests > 0 ? (
+                    <Link
                       href={d.requests}
-                      title="Requests"
-                      hint="Triage the desk queue"
-                      icon={ClipboardList}
-                    />
-                    <DeskQuickLink
+                      className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
+                    >
+                      Pending requests need action ({ov.metrics.pendingRequests}) → Open Requests
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Request queue is healthy.</p>
+                  )}
+                  {ov.metrics.totalBooks === 0 ? (
+                    <Link
                       href={d.inventory}
-                      title="Inventory"
-                      hint="Stock & status"
-                      icon={Package}
-                    />
-                    <DeskQuickLink
-                      href={d.commerce}
-                      title="Commerce"
-                      hint="Revenue & borrows"
-                      icon={Wallet}
-                    />
-                  </div>
-                </section>
+                      className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
+                    >
+                      No inventory yet → Open Inventory
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Inventory is populated.</p>
+                  )}
+                </div>
+              </section>
 
-              </>
-            ) : !isSuperAdmin ? (
-              <>
-                <header className={cn(outline, "p-4 md:p-5")}>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                    <h1 className="text-lg font-bold tracking-tight text-foreground md:text-xl">
-                      {ov.hub?.name ?? ov.hubScope.label}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {ov.hub ? (
-                        <>
-                          <span className="text-sm text-muted-foreground">{hubKindLabel(ov.hub.kind)}</span>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "h-7 rounded-md px-3 text-[11px] font-semibold uppercase tracking-wide",
-                              ov.hub.isActive
-                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
-                                : "border-border bg-muted/30 text-muted-foreground",
-                            )}
-                          >
-                            {ov.hub.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">All locations in scope</span>
-                      )}
-                    </div>
-                  </div>
-                  {ov.hub?.description ? (
-                    <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
-                      {ov.hub.description}
-                    </p>
-                  ) : null}
-                </header>
+              <section className={cn(outline, "overflow-hidden")} aria-label="Metrics">
+                <div className="border-b border-border px-4 py-3">
+                  <SectionLabel>Metrics</SectionLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Detail:{" "}
+                    <Link href={d.inventory} className="underline underline-offset-2">
+                      Inventory
+                    </Link>
+                    ,{" "}
+                    <Link href={d.commerce} className="underline underline-offset-2">
+                      Commerce
+                    </Link>
+                    ,{" "}
+                    <Link href={d.activity} className="underline underline-offset-2">
+                      Activity
+                    </Link>
+                    .
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-3">
+                  <StatCell label="Total books" value={ov.metrics.totalBooks} />
+                  <StatCell label="Available" value={ov.metrics.available} />
+                  <StatCell label="Checked out" value={ov.metrics.checkedOut} />
+                  <StatCell label="Reserved" value={ov.metrics.reserved} />
+                  <StatCell
+                    label="Active requests"
+                    value={ov.metrics.activeRequests}
+                    sub={`${ov.metrics.pendingRequests} need action`}
+                  />
+                  <StatCell
+                    label="Transactions"
+                    value={ov.metrics.transactionsToday}
+                    sub={`${rangeLabel}: ${ov.metrics.transactionsInRange}`}
+                  />
+                </div>
+              </section>
+            </>
+          ) : (
+            <p className={cn(outline, "px-4 py-3 text-sm text-muted-foreground")}>
+              Executive analytics did not load. Refresh the page or update the API.
+            </p>
+          )}
 
-                <section aria-label="Desk shortcuts">
-                  <SectionLabel>Jump in</SectionLabel>
-                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
-                    <DeskQuickLink
-                      href={d.requests}
-                      title="Requests"
-                      hint="Lifecycle & next steps"
-                      icon={ClipboardList}
-                    />
-                    <DeskQuickLink
-                      href={d.inventory}
-                      title="Inventory"
-                      hint="Availability · assignments"
-                      icon={Package}
-                    />
-                    <DeskQuickLink
-                      href={d.catalog}
-                      title="Catalog"
-                      hint="Browse & acquire"
-                      icon={BookOpen}
-                    />
-                    <DeskQuickLink
-                      href={d.activity}
-                      title="Activity"
-                      hint="Loans & requests"
-                      icon={History}
-                    />
-                    <DeskQuickLink
-                      href={d.commerce}
-                      title="Commerce"
-                      hint="Hub ledger"
-                      icon={Wallet}
-                    />
-                  </div>
-                </section>
-                <section className={cn(outline, "px-4 py-3")} aria-label="What to do next">
-                  <SectionLabel>What to do next</SectionLabel>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    {ov.metrics.pendingRequests > 0 ? (
-                      <Link
-                        href={d.requests}
-                        className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
-                      >
-                        Pending requests need action ({ov.metrics.pendingRequests}) → Open Requests
-                      </Link>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Request queue is healthy.</p>
-                    )}
-                    {ov.metrics.totalBooks === 0 ? (
-                      <Link
-                        href={d.inventory}
-                        className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
-                      >
-                        No inventory yet → Open Inventory
-                      </Link>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Inventory is populated.</p>
-                    )}
-                  </div>
-                </section>
-
-                <section className={cn(outline, "overflow-hidden")} aria-label="Metrics">
-                  <div className="border-b border-border px-4 py-3">
-                    <SectionLabel>Metrics</SectionLabel>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Detail:{" "}
-                      <Link href={d.inventory} className="underline underline-offset-2">
-                        Inventory
-                      </Link>
-                      ,{" "}
-                      <Link href={d.commerce} className="underline underline-offset-2">
-                        Commerce
-                      </Link>
-                      ,{" "}
-                      <Link href={d.activity} className="underline underline-offset-2">
-                        Activity
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-3">
-                    <StatCell label="Total books" value={ov.metrics.totalBooks} />
-                    <StatCell label="Available" value={ov.metrics.available} />
-                    <StatCell label="Checked out" value={ov.metrics.checkedOut} />
-                    <StatCell label="Reserved" value={ov.metrics.reserved} />
-                    <StatCell
-                      label="Active requests"
-                      value={ov.metrics.activeRequests}
-                      sub={`${ov.metrics.pendingRequests} need action`}
-                    />
-                    <StatCell
-                      label="Transactions"
-                      value={ov.metrics.transactionsToday}
-                      sub={`${rangeLabel}: ${ov.metrics.transactionsInRange}`}
-                    />
-                  </div>
-                </section>
-              </>
-            ) : (
-              <p className={cn(outline, "px-4 py-3 text-sm text-muted-foreground")}>
-                Executive analytics did not load. Refresh the page or update the API.
+          <section className={cn(outline, "overflow-hidden")}>
+            <div className="border-b border-border px-4 py-3">
+              <SectionLabel>Request pipeline</SectionLabel>
+              <p className="mt-1 text-xs text-muted-foreground">
+                By stage.{" "}
+                <Link href={d.requests} className="underline underline-offset-2">
+                  Open requests
+                </Link>
               </p>
-            )}
+            </div>
+            <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-4 lg:grid-cols-7">
+              {REQUEST_KEYS.map((key) => (
+                <div key={key} className="p-3 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
+                    {pipelineBarLabel(key)}
+                  </p>
+                  <p className="mt-1 font-mono text-base tabular-nums text-foreground">
+                    {ov.requestBreakdown[key] ?? 0}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-            <section className={cn(outline, "overflow-hidden")}>
-              <div className="border-b border-border px-4 py-3">
-                <SectionLabel>Request pipeline</SectionLabel>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  By stage.{" "}
-                  <Link href={d.requests} className="underline underline-offset-2">
-                    Open requests
-                  </Link>
-                </p>
-              </div>
-              <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-4 lg:grid-cols-7">
-                {REQUEST_KEYS.map((key) => (
-                  <div key={key} className="p-3 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
-                      {pipelineBarLabel(key)}
-                    </p>
-                    <p className="mt-1 font-mono text-base tabular-nums text-foreground">
-                      {ov.requestBreakdown[key] ?? 0}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {!isSuperAdmin ? (
+          {!isSuperAdmin ? (
             <section className={cn(outline, "overflow-hidden")}>
               <div className="border-b border-border px-4 py-3">
                 <SectionLabel>Alerts</SectionLabel>
@@ -819,7 +818,7 @@ export default function HubOverviewPage() {
                           className={cn(
                             "shrink-0 text-[10px] font-semibold uppercase tracking-wide",
                             (a.severity ?? "warning") === "critical" &&
-                              "border-destructive/50 text-destructive",
+                            "border-destructive/50 text-destructive",
                             a.severity === "warning" && "border-amber-500/50 text-amber-800 dark:text-amber-200/90",
                             a.severity === "info" && "text-muted-foreground",
                           )}
@@ -836,63 +835,63 @@ export default function HubOverviewPage() {
                 )}
               </ul>
             </section>
-            ) : null}
+          ) : null}
 
-            {ov.topRequestedTitles && ov.topRequestedTitles.length > 0 ? (
-              <section className={cn(outline, "overflow-hidden")} aria-label="Top requested titles">
-                <div className="border-b border-border px-4 py-3">
-                  <SectionLabel>Top requested titles</SectionLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    By volume in {rangeLabel.toLowerCase()}. Fulfilment is tracked on{" "}
-                    <Link href={d.requests} className="underline underline-offset-2">
-                      Book requests
-                    </Link>
-                    .
-                  </p>
-                </div>
-                <ul className="divide-y divide-border">
-                  {ov.topRequestedTitles.map((t) => (
-                    <li
-                      key={t.title}
-                      className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
-                    >
-                      <span className="min-w-0 text-foreground">{t.title}</span>
-                      <span className="shrink-0 font-mono tabular-nums text-muted-foreground">{t.count}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
+          {ov.topRequestedTitles && ov.topRequestedTitles.length > 0 ? (
+            <section className={cn(outline, "overflow-hidden")} aria-label="Top requested titles">
+              <div className="border-b border-border px-4 py-3">
+                <SectionLabel>Top requested titles</SectionLabel>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  By volume in {rangeLabel.toLowerCase()}. Fulfilment is tracked on{" "}
+                  <Link href={d.requests} className="underline underline-offset-2">
+                    Book requests
+                  </Link>
+                  .
+                </p>
+              </div>
+              <ul className="divide-y divide-border">
+                {ov.topRequestedTitles.map((t) => (
+                  <li
+                    key={t.title}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
+                  >
+                    <span className="min-w-0 text-foreground">{t.title}</span>
+                    <span className="shrink-0 font-mono tabular-nums text-muted-foreground">{t.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-            {ov.inventory.lowAvailability.length > 0 ? (
-              <section className={cn(outline, "overflow-hidden")} aria-label="Low on-shelf buffer">
-                <div className="border-b border-border px-4 py-3">
-                  <SectionLabel>Low on-shelf buffer</SectionLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Only one <span className="text-foreground">available</span> copy for this title at this
-                    location. Expand in{" "}
-                    <Link href={d.inventory} className="underline underline-offset-2">
-                      All copies
-                    </Link>
-                    .
-                  </p>
-                </div>
-                <ul className="max-h-60 divide-y divide-border overflow-y-auto">
-                  {ov.inventory.lowAvailability.slice(0, 20).map((b) => (
-                    <li key={b.id} className="px-4 py-2.5 text-sm">
-                      <span className="text-foreground">{b.title}</span>
-                      {hubNameInScope(b.hubId, hubsQ.data?.hubs) ? (
-                        <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                          {hubNameInScope(b.hubId, hubsQ.data?.hubs)}
-                        </span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-          </div>
-        ) : null}
+          {ov.inventory.lowAvailability.length > 0 ? (
+            <section className={cn(outline, "overflow-hidden")} aria-label="Low on-shelf buffer">
+              <div className="border-b border-border px-4 py-3">
+                <SectionLabel>Low on-shelf buffer</SectionLabel>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Only one <span className="text-foreground">available</span> copy for this title at this
+                  location. Expand in{" "}
+                  <Link href={d.inventory} className="underline underline-offset-2">
+                    All copies
+                  </Link>
+                  .
+                </p>
+              </div>
+              <ul className="max-h-60 divide-y divide-border overflow-y-auto">
+                {ov.inventory.lowAvailability.slice(0, 20).map((b) => (
+                  <li key={b.id} className="px-4 py-2.5 text-sm">
+                    <span className="text-foreground">{b.title}</span>
+                    {hubNameInScope(b.hubId, hubsQ.data?.hubs) ? (
+                      <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                        {hubNameInScope(b.hubId, hubsQ.data?.hubs)}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
