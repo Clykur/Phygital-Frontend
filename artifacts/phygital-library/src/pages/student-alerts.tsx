@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch } from "@/lib/api";
-import { userFacingErrorMessage } from "@/lib/error-messages";
+import { apiFetch, ApiError } from "@/lib/api";
 import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -187,7 +186,7 @@ export default function StudentAlertsPage() {
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : notifQ.isError ? (
                 <p className="text-sm text-destructive">
-                  {userFacingErrorMessage(notifQ.error)}
+                  {notifQ.error instanceof ApiError ? notifQ.error.message : "Could not load notifications."}
                 </p>
               ) : notifications.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -208,7 +207,40 @@ export default function StudentAlertsPage() {
                         <p className="mb-2 pl-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                           {bucket.label}
                         </p>
-                        <Table className="w-full table-fixed">
+
+                        {/* Mobile: card list */}
+                        <div className="space-y-2 sm:hidden">
+                          {bucket.rows.map((n) => {
+                            const nav = resolveAlertNav(n, portalPaths.activity, portalPaths.borrow);
+                            return (
+                              <div
+                                key={n.id}
+                                className={cn(
+                                  "rounded-lg border border-border bg-card/60 p-3 text-sm",
+                                  !n.readAt && "border-amber-500/30 bg-amber-500/5",
+                                )}
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <FlatStatus label={fmtKindLabel(n.kind)} />
+                                  {n.createdAt && (
+                                    <span className="text-[10px] text-muted-foreground">
+                                      {fmtDateShort(n.createdAt)}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="mt-2 leading-relaxed text-foreground">{n.body}</p>
+                                <Link href={nav.href} className="mt-2 block">
+                                  <span className="inline-flex h-8 items-center rounded-md border border-border bg-muted/30 px-3 text-xs font-medium text-foreground">
+                                    Take action
+                                  </span>
+                                </Link>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Desktop: table */}
+                        <Table className="hidden w-full table-fixed sm:table">
                           <TableHeader>
                             <TableRow className="border-border/50 hover:bg-transparent">
                               <TableHead className="w-[18%] pl-5">When</TableHead>
