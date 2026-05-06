@@ -24,21 +24,21 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 
 export type CheckoutFlowItem =
   | {
-      kind: "hub";
-      bookId: string;
-      title: string;
-      hubName: string;
-      buyPrice: number;
-      borrowPrice: number;
-    }
+    kind: "hub";
+    bookId: string;
+    title: string;
+    hubName: string;
+    buyPrice: number;
+    borrowPrice: number;
+  }
   | {
-      kind: "p2p";
-      listingId: string;
-      title: string;
-      hubName: string | null;
-      buyPrice: number;
-      borrowPrice: number;
-    };
+    kind: "p2p";
+    listingId: string;
+    title: string;
+    hubName: string | null;
+    buyPrice: number;
+    borrowPrice: number;
+  };
 
 type Step = "details" | "payment" | "success";
 
@@ -97,9 +97,9 @@ export function CheckoutFlowDialog({
   const shelfAcquireBody =
     mode === "buy" && deskAcquireHubs?.length
       ? {
-          acquireForHubId:
-            deskAcquireHubs.length === 1 ? deskAcquireHubs[0]!.id : acquireHubId,
-        }
+        acquireForHubId:
+          deskAcquireHubs.length === 1 ? deskAcquireHubs[0]!.id : acquireHubId,
+      }
       : null;
 
   const runPayment = async () => {
@@ -177,12 +177,12 @@ export function CheckoutFlowDialog({
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
                       mode === "borrow"
-                        ? "border-amber-500/60 bg-amber-500/10"
+                        ? "border-primary/90 bg-primary/30"
                         : "border-border/80 hover:bg-muted/40",
                     )}
                   >
                     <span className="font-medium">Borrow</span>
-                    <span className="tabular-nums text-amber-700 dark:text-amber-300">
+                    <span className="tabular-nums text-blue-600 dark:text-blue-500">
                       {fmtInr(item.borrowPrice)}
                     </span>
                   </button>
@@ -192,12 +192,12 @@ export function CheckoutFlowDialog({
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
                       mode === "buy"
-                        ? "border-amber-500/60 bg-amber-500/10"
+                        ? "border-primary/90 bg-primary/30"
                         : "border-border/80 hover:bg-muted/40",
                     )}
                   >
                     <span className="font-medium">Buy</span>
-                    <span className="tabular-nums text-amber-700 dark:text-amber-300">
+                    <span className="tabular-nums text-blue-600 dark:text-blue-500">
                       {fmtInr(item.buyPrice)}
                     </span>
                   </button>
@@ -235,7 +235,7 @@ export function CheckoutFlowDialog({
                   </p>
                 ))}
               <Button
-                className="h-11 w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
+                className="h-11 w-full rounded-none bg-primary/90 text-slate-950 hover:bg-primary-400"
                 onClick={() => setStep("payment")}
               >
                 Continue to payment

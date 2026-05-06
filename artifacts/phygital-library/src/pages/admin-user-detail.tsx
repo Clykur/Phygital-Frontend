@@ -8,7 +8,7 @@ import { userFacingErrorMessage } from "@/lib/error-messages";
 import { adminHubPath, ADMIN_USERS_PATH, hubOverviewPathForUser } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import {
   Table,
   TableBody,
@@ -268,21 +268,21 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Base role</p>
-              <Badge variant="outline" className="mt-1 rounded-md px-3 py-1 text-xs font-normal">
+              <span className={cn(uniformBadgeShape, getStatusColorClasses("approved"), "mt-1 font-normal")}>
                 {baseRoleLabel(user.baseRole)}
-              </Badge>
+              </span>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Account status</p>
-              <Badge
-                variant={user.accountStatus === "active" ? "default" : "secondary"}
+              <span
                 className={cn(
-                  "mt-1 rounded-md px-3 py-1 text-xs font-normal",
-                  user.accountStatus === "deactivated" ? "bg-destructive/15 text-destructive" : "",
+                  uniformBadgeShape,
+                  getStatusColorClasses(user.accountStatus === "active" ? "available" : user.accountStatus === "deactivated" ? "rejected" : "set aside"),
+                  "mt-1 font-normal"
                 )}
               >
                 {accountStatusLabel(user.accountStatus)}
-              </Badge>
+              </span>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Created</p>
@@ -315,9 +315,9 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{m.hubKind || "other"}</TableCell>
                       <TableCell className="pr-4 sm:pr-6">
-                        <Badge variant="outline" className="rounded-md px-3 py-1 text-xs font-normal">
+                        <span className={cn(uniformBadgeShape, getStatusColorClasses("approved"), "font-normal")}>
                           {hubMembershipRoleLabel(m.role)}
-                        </Badge>
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -419,12 +419,11 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
                       </TableCell>
                       <TableCell>{r.hubName}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={r.status === "active" ? "default" : "outline"}
-                          className="rounded-md px-3 py-1 text-xs font-normal"
+                        <span
+                          className={cn(uniformBadgeShape, getStatusColorClasses(r.status === "active" ? "checked out" : "cancelled"), "font-normal")}
                         >
                           {r.status === "active" ? "Active" : "Returned"}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell>{fmtDate(r.borrowedAt)}</TableCell>
                       <TableCell className="pr-4 sm:pr-6">
