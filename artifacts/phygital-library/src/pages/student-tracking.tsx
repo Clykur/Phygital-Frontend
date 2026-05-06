@@ -478,7 +478,7 @@ export default function StudentTrackingPage() {
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
-            {hubDesk ? "Hub portal" : "Neeve"}
+            {user?.baseRole === "super_admin" ? "Super admin" : hubDesk ? "Hub portal" : "Student"}
           </p>
           <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
             Activity
@@ -969,16 +969,16 @@ export default function StudentTrackingPage() {
                 Start with one of these actions.
               </p>
               <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
-                <Button size="sm" className="w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400 sm:w-auto" asChild>
+                <Button size="sm" className="w-full rounded-none bg-primary/90 text-slate-950 sm:w-auto" asChild>
                   <Link href={portalPaths.borrow}>Borrow a book</Link>
                 </Button>
-                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
+                <Button size="sm" variant="outline" className="w-full rounded-none sm:w-auto" asChild>
                   <Link href={portalPaths.sell}>Buy from a peer</Link>
                 </Button>
-                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
+                <Button size="sm" variant="outline" className="w-full rounded-none sm:w-auto" asChild>
                   <Link href={`${portalPaths.borrow}?request=1`}>Request a title</Link>
                 </Button>
-                <Button size="sm" variant="outline" className="w-full rounded-full sm:w-auto" asChild>
+                <Button size="sm" variant="outline" className="w-full rounded-none sm:w-auto" asChild>
                   <Link href={portalPaths.sell}>List a book</Link>
                 </Button>
               </div>

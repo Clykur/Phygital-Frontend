@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, MapPin, Search, ArrowRight, Sparkles, CheckCircle2, RefreshCw } from "lucide-react";
 import studentHub from "@/assets/images/student-hub.png";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -114,9 +116,9 @@ export default function Student() {
                           <div className="w-12 h-14 bg-slate-900 rounded-sm flex items-center justify-center shadow-md">
                             <BookOpen className="w-5 h-5 text-slate-50" />
                           </div>
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 px-3 py-1 font-medium">
+                          <span className={cn(uniformBadgeShape, getStatusColorClasses("set aside"))}>
                             Due in {book.due}
-                          </Badge>
+                          </span>
                         </div>
                         
                         <h3 className="font-serif font-medium text-xl mb-1 line-clamp-1 relative z-10">{book.title}</h3>
@@ -188,9 +190,9 @@ export default function Student() {
                       </div>
                       <div className="flex items-center gap-4">
                         {book.available ? (
-                          <Badge variant="outline" className="hidden sm:inline-flex bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">Available</Badge>
+                          <span className={cn(uniformBadgeShape, getStatusColorClasses("available"), "hidden sm:inline-flex")}>Available</span>
                         ) : (
-                          <Badge variant="outline" className="hidden sm:inline-flex bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">Checked Out</Badge>
+                          <span className={cn(uniformBadgeShape, getStatusColorClasses("checked out"), "hidden sm:inline-flex")}>Checked Out</span>
                         )}
                         <Button 
                           size="sm" 

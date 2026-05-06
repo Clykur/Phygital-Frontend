@@ -10,7 +10,7 @@ import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import {
   Select,
   SelectContent,
@@ -247,9 +247,9 @@ function AdminHubsContent() {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{h.location}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-normal">
+                          <span className={cn(uniformBadgeShape, getStatusColorClasses("approved"), "font-normal")}>
                             {hubKindLabel(h.kind)}
-                          </Badge>
+                          </span>
                         </TableCell>
                         <TableCell className="tabular-nums text-muted-foreground">{h.memberCount}</TableCell>
                         <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
@@ -266,9 +266,9 @@ function AdminHubsContent() {
                               : "Normal"}
                         </TableCell>
                         <TableCell className="pr-4 sm:pr-6">
-                          <Badge variant={h.isActive ? "default" : "secondary"}>
+                          <span className={cn(uniformBadgeShape, getStatusColorClasses(h.isActive ? "available" : "cancelled"))}>
                             {h.isActive ? "Active" : "Off"}
-                          </Badge>
+                          </span>
                         </TableCell>
                       </TableRow>
                     ))}

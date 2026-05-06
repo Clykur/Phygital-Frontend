@@ -15,7 +15,7 @@ import {
 } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -279,9 +279,9 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Kind</p>
-              <Badge variant="outline" className="mt-1 rounded-md px-3 py-1 text-xs font-medium">
+              <span className={cn(uniformBadgeShape, getStatusColorClasses("approved"), "mt-1 font-medium")}>
                 {hubKindLabel(hub.kind)}
-              </Badge>
+              </span>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Location</p>
@@ -289,17 +289,15 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Status</p>
-              <Badge
-                variant="outline"
+              <span
                 className={cn(
-                  "mt-1 rounded-md px-3 py-1 text-xs font-medium",
-                  hub.isActive
-                    ? "border-emerald-300/60 text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300"
-                    : "border-border text-muted-foreground",
+                  uniformBadgeShape,
+                  getStatusColorClasses(hub.isActive ? "available" : "cancelled"),
+                  "mt-1 font-medium"
                 )}
               >
                 {hub.isActive ? "Active" : "Disabled"}
-              </Badge>
+              </span>
             </div>
             {hub.capacity != null ? (
               <div>
@@ -336,9 +334,9 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
                     <p className="truncate text-xs text-muted-foreground">{m.email}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-normal">
+                    <span className={cn(uniformBadgeShape, getStatusColorClasses("approved"), "font-normal")}>
                       {hubMembershipRoleLabel(m.role)}
-                    </Badge>
+                    </span>
                     <Button variant="ghost" size="sm" className="h-8 rounded-md" asChild>
                       <Link href={adminUserPath(m.userId)}>Open user</Link>
                     </Button>
@@ -386,9 +384,9 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
                         <CoverCell title={r.title} url={r.coverImageUrl} />
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="font-normal">
+                        <span className={cn(uniformBadgeShape, getStatusColorClasses(r.status.toLowerCase() === "available" ? "available" : r.status.toLowerCase() === "checked_out" ? "checked out" : "set aside"), "font-normal")}>
                           {r.status.replace(/_/g, " ")}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {r.source === "hub_inventory" ? "Hub owned" : r.source}
@@ -425,9 +423,9 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{r.borrowerMasked}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="rounded-md px-3 py-1 text-xs font-medium">
+                        <span className={cn(uniformBadgeShape, getStatusColorClasses(r.status.toLowerCase() === "active" || r.status.toLowerCase() === "checked_out" ? "checked out" : r.status.toLowerCase() === "overdue" ? "overdue" : "available"), "font-medium")}>
                           {r.status.replace(/_/g, " ")}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="pr-4 sm:pr-6">{fmtDate(r.dueAt)}</TableCell>
                     </TableRow>

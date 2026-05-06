@@ -159,7 +159,6 @@ export function CatalogBookCard({
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         STUDENT_CARD_SURFACE,
-        sharpCover && "!rounded-none",
         "group relative",
         sharpCover ? "w-full" : "h-full",
       )}
@@ -246,13 +245,6 @@ export function CatalogBookCard({
           </div>
         </div>
       </div>
-
-      {/* Mobile action strip — always visible on touch devices */}
-      <div className="flex w-full flex-col p-4 md:hidden">
-        <p className="truncate font-serif text-lg font-bold leading-snug text-foreground">{title}</p>
-        <p className="mt-1 truncate text-sm text-muted-foreground">{hubName}</p>
-        <div className="mt-3 w-full space-y-2">{action}</div>
-      </div>
     </motion.article>
   );
 }
@@ -307,7 +299,6 @@ export function PeerListingCard({
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         STUDENT_CARD_SURFACE,
-        sharpCover && "!rounded-none",
         "group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         sharpCover ? "w-full" : "h-full",
       )}
@@ -521,7 +512,7 @@ export default function LibraryPage() {
         >
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-600/90">
-              {inShell ? "Borrow" : "Catalog"}
+              {user?.baseRole === "super_admin" ? "Super admin" : inShell ? "Student" : "Catalog"}
             </p>
             <h1 className="mt-3 font-serif text-4xl font-light tracking-tight md:text-[2.75rem]">
               {inShell ? "Books at your hub" : "Campus copies"}
@@ -892,6 +883,9 @@ export function RequestBookSection({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-600">
+            Neeve
+          </p>
           <DialogTitle className="font-serif">Request via Hub</DialogTitle>
           <DialogDescription>
             Premium only. The hub desk routes this request; you’ll see status updates under My
@@ -994,7 +988,7 @@ export function RequestBookSection({
           )}
           <Button
             type="submit"
-            className="w-full rounded-full"
+            className="w-full rounded-none"
             disabled={
               !isPremiumOk(user) || !hubId || hubs.length === 0 || !bookTitle.trim()
             }

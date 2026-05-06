@@ -10,7 +10,7 @@ import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import {
   Select,
   SelectContent,
@@ -240,9 +240,19 @@ function AdminUsersContent() {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-normal">
+                          <span
+                            className={cn(
+                              uniformBadgeShape,
+                              "font-normal",
+                              u.baseRole === "super_admin"
+                                ? "border border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300"
+                                : u.baseRole === "hub"
+                                  ? "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300"
+                                  : "border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300",
+                            )}
+                          >
                             {baseRoleLabel(u.baseRole)}
-                          </Badge>
+                          </span>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {(u.accountStatus ?? "active") === "held"
