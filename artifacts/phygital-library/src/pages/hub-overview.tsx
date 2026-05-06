@@ -14,7 +14,7 @@ import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { hubKindLabel } from "@/lib/hub-display";
-import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
+import { PORTAL_INLINE_LINK, PORTAL_KICKER_COLOR, PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { portalPathsForUser } from "@/lib/app-paths";
 import {
   BookOpen,
@@ -382,7 +382,7 @@ export default function HubOverviewPage() {
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                "text-amber-600/90 dark:text-amber-400/90",
+                PORTAL_KICKER_COLOR,
               )}
             >
               {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -702,20 +702,14 @@ export default function HubOverviewPage() {
                 <SectionLabel>What to do next</SectionLabel>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {ov.metrics.pendingRequests > 0 ? (
-                    <Link
-                      href={d.requests}
-                      className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
-                    >
+                    <Link href={d.requests} className={cn("text-sm", PORTAL_INLINE_LINK)}>
                       Pending requests need action ({ov.metrics.pendingRequests}) → Open Requests
                     </Link>
                   ) : (
                     <p className="text-sm text-muted-foreground">Request queue is healthy.</p>
                   )}
                   {ov.metrics.totalBooks === 0 ? (
-                    <Link
-                      href={d.inventory}
-                      className="text-sm text-amber-800 underline-offset-2 hover:underline dark:text-amber-200"
-                    >
+                    <Link href={d.inventory} className={cn("text-sm", PORTAL_INLINE_LINK)}>
                       No inventory yet → Open Inventory
                     </Link>
                   ) : (
@@ -818,8 +812,9 @@ export default function HubOverviewPage() {
                           className={cn(
                             "shrink-0 text-[10px] font-semibold uppercase tracking-wide",
                             (a.severity ?? "warning") === "critical" &&
-                            "border-destructive/50 text-destructive",
-                            a.severity === "warning" && "border-amber-500/50 text-amber-800 dark:text-amber-200/90",
+                              "border-destructive/50 text-destructive",
+                            a.severity === "warning" &&
+                              "border-accent/40 bg-accent/5 text-foreground dark:bg-accent/10",
                             a.severity === "info" && "text-muted-foreground",
                           )}
                         >

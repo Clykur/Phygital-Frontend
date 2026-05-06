@@ -1,5 +1,16 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Uppercase kicker (Hub portal / Neeve / student) — same slate as marketing `home-kicker` and profile pages.
+ * Use with `text-[10px] font-semibold uppercase tracking-[0.35em]` or `tracking-[0.22em]`.
+ */
+export const PORTAL_KICKER_COLOR = "text-[#64748B] dark:text-slate-400";
+
+/** Inline text link in portal copy — primary blue, not amber. */
+export const PORTAL_INLINE_LINK = cn(
+  "font-medium text-primary underline-offset-2 hover:underline",
+);
+
 /** Shared horizontal rhythm for hub desk, student shell, and public portal pages. */
 export const PORTAL_PAGE_GUTTER_X = "px-4 sm:px-6 lg:px-8";
 

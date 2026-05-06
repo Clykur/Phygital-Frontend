@@ -15,7 +15,7 @@ import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError, apiPublicUrl } from "@/lib/api";
 import { portalPathsForUser } from "@/lib/app-paths";
-import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
+import { PORTAL_INLINE_LINK, PORTAL_KICKER_COLOR, PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
 import { p2pShelfStatusRank } from "@/lib/catalog-sort";
 import { shelfFilterChipOnDarkClass } from "@/lib/status-badges";
@@ -165,7 +165,7 @@ export default function HubDeskP2pListingsPage() {
           <p
             className={cn(
               "text-[10px] font-semibold uppercase tracking-[0.35em]",
-              "text-amber-600/90 dark:text-amber-400/90",
+              PORTAL_KICKER_COLOR,
             )}
           >
             {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -175,10 +175,7 @@ export default function HubDeskP2pListingsPage() {
             Peer <span className="font-semibold text-foreground">listings that do not have a physical copy yet</span>{" "}
             (pipeline only, e.g. listed, awaiting drop-off). This is <span className="italic">not</span> on-shelf
             inventory. For physically verifiable stock, use{" "}
-            <Link
-              href={p.inventory}
-              className="font-medium text-amber-700 underline-offset-2 hover:underline dark:text-amber-400"
-            >
+            <Link href={p.inventory} className={PORTAL_INLINE_LINK}>
               All copies
             </Link>
             . Typical path: <span className="font-mono text-[10px]">listed</span> →
@@ -323,7 +320,7 @@ export default function HubDeskP2pListingsPage() {
                     action={
                       canManage ? (
                         <div className="space-y-2 text-left">
-                          <p className="text-xs font-medium leading-snug text-amber-200/95">
+                          <p className="text-xs font-medium leading-snug text-blue-100">
                             Action required
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
@@ -358,7 +355,7 @@ export default function HubDeskP2pListingsPage() {
                         </div>
                       ) : (
                         <div className="space-y-2 text-left text-xs text-white/90">
-                          <p className="font-medium leading-snug text-amber-200/95">
+                          <p className="font-medium leading-snug text-blue-100">
                             Peer pipeline (no physical copy yet)
                           </p>
                           {l.type ? (

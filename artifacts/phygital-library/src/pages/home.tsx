@@ -1,540 +1,486 @@
-import { motion, useScroll, useTransform, animate } from "framer-motion";
-import { Link, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
+import { BookOpen, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/home/Container";
+import { Section } from "@/components/home/Section";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { motion, useReducedMotion } from "framer-motion";
 
-import { useEffect, useRef, useState } from "react";
-import { apiFetch } from "@/lib/api";
-import {
-  MapPin,
-  RefreshCw,
-  Smartphone,
-  Users,
-  ArrowRight,
-  Wallet,
-  Search,
-  Zap,
-  Recycle,
-} from "lucide-react";
+import heroImage from "@/assets/images/hero.png";
+import aerialShelf from "@/assets/images/aerial-shelf.png";
+import studentHub from "@/assets/images/student-hub.png";
 import libraryDusk from "@/assets/images/library-dusk.png";
-import booksGlow from "@/assets/images/books-glow.png";
-import constellation from "@/assets/images/constellation.png";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
-  },
-};
+const heroBackgroundImages = [
+  { src: heroImage, alt: "Library shelves at a partner hub" },
+  { src: aerialShelf, alt: "Organized stacks for borrowing and pickup" },
+  { src: studentHub, alt: "Students at a Neeve-enabled study hub" },
+  { src: libraryDusk, alt: "Reading and collaboration in a partner library" },
+];
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
+const heroStats = [
+  { label: "Readers", value: "Borrow, exchange, or buy at a hub" },
+  { label: "Partner colleges", value: "Upgraded space, zero capex" },
+  { label: "Network", value: "Route and fulfill locally" },
+];
 
-
-
-function Counter({
-  from,
-  to,
-  suffix = "",
-  prefix = "",
-  duration = 2,
-  className,
-}: {
-  from: number;
-  to: number;
-  suffix?: string;
-  prefix?: string;
-  duration?: number;
-  className?: string;
-}) {
-  const nodeRef = useRef<HTMLSpanElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (nodeRef.current) observer.observe(nodeRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!inView || !nodeRef.current) return;
-    const node = nodeRef.current;
-    const controls = animate(from, to, {
-      duration: duration,
-      ease: "easeOut",
-      onUpdate(value) {
-        node.textContent = prefix + Math.round(value).toLocaleString() + suffix;
-      }
-    });
-    return () => controls.stop();
-  }, [from, to, inView, duration, prefix, suffix]);
-
-  return (
-    <span ref={nodeRef} className={className}>
-      {prefix}
-      {from}
-      {suffix}
-    </span>
-  );
-}
+const viewportOnce = { once: true, margin: "-80px", amount: 0.2 } as const;
 
 export default function Home() {
-  const [, setLocation] = useLocation();
-  const catalogTeaser = useQuery({
-    queryKey: ["home", "catalog-teaser"],
-    queryFn: async () => {
-      const [b, h, p] = await Promise.all([
-        apiFetch<{ books: { id: string }[] }>("/api/catalog/books"),
-        apiFetch<{ hubs: { id: string }[] }>("/api/catalog/hubs"),
-        apiFetch<{ listings: { id: string }[] }>("/api/p2p/listings"),
-      ]);
-      return {
-        books: b.books.length,
-        hubs: h.hubs.length,
-        listings: p.listings.length,
-      };
+  const reduceMotion = useReducedMotion();
+  const [heroBgIndex, setHeroBgIndex] = useState(0);
+
+  useEffect(() => {
+    if (reduceMotion || heroBackgroundImages.length <= 1) return;
+    const id = window.setInterval(() => {
+      setHeroBgIndex((i) => (i + 1) % heroBackgroundImages.length);
+    }, 5500);
+    return () => window.clearInterval(id);
+  }, [reduceMotion]);
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: reduceMotion
+        ? { duration: 0 }
+        : { type: "spring" as const, stiffness: 380, damping: 30, mass: 0.85 },
     },
-    staleTime: 60_000,
-  });
-  const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  
+  };
+  const stagger = {
+    hidden: {},
+    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.05, delayChildren: reduceMotion ? 0 : 0.03 } },
+  };
+
+  const card = "home-interactive-card border border-border bg-white p-6";
+
   return (
-    <div className="flex flex-col w-full bg-background selection:bg-amber-500/30">
-      {/* Editorial Hero */}
-      <section className="relative min-h-[100dvh] flex items-center pt-24 overflow-hidden bg-slate-950 text-slate-50">
-        {/* Background Image with Parallax */}
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: heroY, opacity: heroOpacity }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-slate-950 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/50 to-transparent z-10" />
-          <img src={libraryDusk} alt="Modern Library at Dusk" className="w-full h-full object-cover" />
-        </motion.div>
-
-        {/* Ambient Glows */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-10">
-          <div className="absolute top-[-10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-amber-500/20 blur-[120px] mix-blend-screen animate-pulse" />
-          <div className="absolute top-[40%] right-[0%] w-[40%] h-[60%] rounded-full bg-blue-500/10 blur-[150px] mix-blend-screen" />
+    <div className="home-page w-full bg-background">
+      {/* Hero — full first screen only; navbar hidden until scroll (see Navbar) */}
+      <section className="relative min-h-[100dvh] overflow-hidden border-b border-border">
+        <div className="absolute inset-0 bg-[#0F172A]" aria-hidden>
+          {heroBackgroundImages.map((img, i) => (
+            <div
+              key={img.src}
+              className="absolute inset-0 bg-cover bg-center motion-safe:transition-opacity motion-safe:duration-[1400ms] motion-safe:ease-in-out"
+              style={{
+                backgroundImage: `url(${img.src})`,
+                opacity: reduceMotion ? (i === 0 ? 1 : 0) : i === heroBgIndex ? 1 : 0,
+              }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-[#0F172A]/82" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-20 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <motion.div 
-              initial="hidden" animate="visible" variants={staggerContainer}
-              className="lg:col-span-8 flex flex-col items-start"
-            >
-              <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl md:text-7xl lg:text-[85px] font-serif font-medium leading-[1.05] tracking-tight mb-8 mt-4">
-                Stop spending ₹10,000+ <br className="hidden md:block" />
-                every semester <br className="hidden md:block" />
-                on <span className="italic font-light text-amber-400">textbooks.</span>
+        <div className="relative z-10 flex min-h-[100dvh] flex-col justify-center">
+          <Container className="px-4 py-10 md:px-6 md:py-12">
+            <motion.div variants={stagger} initial="hidden" animate="visible" className="mx-auto max-w-3xl text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                Neeve · B2B2C library network
+              </p>
+              <motion.h1
+                variants={fadeUp}
+                className="mt-6 text-balance font-[var(--font-display)] text-[2rem] font-extrabold leading-[1.12] tracking-tight text-white sm:text-4xl md:text-[2.75rem] md:leading-[1.1]"
+              >
+                Affordable textbooks through a network of{" "}
+                <span className="border-b-2 border-[#F97316] pb-0.5 text-white">partner study hubs</span>, not another{" "}
+                <span className="text-primary">shipping-only marketplace</span>.
               </motion.h1>
-              
-              <motion.p variants={fadeInUp} className="text-lg md:text-xl text-slate-300 max-w-xl font-light leading-relaxed mb-10 border-l-2 border-amber-500/50 pl-6">
-                Borrow what you need, when you need it - right on campus. Find, reserve, and pick up textbooks from nearby campus hubs in minutes.
+              <motion.p variants={fadeUp} className="mt-6 text-base leading-[1.7] text-white/90 md:text-lg">
+                <span className="relative inline-block rounded-none bg-primary/35 px-1.5 py-0.5 font-semibold text-white ring-1 ring-primary/50">
+                  Neeve is infrastructure, not a university.
+                </span>{" "}
+                We upgrade underused library space inside partner colleges, run it as a hub, and connect every hub in{" "}
+                <span className="font-semibold text-[#F97316] underline decoration-[#F97316] decoration-2 underline-offset-4">
+                  one app
+                </span>{" "}
+                for borrowing, peer-to-peer exchanges, and retail pickup.
               </motion.p>
-              
-              <motion.div variants={fadeInUp} className="flex flex-col flex-wrap gap-4 sm:flex-row">
-              </motion.div>
-              {/* {catalogTeaser.data && (
-                <motion.p
-                  variants={fadeInUp}
-                  className="mt-8 max-w-xl text-sm leading-relaxed text-slate-400"
-                >
-                  <span className="text-slate-300">Live network: </span>
-                  <Link
-                    href="/library"
-                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
-                  >
-                    {catalogTeaser.data.books} titles
-                  </Link>
-                  <span className="text-slate-500"> · </span>
-                  <Link
-                    href="/library"
-                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
-                  >
-                    {catalogTeaser.data.hubs} hubs
-                  </Link>
-                  <span className="text-slate-500"> · </span>
-                  <Link
-                    href="/marketplace"
-                    className="text-amber-300/95 underline-offset-4 hover:text-amber-200 hover:underline"
-                  >
-                    {catalogTeaser.data.listings} peer listings
-                  </Link>
-                  <span className="text-slate-500"> no sign-in to browse.</span>
-                </motion.p>
-              )} */}
-            </motion.div>
-          </div>
-        </div>
 
-        {/* Shelf Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-      </section>
-
-      {/* Value Proposition */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-16">
-            <motion.h2 
-              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-              className="text-4xl md:text-5xl font-serif font-medium text-slate-900 leading-tight"
-            >
-              Save money. Skip the hassle.
-            </motion.h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 max-w-4xl mx-auto">
-            {[
-              { icon: Wallet, text: "Save up to ₹12,000 per semester" },
-              { icon: Search, text: "No more searching across libraries" },
-              { icon: Zap, text: "Get books near you, instantly" },
-              { icon: Recycle, text: "Help reuse books instead of buying new" },
-            ].map((item, i) => (
               <motion.div
-                key={i}
-                initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-                transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-4"
+                variants={stagger}
+                className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap"
               >
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-medium text-slate-700">{item.text}</h3>
+                <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                  <Button asChild className="w-full sm:w-auto">
+                    <Link href="/sign-in">Get started</Link>
+                  </Button>
+                </motion.div>
+                <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-white bg-transparent text-white hover:bg-white hover:text-foreground sm:w-auto"
+                  >
+                    <Link href="/marketplace">Browse marketplace</Link>
+                  </Button>
+                </motion.div>
+                <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="w-full text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                  >
+                    <Link href="/colleges">Partner with Neeve</Link>
+                  </Button>
+                </motion.div>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-medium text-slate-900 leading-tight">Get your textbook in under 5 minutes - here’s how:</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {/* Step 1: Discover */}
-            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-6">
-                <Smartphone className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-semibold text-slate-800 mb-3">1. Search Instantly</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Search for your textbook across all nearby campuses instantly.
-              </p>
-            </div>
-            {/* Step 2: Borrow */}
-            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-sky-100 text-sky-600 mb-6">
-                <MapPin className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-semibold text-slate-800 mb-3">2. Reserve & Pick Up</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Reserve the closest available copy and pick your campus hub.
-              </p>
-            </div>
-            {/* Step 3: Return */}
-            <div className="flex flex-col items-center p-8 border border-slate-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-6">
-                <RefreshCw className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-semibold text-slate-800 mb-3">3. Return Anywhere</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Return it at any hub - no stress, no deadlines pressure.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
-
-      {/* The Solution — bespoke atelier layout */}
-      <section className="relative py-28 md:py-40 overflow-hidden bg-[#06060a] text-[#ebe8e2]">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 opacity-[0.14]">
-            <img src={constellation} alt="" className="h-full w-full object-cover mix-blend-screen" />
-          </div>
-          <div
-            className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_10%_0%,rgba(201,162,39,0.14),transparent_55%),radial-gradient(ellipse_70%_50%_at_95%_60%,rgba(96,165,250,0.09),transparent_50%)]"
-            aria-hidden
-          />
-          <div
-            className="absolute inset-0 opacity-[0.4] bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[length:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"
-            aria-hidden
-          />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
-          <div className="mb-20 flex flex-col gap-10 lg:mb-28 lg:flex-row lg:items-end lg:justify-between">
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-xl"
-            >
-              <div className="mb-6 flex items-center gap-3">
-                <span className="h-px w-12 bg-gradient-to-r from-[#c9a227] to-transparent" />
-                <span className="text-[10px] font-medium uppercase tracking-[0.45em] text-[#c9a227]/90">
-                  The solution
-                </span>
-              </div>
-              <h2 className="font-serif text-[2.125rem] font-light leading-[1.12] tracking-[-0.02em] sm:text-5xl md:text-[3.25rem]">
-                One system that connects
-                <span className="mt-3 block font-serif text-[#c9a227] italic">
-                  all campus books into a single, searchable network.
-                </span>
-              </h2>
             </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-md border-l border-[#c9a227]/25 pl-6 text-[15px] leading-[1.75] text-[#9a968c] lg:max-w-sm lg:border-l-0 lg:border-r lg:pl-0 lg:pr-8 lg:text-right"
-            >
-              Phygital Library treats the app, the hub shelf, and the inter-campus catalog as one orchestrated layer so that
-              availability, routing, and pickup stay in sync.
+          </Container>
+        </div>
+      </section>
+
+      <section className="border-t border-border bg-background pt-16 pb-10 md:pb-12">
+        <Container>
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="text-center"
+          >
+            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6 md:gap-10">
+              {heroStats.map((chip) => (
+                <motion.div key={chip.label} variants={fadeUp} className="mx-auto max-w-xs sm:mx-0 sm:max-w-none">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">{chip.label}</p>
+                  <p className="mt-2 text-sm font-semibold leading-snug text-foreground md:text-base">{chip.value}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Problem */}
+      <section className="border-y border-border bg-white py-12 md:py-16">
+        <Container>
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+            <div className="grid grid-cols-1 gap-8 border border-border bg-background p-6 md:grid-cols-12 md:gap-10 md:p-8 lg:p-10">
+              <div className="md:col-span-4 md:border-r md:border-border md:pr-8">
+                <p className="home-kicker">THE PROBLEM</p>
+                <motion.h2 variants={fadeUp} className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                  Textbooks are expensive; library space is underused
+                </motion.h2>
+              </div>
+              <div className="md:col-span-8">
+                <motion.p variants={fadeUp} className="text-base leading-relaxed text-[#334155] md:pt-1 md:text-[1.05rem]">
+                  Students pay semester prices for books they only need for a few months, then struggle to resell safely. Colleges own the foot traffic but often cannot fund a full library refresh. Neeve addresses both sides with hubs plus software.
+                </motion.p>
+              </div>
+            </div>
+
+            <motion.div variants={stagger} className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+              <motion.article variants={fadeUp} className={`${card} md:p-8`}>
+                <div className="mb-4 h-1 w-12 bg-primary" aria-hidden />
+                <h3 className="text-lg font-semibold text-foreground">Readers</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[#64748B]">
+                  High prices and low trust in random online deals. People need predictable pickup, clear condition, and a local loop instead of courier roulette.
+                </p>
+              </motion.article>
+              <motion.article variants={fadeUp} className={`${card} md:p-8`}>
+                <div className="mb-4 h-1 w-12 bg-[#F97316]" aria-hidden />
+                <h3 className="text-lg font-semibold text-foreground">Institutions</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[#64748B]">
+                  Libraries should anchor study life, but capex is tight. A partner-led hub upgrade lifts the student experience without a massive capital project on day one.
+                </p>
+              </motion.article>
+            </motion.div>
+          </motion.div>
+        </Container>
+      </section>
+
+      {/* Model */}
+      <Section>
+        <Container>
+          <motion.header variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="max-w-2xl">
+            <p className="home-kicker">HOW NEEVE WORKS</p>
+            <motion.h2 variants={fadeUp} className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+              Hubs in colleges, one network in the app
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-[#334155]">
+              Each partner site is a physical node: shelving, desk handoff, and local inventory. The app is where discovery, routing, and membership live.
             </motion.p>
-          </div>
+          </motion.header>
 
-          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-12 lg:gap-4">
-            <div className="pointer-events-none absolute left-1/2 top-[18%] hidden h-[64%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#c9a227]/35 to-transparent lg:block" />
-
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
             {[
               {
-                step: "I",
-                title: "Search & Reserve Instantly",
-                subtitle: "Reserve from anywhere",
-                body: "Search once across the union catalog. Hold, renew, and see live ETAs without calling a desk.",
-                Icon: Smartphone,
-                span: "lg:col-span-4 lg:row-span-1 lg:translate-y-8",
-                glow: "from-amber-500/25",
-                rim: "from-amber-400/50 via-amber-500/10 to-transparent",
+                title: "Hub inside the college",
+                body: "We secure underused library space, upgrade it, and operate it as a node in the network. The college keeps its brand; students get a space that feels current.",
               },
               {
-                step: "II",
-                title: "Easy Pickup Points on Campus",
-                subtitle: "Physical custody, refined",
-                body: "Human-scale pickup rooms with calibrated lighting and QR handoff so that dignity is maintained in the last meter.",
-                Icon: MapPin,
-                span: "lg:col-span-4 lg:-translate-y-4",
-                glow: "from-sky-400/20",
-                rim: "from-sky-300/40 via-sky-500/10 to-transparent",
+                title: "Search and routing",
+                body: "Look up a title once. If it is not at your hub, the app checks nearby hubs before we fall back to central sourcing shipped to your pickup desk.",
               },
               {
-                step: "III",
-                title: "Shared Books Across Campuses",
-                subtitle: "Many shelves, one ledger",
-                body: "Pooling stock across partner campuses expands what any single library could ever hold alone.",
-                Icon: RefreshCw,
-                span: "lg:col-span-4 lg:translate-y-6",
-                glow: "from-emerald-400/18",
-                rim: "from-emerald-300/45 via-emerald-500/10 to-transparent",
+                title: "Ways to get the book",
+                body: "Premium membership for deeper borrowing, retail when you want to own, and P2P with desk-assisted handoff so exchanges stay local and accountable.",
               },
-            ].map((p, i) => (
-              <motion.article
-                key={p.step}
-                initial={{ opacity: 0, y: 36 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.75, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className={`group relative ${p.span}`}
+            ].map((c) => (
+              <motion.article key={c.title} variants={fadeUp} className={card}>
+                <h3 className="text-lg font-semibold text-foreground">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#64748B]">{c.body}</p>
+              </motion.article>
+            ))}
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* Pricing — balanced twin columns, shared header */}
+      <Section className="border-t border-border bg-white">
+        <Container>
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="overflow-hidden border border-border bg-[#F8FAFC]"
+          >
+            <div className="border-b border-border bg-white px-8 py-10 md:px-10 md:py-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Pricing</p>
+              <motion.h2
+                variants={fadeUp}
+                className="mt-3 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl"
               >
-                <div
-                  className={`rounded-[2px] bg-gradient-to-br ${p.rim} p-px shadow-[0_32px_64px_-32px_rgba(0,0,0,0.85)]`}
-                >
-                  <div className="relative overflow-hidden rounded-[1px] border border-white/[0.06] bg-[#0a0a0f]/95 p-8 backdrop-blur-md md:p-9">
-                  <div
-                    className={`pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-gradient-to-br ${p.glow} to-transparent blur-3xl transition-transform duration-700 group-hover:scale-110`}
-                  />
-                  <div className="relative flex items-start justify-between gap-6">
-                    <div>
-                      <p className="font-serif text-xs tracking-[0.35em] text-[#6b6860]">{p.step}</p>
-                      <h3 className="mt-4 font-serif text-2xl font-normal tracking-tight text-[#f4f1ea] md:text-[1.65rem]">
-                        {p.title}
-                      </h3>
-                      <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.28em] text-[#c9a227]/80">
-                        {p.subtitle}
-                      </p>
-                    </div>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-[#c9a227] transition-colors duration-500 group-hover:border-[#c9a227]/35 group-hover:text-[#e8d48b]">
-                      <p.Icon className="h-5 w-5" strokeWidth={1.25} />
-                    </div>
+                Membership and purchase paths
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base leading-relaxed text-[#334155]">
+                Premium is for readers who want predictable access across the network. Retail and P2P stay optional so you are not forced
+                into one shape of transaction.
+              </motion.p>
+            </div>
+            <div className="grid grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+              <motion.article variants={fadeUp} className="bg-white p-8 md:p-10">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Premium membership</p>
+                <p className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-[2rem]">
+                  ₹199
+                  <span className="text-lg font-semibold text-[#64748B]"> / month</span>
+                </p>
+                <p className="mt-2 inline-block border border-border bg-[#F8FAFC] px-2.5 py-1 text-xs font-medium text-[#475569]">
+                  or ₹999 / year
+                </p>
+                <p className="mt-6 text-sm leading-relaxed text-[#475569]">
+                  Borrow from premium inventory and use the peer-to-peer lane under clear membership rules.
+                </p>
+              </motion.article>
+              <motion.article variants={fadeUp} className="bg-[#FAFAF9] p-8 md:p-10">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9A3412]">Retail & peer-to-peer</p>
+                <p className="mt-4 font-[var(--font-display)] text-xl font-bold tracking-tight text-foreground md:text-2xl">
+                  Pay per title no subscription
+                </p>
+                <p className="mt-2 text-sm text-[#64748B]">Buy when you want to own; resell with a small platform fee.</p>
+                <p className="mt-6 text-sm leading-relaxed text-[#475569]">
+                  Desk pickup keeps money and books traceable, so exchanges stay local and accountable instead of anonymous meetups.
+                </p>
+              </motion.article>
+            </div>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* Moat */}
+      <Section className="border-t border-border bg-white">
+        <Container>
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10 md:items-start">
+            <motion.div variants={fadeUp}>
+              <p className="home-kicker">WHY HUBS MATTER</p>
+              <h2 className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                Placement and logistics compound together
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-[#334155]">
+                Every new hub shortens distance to pickup and strengthens trust. That is structurally different from a warehouse that only ships to hostels.
+              </p>
+            </motion.div>
+            <div className="flex flex-col gap-4 md:gap-5">
+              <motion.article variants={fadeUp} className={card}>
+                <h3 className="text-lg font-semibold text-foreground">On-campus presence</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#64748B]">
+                  Agreements anchor Neeve where students already study. That footprint is costly for pure e-commerce to copy city by city.
+                </p>
+              </motion.article>
+              <motion.article variants={fadeUp} className={card}>
+                <h3 className="text-lg font-semibold text-foreground">Hub-first fulfillment</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#64748B]">
+                  Inbound stock and peer drop-off consolidate at the desk, which cuts last-mile cost versus repeated door delivery in dense corridors.
+                </p>
+              </motion.article>
+            </div>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* Roadmap + impact (single panel) */}
+      <Section>
+        <Container>
+          <div className="border border-border bg-white p-6 md:p-8 lg:p-10">
+            <motion.header variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="max-w-2xl">
+              <p className="home-kicker">ROLL-OUT</p>
+              <motion.h2 variants={fadeUp} className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                One city, then a mesh
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-[#334155]">
+                We prove unit economics and reader conversion locally before copying playbooks. No noisy national launch without ops backing.
+              </motion.p>
+            </motion.header>
+
+            <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
+              {[
+                { title: "Phase 1", body: "Liquidity first: listings, exchanges, and reasons to visit the desk every week." },
+                { title: "Phase 2", body: "Add a small set of colleges once conversion and staffing meet internal bars." },
+                { title: "Phase 3", body: "Regional mesh: deeper catalog tools, institutional supply, and state-appropriate integrations." },
+              ].map((c) => (
+                <motion.article key={c.title} variants={fadeUp} className={`${card} bg-background`}>
+                  <h3 className="text-lg font-semibold text-foreground">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#64748B]">{c.body}</p>
+                </motion.article>
+              ))}
+            </motion.div>
+
+            <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="mt-8 border-t border-border pt-8">
+              <p className="text-xs font-semibold tracking-wide text-[#64748B]">EXPECTED IMPACT (ILLUSTRATIVE)</p>
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+                {[
+                  { k: "Pilot reach", v: "~3,000 students and ~500 local readers" },
+                  { k: "Year-one vision", v: "10 hubs, 25,000+ readers in the model" },
+                  { k: "Circular value", v: "Longer book life, less waste, lower out-of-pocket spend" },
+                ].map((row) => (
+                  <motion.div key={row.k} variants={fadeUp}>
+                    <p className="text-sm font-semibold text-foreground">{row.k}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#64748B]">{row.v}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Reader steps */}
+      <Section className="border-t border-border bg-white">
+        <Container>
+          <motion.header variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="max-w-2xl">
+            <p className="home-kicker">IN THE APP</p>
+            <motion.h2 variants={fadeUp} className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+              Four steps for readers
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-[#334155]">
+              Search, choose how to get the book, pick up at the hub, then return or relist when the term ends.
+            </motion.p>
+          </motion.header>
+
+          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+            {[
+              { title: "Find your title", body: "See local hub stock, nearby hubs, and peer listings in one search." },
+              { title: "Choose borrow, buy, or exchange", body: "Membership, retail, or P2P depending on what the network can offer for that copy." },
+              { title: "Pick up at the desk", body: "Staffed handoff instead of anonymous meetups." },
+              { title: "Close the loop", body: "Return on time, relist, or pass along so the next reader saves money." },
+            ].map((item, idx) => (
+              <motion.article key={item.title} variants={fadeUp} className={card}>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-primary bg-primary text-sm font-extrabold text-primary-foreground">
+                    {(idx + 1).toString().padStart(2, "0")}
                   </div>
-                  <p className="relative mt-8 text-[14px] leading-[1.75] text-[#9a968c]">{p.body}</p>
-                  <div className="relative mt-10 flex items-center gap-2 border-t border-white/[0.06] pt-6">
-                    <span className="h-1 w-1 rounded-full bg-[#c9a227]" />
-                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#6b6860]">Phygital Library stack</span>
-                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-[#64748B]">{item.body}</p>
                   </div>
                 </div>
               </motion.article>
             ))}
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* Features Bento */}
-      <section className="py-32">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <motion.div 
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-            className="mb-16"
-          >
-            <h2 className="text-4xl font-serif font-medium">Built for scale.</h2>
           </motion.div>
+        </Container>
+      </Section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="md:col-span-2 glass-card p-8 rounded-2xl bg-card flex flex-col justify-end min-h-[300px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-100 transition-opacity duration-500">
-                <RefreshCw className="w-24 h-24 text-primary" />
+      {/* Discoverability (compact) */}
+      <Section>
+        <Container>
+          <div className="border border-border border-l-4 border-l-primary bg-white p-6 md:p-8">
+            <p className="home-kicker">DISCOVERABILITY</p>
+            <h2 className="mt-4 font-[var(--font-display)] text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+              Built for how people search and how campuses actually operate
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#334155]">
+              If you are looking for textbook sharing in India, a campus library network, affordable textbooks, or a peer-to-peer book loop with desk pickup, Neeve is built around hubs, not only courier cartons.
+            </p>
+          </div>
+        </Container>
+      </Section>
+
+      {/* FAQ */}
+      <Section className="border-t border-border bg-white">
+        <Container>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
+            <motion.header variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce} className="md:col-span-4">
+              <p className="home-kicker">FAQ</p>
+              <motion.h2 variants={fadeUp} className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                Common questions
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 text-sm leading-relaxed text-[#334155]">
+                We publish what we can stand behind. No inflated proof.
+              </motion.p>
+            </motion.header>
+            <div className="md:col-span-8">
+              <div className="border border-border bg-white">
+                <Accordion type="single" collapsible className="px-4">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Is Neeve a college or a university?</AccordionTrigger>
+                    <AccordionContent className="text-[#64748B]">
+                      No. Neeve is a company that partners with colleges to run hubs and software. Your institution remains the institution.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>What do I pay as a reader?</AccordionTrigger>
+                    <AccordionContent className="text-[#64748B]">
+                      Premium is ₹199 per month or ₹999 per year where offered. You can also buy retail or use P2P flows; exact entitlements show in the app for your hub.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger>What if my book is not at my hub?</AccordionTrigger>
+                    <AccordionContent className="text-[#64748B]">
+                      The app checks other hubs first, then central sourcing to your nearest desk when needed, which usually beats repeated door-to-door shipping on cost.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-4">
+                    <AccordionTrigger>How do colleges partner?</AccordionTrigger>
+                    <AccordionContent className="text-[#64748B]">
+                      MoU, space audit, operational plan, then hub launch. We fund the upgrade so the college gets a modern touchpoint without a large balance-sheet project up front.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
-              <h3 className="text-2xl font-serif font-medium mb-3 relative z-10">Live Inventory Synced Across Campuses</h3>
-              <p className="text-muted-foreground max-w-md relative z-10">See real-time availability of books across all connected network hubs instantly.</p>
-            </motion.div>
-
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.1 }} className="md:col-span-1 glass-card p-8 rounded-2xl bg-card flex flex-col justify-end min-h-[300px]">
-              <Smartphone className="w-8 h-8 text-amber-600 mb-6" />
-              <h3 className="text-xl font-serif font-medium mb-3">QR Scanning</h3>
-              <p className="text-muted-foreground text-sm">Instant pickup and drop-off with a simple app scan.</p>
-            </motion.div>
-
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.2 }} className="md:col-span-1 glass-card p-8 rounded-2xl bg-card flex flex-col justify-end min-h-[300px]">
-              <Users className="w-8 h-8 text-blue-600 mb-6" />
-              <h3 className="text-xl font-serif font-medium mb-3">P2P Marketplace</h3>
-              <p className="text-muted-foreground text-sm">Buy or sell directly with peers safely.</p>
-            </motion.div>
-
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} transition={{ delay: 0.3 }} className="md:col-span-2 glass-card p-8 rounded-2xl bg-slate-900 text-slate-50 flex flex-col justify-end min-h-[300px] relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent z-10" />
-              <img src={libraryDusk} className="absolute inset-0 w-full h-full object-cover opacity-40 z-0 mix-blend-luminosity" alt="" />
-              <h3 className="text-2xl font-serif font-medium mb-3 relative z-20">Smart Routing Engine</h3>
-              <p className="text-slate-300 max-w-md relative z-20">Our algorithm automatically finds the nearest available copy and reserves it for your pickup window.</p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Impact — same language as hero metrics & runway */}
-      {/* Impact */}
-      <section className="relative border-y border-white/[0.06] bg-[#050505] text-[#f4f1ea] py-24 sm:py-32">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-35 bg-[radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(212,175,55,0.08),transparent),radial-gradient(ellipse_50%_35%_at_100%_100%,rgba(56,189,248,0.05),transparent)]"
-          aria-hidden
-        />
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
-          <motion.div 
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h2 className="text-4xl md:text-5xl font-serif font-medium text-white leading-tight">
-              Making a tangible difference.
-            </h2>
-            <p className="mt-6 text-lg text-slate-400">
-              Our network isn't just about convenience; it's about creating sustainable, cost-effective access to knowledge for every student.
-            </p>
-          </motion.div>
-
-          <div className="mt-20 grid grid-cols-1 gap-8 md:grid-cols-2">
-            <motion.div 
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="rounded-2xl bg-white/5 p-8 text-center"
-            >
-              <p className="font-serif text-6xl font-medium text-sky-400">
-                <Counter from={0} to={12000} prefix="₹" />+
-              </p>
-              <p className="mt-4 text-lg text-slate-300">Saved by students per semester</p>
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-              className="rounded-2xl bg-white/5 p-8 text-center"
-            >
-              <p className="font-serif text-6xl font-medium text-amber-400">
-                <Counter from={0} to={80} suffix="%" />
-              </p>
-              <p className="mt-4 text-lg text-slate-300">Of network books reused instead of wasted</p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA — aligned with hero actions */}
-      <section className="relative overflow-hidden border-t border-white/[0.06] bg-[#050505] text-[#f4f1ea]">
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[min(90vw,42rem)] w-[min(90vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.12)_0%,transparent_65%)] blur-3xl"
-          aria-hidden
-        />
-        <div className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center lg:px-12 lg:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] as const }}
-          >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-400/90">
-              Join the network
-            </p>
-            <h2 className="mt-6 font-serif text-[2.35rem] font-light leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-6xl">
-              Start saving on textbooks today.
-            </h2>
-            <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-slate-400">
-              Find books near you, list your own, or partner with us to bring Phygital Library to your campus.
-            </p>
-            <div className="mt-12 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-5">
-              <Button
-                asChild
-                size="lg"
-                className="h-14 rounded-lg border-0 bg-amber-500 px-10 text-base font-medium text-slate-950 shadow-[0_0_0_1px_rgba(251,191,36,0.35)] transition-all hover:scale-[1.02] hover:bg-amber-400"
-              >
-                <Link href="/sign-in?as=student">Find Books Near Me</Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="h-14 rounded-lg border border-white/20 bg-transparent px-10 text-base font-medium text-slate-50 transition-all hover:scale-[1.02] hover:border-amber-400/50 hover:bg-white/[0.04]"
-              >
-                <Link href="/sign-in">List a Book</Link>
-              </Button>
             </div>
-            <div className="mt-6">
-              <Button asChild variant="link" size="lg" className="h-14 rounded-lg px-8 text-slate-400 hover:text-amber-400">
-                <Link href="/colleges">Partner Your Campus</Link>
-              </Button>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Final CTA */}
+      <Section className="bg-background pb-16 md:pb-20">
+        <Container>
+          <div className="border border-border border-t-4 border-t-primary bg-white p-8 md:p-10">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                Less spend per semester. More access per city.
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-[#334155]">
+                Open the app for readers, or talk to us if you are ready to pilot a hub on campus.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/sign-in">Get started</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href="/colleges">Partner with Neeve</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href="/about">About</Link>
+                </Button>
+              </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-
+          </div>
+        </Container>
+      </Section>
     </div>
   );
 }

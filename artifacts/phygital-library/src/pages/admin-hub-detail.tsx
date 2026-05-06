@@ -38,6 +38,7 @@ import {
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PORTAL_KICKER_COLOR } from "@/lib/student-ui";
 import { BOOK_COVER_PLACEHOLDER_URL, bookCoverDisplayUrl } from "@/lib/book-cover-display";
 import { hubKindLabel, hubMembershipRoleLabel } from "@/lib/hub-display";
 
@@ -238,7 +239,7 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                "text-amber-600/90 dark:text-amber-400/90",
+                PORTAL_KICKER_COLOR,
               )}
             >
               {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -294,7 +295,7 @@ function AdminHubDetailContent({ hubId }: { hubId: string }) {
                   "mt-1 rounded-md px-3 py-1 text-xs font-medium",
                   hub.isActive
                     ? "border-emerald-300/60 text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300"
-                    : "border-amber-300/60 text-amber-700 dark:border-amber-500/40 dark:text-amber-300",
+                    : "border-border text-muted-foreground",
                 )}
               >
                 {hub.isActive ? "Active" : "Disabled"}

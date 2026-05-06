@@ -111,7 +111,7 @@ export function Footer() {
 
         <div className="flex flex-col items-stretch justify-between gap-6 border-t border-white/10 py-10 md:flex-row md:items-center">
           <p className="text-center text-[13px] text-slate-500 md:text-left">
-            © {new Date().getFullYear()} Phygital Library. All rights reserved.
+            © {new Date().getFullYear()} Neeve. All rights reserved.
           </p>
           <div className="flex justify-center gap-10 text-[13px] text-slate-500 md:justify-end">
             <Link href="#" className="transition-colors hover:text-slate-300">

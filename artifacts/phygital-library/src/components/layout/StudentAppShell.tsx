@@ -79,7 +79,7 @@ function MobileSheetNav({
           <Button
             variant="outline"
             size="sm"
-            className="w-full justify-start gap-2 rounded-lg border-amber-500/40 text-amber-800 hover:bg-amber-500/10 dark:text-amber-200"
+            className="w-full justify-start gap-2 rounded-lg border-primary/35 text-primary hover:bg-primary/10"
             onClick={() => {
               onClose();
               onUpgrade();
@@ -123,10 +123,13 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
   return (
     <StudentShellContext.Provider value={true}>
       <div className="min-h-[100dvh] bg-background">
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border/80 bg-card/40 backdrop-blur-sm md:flex">
-          <div className="flex h-16 shrink-0 items-center border-b border-border/60 px-4">
-            <Link href={shellHome} className="font-serif text-lg tracking-tight text-foreground">
-              Phygital <span className="text-amber-600">Library</span>
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-[#F8FAFC] backdrop-blur-sm md:flex">
+          <div className="flex h-16 shrink-0 items-center border-b border-border px-4">
+            <Link
+              href={shellHome}
+              className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground"
+            >
+              Neeve
             </Link>
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-3">
@@ -137,7 +140,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start gap-2 rounded-lg border-amber-500/40 text-amber-800 hover:bg-amber-500/10 dark:text-amber-200"
+                  className="w-full justify-start gap-2 rounded-lg border-primary/35 text-primary hover:bg-primary/10"
                   onClick={() => setUpgradeOpen(true)}
                 >
                   <Sparkles className="h-4 w-4" />
@@ -157,9 +160,11 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-0">
-                  <div className="flex h-14 items-center border-b px-4 font-serif text-lg">
-                    Phygital <span className="text-amber-600">Library</span>
+                <SheetContent side="left" className="w-64 border-border bg-[#F8FAFC] p-0">
+                  <div className="flex h-14 items-center border-b border-border px-4">
+                    <span className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground">
+                      Neeve
+                    </span>
                   </div>
                   <div className="flex h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto p-3">
                     <MobileSheetNav
@@ -171,7 +176,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
                 </SheetContent>
               </Sheet>
               <div className="min-w-0">
-                <p className="truncate font-serif text-base text-foreground">
+                <p className="truncate font-[var(--font-display)] text-base font-semibold text-foreground">
                   {isHubAccount(user) ? "Hub desk" : "Student"}
                 </p>
                 <p className="truncate text-[10px] text-muted-foreground">
@@ -203,15 +208,17 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
       </div>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="rounded-none sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="font-serif">Demo premium</DialogTitle>
+            <DialogTitle className="font-[var(--font-display)] text-lg font-bold tracking-tight">
+              Demo premium
+            </DialogTitle>
             <DialogDescription>
               Unlock borrow, requests, and peer buy/sell for this prototype session.
             </DialogDescription>
           </DialogHeader>
           <Button
-            className="w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
+            className="h-11 w-full rounded-none font-semibold"
             disabled={upgradeBusy}
             onClick={() => void runUpgrade()}
           >
@@ -235,7 +242,7 @@ function SidebarProfileRow({ onNavigate }: { onNavigate?: () => void }) {
       className={cn(
         "flex items-center rounded-xl border transition-colors",
         active
-          ? "border-amber-500/25 bg-amber-500/15 text-amber-950 dark:text-amber-50"
+          ? "border-primary/30 bg-primary/10 text-foreground"
           : "border-border/50 bg-card/60 hover:bg-muted/50",
       )}
     >
@@ -252,7 +259,7 @@ function SidebarProfileRow({ onNavigate }: { onNavigate?: () => void }) {
           <span
             className={cn(
               "mt-0.5 block truncate text-[10px] leading-snug",
-              active ? "text-amber-900/75 dark:text-amber-100/80" : "text-muted-foreground",
+              active ? "text-primary/80" : "text-muted-foreground",
             )}
           >
             {user.email}
@@ -266,7 +273,7 @@ function SidebarProfileRow({ onNavigate }: { onNavigate?: () => void }) {
           size="icon"
           className={cn(
             "h-9 w-9 text-muted-foreground hover:text-foreground",
-            active && "hover:bg-amber-500/20 dark:hover:bg-amber-500/10",
+            active && "hover:bg-primary/15",
           )}
           aria-label="Sign out"
           onClick={() => {

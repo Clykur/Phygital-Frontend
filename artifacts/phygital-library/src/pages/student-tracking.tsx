@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { isHubAccount, portalPathsForUser } from "@/lib/app-paths";
+import { STATUS_CHIP_EMERALD } from "@/lib/status-chip-tones";
 
 type BookRow = {
   id: string;
@@ -173,7 +174,7 @@ function RequestProgress({ status }: { status: string }) {
             key={s}
             className={cn(
               "h-1.5 flex-1 rounded-sm",
-              idx >= i ? "bg-amber-500/70" : "bg-muted",
+              idx >= i ? "bg-primary/70" : "bg-muted",
             )}
             title={s}
           />
@@ -197,8 +198,8 @@ function FlatStatus({
     <span
       className={cn(
         "inline-flex h-7 items-center whitespace-nowrap rounded-sm border px-3 text-[10px] font-semibold uppercase tracking-wide",
-        tone === "emerald" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100",
-        tone === "amber" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100",
+        tone === "emerald" && STATUS_CHIP_EMERALD,
+        tone === "amber" && "border-primary/30 bg-primary/10 text-foreground dark:bg-primary/15",
         tone === "destructive" && "border-destructive/30 bg-destructive/10 text-destructive",
         tone === "neutral" && "border-border bg-muted/40 text-foreground",
       )}
@@ -249,7 +250,7 @@ function BlockCard({
       </div>
       {isLoading ? (
         <div className="flex items-center gap-2 px-5 py-8 text-sm text-muted-foreground">
-          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-amber-600/80" />
+          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary/80" />
           Loading…
         </div>
       ) : (
@@ -465,9 +466,9 @@ export default function StudentTrackingPage() {
     const el = document.querySelector(selector);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+    el.classList.add("ring-2", "ring-primary/50", "bg-primary/5");
     const t = window.setTimeout(() => {
-      el.classList.remove("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+      el.classList.remove("ring-2", "ring-primary/50", "bg-primary/5");
     }, 2600);
     return () => window.clearTimeout(t);
   }, [reqQ.data?.requests, p2pQ.data?.listings, booksQ.data?.books]);
@@ -476,10 +477,12 @@ export default function StudentTrackingPage() {
     <div className={cn("min-h-[100dvh] bg-background pb-20", top)}>
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
-            {hubDesk ? "Hub portal" : "Library"}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+            {hubDesk ? "Hub portal" : "Neeve"}
           </p>
-          <h1 className="mt-1 font-serif text-lg font-light text-foreground">Activity</h1>
+          <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
+            Activity
+          </h1>
         </div>
 
         <section aria-label="Summary">
@@ -580,8 +583,8 @@ export default function StudentTrackingPage() {
                   </div>
                 ) : null}
                 {nextActions.returnSoon.length > 0 ? (
-                  <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-amber-950 dark:text-amber-200/90">
+                  <div className="rounded-md border border-primary/25 bg-primary/5 p-3 text-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
                       Return due or overdue
                     </p>
                     <ul className="mt-2 list-inside list-disc text-muted-foreground">

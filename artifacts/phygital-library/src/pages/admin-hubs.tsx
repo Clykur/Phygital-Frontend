@@ -29,6 +29,7 @@ import {
 import { HUB_KIND_VALUES, hubKindLabel } from "@/lib/hub-display";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
+import { PORTAL_INLINE_LINK, PORTAL_KICKER_COLOR } from "@/lib/student-ui";
 import { Loader2 } from "lucide-react";
 
 type HubRow = {
@@ -102,7 +103,7 @@ function AdminHubsContent() {
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                "text-amber-600/90 dark:text-amber-400/90",
+                PORTAL_KICKER_COLOR,
               )}
             >
               {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -117,7 +118,7 @@ function AdminHubsContent() {
                 stock, use{" "}
                 <Link
                   href={user ? portalPathsForUser(user).inventory : "/library"}
-                  className="font-medium text-amber-700 underline-offset-2 hover:underline dark:text-amber-400"
+                  className={PORTAL_INLINE_LINK}
                   title="All copies — every physical copy in the platform (same as sidebar)"
                 >
                   All copies
@@ -237,10 +238,7 @@ function AdminHubsContent() {
                     {filteredHubs.map((h) => (
                       <TableRow key={h.id} className="cursor-pointer border-border">
                         <TableCell className="pl-4 font-medium sm:pl-6">
-                          <Link
-                            href={adminHubPath(h.id)}
-                            className="text-amber-900 hover:underline dark:text-amber-200"
-                          >
+                          <Link href={adminHubPath(h.id)} className={PORTAL_INLINE_LINK}>
                             {h.name}
                           </Link>
                           <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">

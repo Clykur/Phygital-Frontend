@@ -25,7 +25,7 @@ import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
+import { PORTAL_KICKER_COLOR, PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { bookRequestMatchesSearch, normalizeBookTitle } from "@/lib/title-match";
 import { formatDistanceToNow } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
@@ -124,7 +124,7 @@ function DeskRequestStatusBadge({ status }: { status: string }) {
     status === "expired" || status === "cancelled"
       ? "border-destructive/30 bg-destructive/10 text-destructive"
       : status === "ready" || status === "picked"
-        ? "border-amber-500/30 bg-amber-500/15 text-amber-900 dark:text-amber-100"
+        ? "border-primary/30 bg-primary/10 text-foreground"
         : status === "fulfilled"
           ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
           : "border-border bg-muted/40 text-foreground";
@@ -189,7 +189,7 @@ function DeskRequestProgress({ status }: { status: string }) {
             className={cn(
               "inline-flex h-6 items-center rounded-md border px-2 text-[10px] font-medium",
               i === active
-                ? "border-amber-500/30 bg-amber-500/20 text-amber-950 dark:text-amber-100"
+                ? "border-primary/30 bg-primary/10 text-foreground"
                 : i < active
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200/90"
                   : "border-border/70 bg-background text-muted-foreground",
@@ -599,7 +599,7 @@ export default function HubBookRequestsPage() {
           <p
             className={cn(
               "text-[10px] font-semibold uppercase tracking-[0.35em]",
-              "text-amber-600/90 dark:text-amber-400/90",
+              PORTAL_KICKER_COLOR,
             )}
           >
             {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -735,7 +735,7 @@ export default function HubBookRequestsPage() {
                     className={cn(
                       "rounded-md border bg-card/50 p-4 sm:p-5",
                       r.assignedCopyId && r.assignmentVerified === false
-                        ? "border-amber-500/40 bg-amber-500/[0.04]"
+                        ? "border-primary/35 bg-primary/[0.04]"
                         : "border-border",
                     )}
                   >
@@ -796,7 +796,7 @@ export default function HubBookRequestsPage() {
                             <>
                               <span className="font-mono text-foreground/90">{r.assignedCopyRefId ?? "Linked copy"}</span>
                               {r.assignmentVerified === false ? (
-                                <Badge variant="outline" className="ml-2 border-amber-500/50 text-[10px] text-amber-700">
+                                <Badge variant="outline" className="ml-2 border-primary/40 text-[10px] text-primary">
                                   Unverified
                                 </Badge>
                               ) : null}
@@ -806,7 +806,7 @@ export default function HubBookRequestsPage() {
                           )}
                         </p>
                         {r.assignedCopyId && r.assignmentVerified === false ? (
-                          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100">
+                          <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-[11px] text-foreground">
                             Not shelf verified - pickup may fail.
                           </p>
                         ) : null}
@@ -827,8 +827,8 @@ export default function HubBookRequestsPage() {
                           <DeskRequestProgress status={r.status} />
                         </div>
                         {nextAction ? (
-                          <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2 text-[12px] leading-snug text-foreground dark:bg-amber-500/[0.08]">
-                            <span className="font-semibold text-amber-950 dark:text-amber-100">Next: </span>
+                          <div className="rounded-md border border-primary/25 bg-primary/[0.06] px-3 py-2 text-[12px] leading-snug text-foreground dark:bg-primary/[0.08]">
+                            <span className="font-semibold text-primary">Next: </span>
                             {nextAction}
                           </div>
                         ) : null}

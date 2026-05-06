@@ -5,7 +5,7 @@ import { useStudentShell } from "@/components/layout/StudentAppShell";
 import { useAuth } from "@/context/auth-context"; 
 import { apiFetch, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
+import { PORTAL_KICKER_COLOR, PORTAL_PAGE_GUTTER_X } from "@/lib/student-ui";
 import { portalPathsForUser } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -182,7 +182,7 @@ export default function HubCommercePage() {
           <p
             className={cn(
               "text-[10px] font-semibold uppercase tracking-[0.35em]",
-              "text-amber-600/90 dark:text-amber-400/90",
+              PORTAL_KICKER_COLOR,
             )}
           >
             {isSuperAdmin ? "Super admin" : "Hub portal"}

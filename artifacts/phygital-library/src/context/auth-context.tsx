@@ -44,9 +44,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() =>
-    typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null,
-  );
+  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUser(next);
   }, [token]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem(STORAGE_KEY));
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

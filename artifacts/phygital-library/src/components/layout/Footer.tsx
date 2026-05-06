@@ -2,19 +2,13 @@ import { Link } from "wouter";
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.06] bg-[#050505] text-[#f4f1ea]">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_55%_40%_at_20%_100%,rgba(212,175,55,0.06),transparent),radial-gradient(ellipse_45%_35%_at_90%_0%,rgba(56,189,248,0.04),transparent)]"
-        aria-hidden
-      />
-      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/25 to-transparent" />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
-        <div className="grid grid-cols-1 gap-16 pb-20 pt-20 lg:grid-cols-12 lg:gap-12 lg:pb-24 lg:pt-24">
-          <div className="lg:col-span-5">
-            <Link href="/" className="group mb-8 inline-flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center text-amber-400 transition-colors group-hover:text-amber-300">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-8 w-8">
+    <footer className="border-t border-border bg-white">
+      <div className="mx-auto max-w-[1280px] px-4 py-14 md:px-6">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
+          <div className="md:col-span-4">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center border border-border bg-white">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-foreground">
                   <path
                     d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z"
                     stroke="currentColor"
@@ -32,76 +26,46 @@ export function Footer() {
                   <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span className="font-serif text-xl font-medium tracking-[-0.02em] sm:text-2xl">
-                Phygital <span className="font-light text-amber-400">Library</span>
+              <span className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground">
+                Neeve
               </span>
             </Link>
-            <div className="max-w-sm border-l border-white/15 pl-6">
-              <p className="text-[15px] leading-[1.75] text-slate-400">
-                The modern library network for the next generation of students.
-              </p>
-            </div>
+            <p className="mt-4 text-sm leading-relaxed text-[#64748B]">
+              The modern student library network for faster access, lower costs, and better reuse across campuses.
+            </p>
           </div>
 
-          <div className="lg:col-span-7 flex justify-end">
-            <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:gap-8">
-              <div className="col-span-2 sm:col-span-1">
-                <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Company</p>
-                <ul className="space-y-3.5 text-[15px]">
-                  <li>
-                    <Link href="/about" className="text-slate-300 transition-colors hover:text-amber-400">
-                      About Us
-                    </Link>
-                  </li>
-                  <li>
-                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                      Careers
-                    </a>
-                  </li>
-                  <li>
-                    <a href="mailto:hello@phygitallibrary.com" className="text-slate-300 transition-colors hover:text-amber-400">
-                      Contact
-                    </a>
-                  </li>
-                </ul>
-              </div>
+          <div className="md:col-span-2">
+            <p className="text-sm font-semibold text-foreground">Navigation</p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link href="/" className="text-[#334155] hover:text-foreground">Home</Link></li>
+              <li><Link href="/marketplace" className="text-[#334155] hover:text-foreground">Marketplace</Link></li>
+              <li><Link href="/colleges" className="text-[#334155] hover:text-foreground">Colleges</Link></li>
+              <li><Link href="/about" className="text-[#334155] hover:text-foreground">About</Link></li>
+            </ul>
+          </div>
 
-              <div className="col-span-2 sm:col-span-1">
-                <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500">Connect</p>
-                <ul className="space-y-3.5 text-[15px]">
-                  <li>
-                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                      Twitter
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                      LinkedIn
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-slate-300 transition-colors hover:text-amber-400">
-                      Instagram
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
+          <div className="md:col-span-3">
+            <p className="text-sm font-semibold text-foreground">Contact</p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><a className="text-[#334155] hover:text-foreground" href="mailto:hello@phygitallibrary.com">hello@phygitallibrary.com</a></li>
+              <li><a className="text-[#334155] hover:text-foreground" href="#">LinkedIn</a></li>
+              <li><a className="text-[#334155] hover:text-foreground" href="#">Twitter</a></li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-3">
+            <p className="text-sm font-semibold text-foreground">Trust</p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link href="#" className="text-[#334155] hover:text-foreground">Privacy</Link></li>
+              <li><Link href="#" className="text-[#334155] hover:text-foreground">Terms</Link></li>
+              <li><Link href="#" className="text-[#334155] hover:text-foreground">Security</Link></li>
+            </ul>
           </div>
         </div>
 
-        <div className="flex flex-col items-stretch justify-between gap-6 border-t border-white/10 py-10 md:flex-row md:items-center">
-          <p className="text-center text-[13px] text-slate-500 md:text-left">
-            © {new Date().getFullYear()} Phygital Library. All rights reserved.
-          </p>
-          <div className="flex justify-center gap-10 text-[13px] text-slate-500 md:justify-end">
-            <Link href="#" className="transition-colors hover:text-slate-300">
-              Privacy
-            </Link>
-            <Link href="#" className="transition-colors hover:text-slate-300">
-              Terms
-            </Link>
-          </div>
+        <div className="mt-12 border-t border-border pt-6">
+          <p className="text-sm text-[#64748B]">© {new Date().getFullYear()} Neeve. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PORTAL_KICKER_COLOR } from "@/lib/student-ui";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 type Severity = "critical" | "warning" | "info";
@@ -77,13 +78,13 @@ const outline = "rounded-md border border-border bg-background";
 
 function severityClass(s: Severity) {
   if (s === "critical") return "border-destructive/50 bg-destructive/5";
-  if (s === "warning") return "border-amber-500/40 bg-amber-500/5";
+  if (s === "warning") return "border-accent/35 bg-accent/5";
   return "border-border bg-muted/30";
 }
 
 function severityBadgeClass(s: Severity) {
   if (s === "critical") return "border-destructive/50 text-destructive";
-  if (s === "warning") return "border-amber-500/50 text-amber-800 dark:text-amber-200/90";
+  if (s === "warning") return "border-accent/45 text-foreground dark:bg-accent/10";
   return "text-muted-foreground";
 }
 
@@ -264,7 +265,7 @@ function SuperAdminOperationsContent() {
       <div className="mb-6 border-b border-border pb-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
+            <p className={cn("text-[10px] font-semibold uppercase tracking-[0.35em]", PORTAL_KICKER_COLOR)}>
               Super admin
             </p>
             <h1 className="mt-1 font-serif text-lg font-light text-foreground">System health & notifications</h1>

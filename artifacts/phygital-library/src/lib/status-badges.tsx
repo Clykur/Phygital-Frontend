@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { peerShelfStatusLabel } from "@/lib/catalog-sort";
+import { STATUS_CHIP_EMERALD } from "@/lib/status-chip-tones";
 import { cn } from "@/lib/utils";
 
 /** Same geometry as desk filter controls: `SelectTrigger` / inputs (`rounded-md border-border`, `h-8` chip height, uppercase label). */
@@ -24,7 +25,7 @@ export function hubBookStatusLabel(status: string): string {
 function hubBookChipTone(status: string): string {
   switch (status) {
     case "available":
-      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
+      return STATUS_CHIP_EMERALD;
     case "sold":
       return "border-muted-foreground/25 bg-muted/50 text-muted-foreground";
     case "unavailable":
@@ -128,9 +129,9 @@ function p2pPipelineChipTone(status: string): string {
     case "pending_dropoff":
       return "border-violet-500/35 bg-violet-500/10 text-violet-950 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-100";
     case "approved":
-      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
+      return STATUS_CHIP_EMERALD;
     case "available":
-      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
+      return STATUS_CHIP_EMERALD;
     case "reserved":
       return "border-amber-500/35 bg-amber-500/10 text-amber-950 dark:text-amber-100";
     case "sold":
@@ -167,7 +168,7 @@ function shelfPeerChipTone(status: string): string {
   switch (status) {
     case "approved":
     case "available":
-      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100";
+      return STATUS_CHIP_EMERALD;
     case "sold":
       return "border-muted-foreground/25 bg-muted/50 text-muted-foreground";
     case "borrowed":
