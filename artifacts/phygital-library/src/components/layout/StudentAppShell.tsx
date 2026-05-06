@@ -177,7 +177,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
               </Sheet>
               <div className="min-w-0">
                 <p className="truncate font-[var(--font-display)] text-base font-semibold text-foreground">
-                  {isHubAccount(user) ? "Hub desk" : "Student"}
+                  {user?.baseRole === "super_admin" ? "Super admin" : isHubAccount(user) ? "Hub desk" : "Student"}
                 </p>
                 <p className="truncate text-[10px] text-muted-foreground">
                   {isHubAccount(user) ? "Desk · swipe tabs below" : "Borrow · buy · sell"}

@@ -242,7 +242,7 @@ export default function HubDeskP2pListingsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending_dropoff">Needs Review (Pending Drop-off)</SelectItem>
-                <SelectItem value="approved">Approved (Pending On-shelf)</SelectItem>
+                <SelectItem value="approved">Approved (On-shelf)</SelectItem>
                 <SelectItem value="all">All Pipeline</SelectItem>
                 <SelectItem value="listed">Listed (Online)</SelectItem>
                 <SelectItem value="available">Available at Hub</SelectItem>

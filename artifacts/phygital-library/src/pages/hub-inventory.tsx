@@ -601,8 +601,8 @@ export default function HubInventoryPage() {
           ) : null}
         </div>
 
-        <div className="mt-4 flex w-full min-w-0 flex-row overflow-x-auto pb-2 gap-3 sm:flex-nowrap sm:items-end sm:gap-3">
-          <div className="flex min-w-[14rem] shrink-0 flex-col gap-1.5 sm:w-full sm:flex-[3] sm:min-w-[20rem] lg:min-w-[28rem]">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-full sm:flex-[3] sm:min-w-[20rem] lg:min-w-[28rem]">
             <Label htmlFor="hub-inv-search" className="text-[10px] font-bold uppercase tracking-wide text-foreground">
               Search title or ref
             </Label>
@@ -618,7 +618,7 @@ export default function HubInventoryPage() {
             />
           </div>
           {user.hubStaffHubIds.length > 1 ? (
-            <div className="flex min-w-[10rem] shrink-0 flex-1 flex-col gap-1.5">
+            <div className="flex w-full flex-col gap-1.5 sm:min-w-[10rem] sm:shrink-0 sm:flex-1">
               <Label
                 htmlFor="hub-inv-scope"
                 className="text-[10px] font-bold uppercase tracking-wide text-foreground"
@@ -694,7 +694,7 @@ export default function HubInventoryPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-10 shrink-0 rounded-md sm:min-w-[6.5rem]"
+            className="h-10 w-full rounded-md sm:w-auto sm:min-w-[6.5rem]"
             onClick={clearInventoryFilters}
           >
             Reset filters
@@ -752,7 +752,7 @@ export default function HubInventoryPage() {
                 ) : null}
               </div>
             ) : (
-              <div className="grid grid-cols-1 items-start gap-6 p-4 sm:grid-cols-2 sm:items-stretch sm:gap-6 sm:p-6 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 items-start gap-3 p-3 sm:grid-cols-2 sm:items-stretch sm:gap-6 sm:p-6 md:grid-cols-3 lg:grid-cols-4">
                 {rows.map((b) => {
                   const hubName =
                     hubsQ.data?.hubs.find((h) => h.id === b.hubId)?.name ?? "Managed hub";
