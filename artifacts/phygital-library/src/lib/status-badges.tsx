@@ -1,18 +1,56 @@
-import { Badge } from "@/components/ui/badge";
-import { peerShelfStatusLabel } from "@/lib/catalog-sort";
-import { STATUS_CHIP_EMERALD } from "@/lib/status-chip-tones";
 import { cn } from "@/lib/utils";
 
-/** Same geometry as desk filter controls: `SelectTrigger` / inputs (`rounded-md border-border`, `h-8` chip height, uppercase label). */
-export const shelfFilterChipClass =
-  "inline-flex h-8 max-w-full min-w-0 shrink-0 items-center justify-center gap-1 rounded-md border border-border bg-background px-2.5 text-[10px] font-bold uppercase tracking-wide text-foreground antialiased";
+// Standardized visual shape for all status badges everywhere
+export const uniformBadgeShape = "inline-flex items-center justify-center whitespace-nowrap px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide uppercase";
 
-/** For chips over cover art — read legible, still the same border/radius. */
-export const shelfFilterChipOnCoverClass = "border-border/80 bg-background/90 shadow-sm backdrop-blur-sm";
+// Keep this around for backwards compatibility where the cover shape was expected,
+// but now just map it to the new uniform shape + backdrop blur.
+export const shelfFilterChipOnCoverClass = "shadow-sm backdrop-blur-md bg-opacity-90 dark:bg-opacity-90";
 
-/** Same chip shape on dark card overlays (prices / meta row). */
-export const shelfFilterChipOnDarkClass =
-  "inline-flex h-8 max-w-full min-w-0 shrink-0 items-center justify-center gap-1 rounded-md border border-white/20 bg-white/10 px-2.5 text-[10px] font-bold uppercase tracking-wide text-white/95 shadow-sm backdrop-blur-sm";
+export const shelfFilterChipClass = cn(uniformBadgeShape, "border border-border bg-background text-foreground shadow-sm");
+export const shelfFilterChipOnDarkClass = cn(uniformBadgeShape, "border border-white/20 bg-black/60 text-white shadow-sm backdrop-blur-md");
+
+export function getStatusColorClasses(status: string): string {
+  const s = status.toLowerCase();
+  
+  // Available (Emerald)
+  if (["available", "ready", "on marketplace"].includes(s)) {
+    return "border border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100";
+  }
+  
+  // Approved (Sky)
+  if (["approved", "listed", "requested", "new"].includes(s)) {
+    return "border border-sky-500/35 bg-sky-500/10 text-sky-950 dark:text-sky-100";
+  }
+  
+  // Set Aside (Amber)
+  if (["set aside", "reserved", "fulfilled", "borrowed"].includes(s)) {
+    return "border border-amber-500/35 bg-amber-500/10 text-amber-950 dark:text-amber-100";
+  }
+  
+  // Checked Out (Violet)
+  if (["checked out", "checked_out", "in_transit", "in transit", "transfer_pending", "transfer pending", "routed", "finding", "pending_dropoff", "pending drop-off"].includes(s)) {
+    return "border border-violet-500/35 bg-violet-500/10 text-violet-950 dark:text-violet-100";
+  }
+  
+  // Overdue (Rose)
+  if (["overdue", "timed out"].includes(s)) {
+    return "border border-rose-500/30 bg-rose-500/10 text-rose-900 dark:text-rose-100";
+  }
+  
+  // Rejected (Red)
+  if (["rejected", "unavailable", "expired"].includes(s)) {
+    return "border border-destructive/30 bg-destructive/10 text-destructive";
+  }
+  
+  // Cancelled (Slate)
+  if (["cancelled", "sold", "withdrawn", "picked", "completed"].includes(s)) {
+    return "border border-muted-foreground/25 bg-muted/50 text-muted-foreground";
+  }
+
+  // Fallback (Slate)
+  return "border border-muted-foreground/25 bg-muted/50 text-muted-foreground";
+}
 
 /** Staff-facing label: reserved copies are held for desk pickup. */
 export function hubBookStatusLabel(status: string): string {
@@ -22,31 +60,9 @@ export function hubBookStatusLabel(status: string): string {
   return status.replace(/_/g, " ");
 }
 
-function hubBookChipTone(status: string): string {
-  switch (status) {
-    case "available":
-      return STATUS_CHIP_EMERALD;
-    case "sold":
-      return "border-muted-foreground/25 bg-muted/50 text-muted-foreground";
-    case "unavailable":
-    case "overdue":
-      return "border-destructive/30 bg-destructive/10 text-destructive";
-    case "checked_out":
-      return "border-amber-500/35 bg-amber-500/10 text-amber-950 dark:text-amber-100";
-    case "reserved":
-      return "border-sky-500/35 bg-sky-500/10 text-sky-950 dark:text-sky-100";
-    case "transfer_pending":
-    case "in_transit":
-      return "border-violet-500/35 bg-violet-500/10 text-violet-950 dark:text-violet-100";
-    default:
-      return "";
-  }
-}
-
 export function HubBookStatusBadge({
   status,
   className,
-  /** `false` for table / light surfaces (chips sit on page background, not on cover art). @default true */
   onCover = true,
 }: {
   status: string;
@@ -56,9 +72,9 @@ export function HubBookStatusBadge({
   return (
     <span
       className={cn(
-        shelfFilterChipClass,
+        uniformBadgeShape,
         onCover ? shelfFilterChipOnCoverClass : null,
-        hubBookChipTone(status),
+        getStatusColorClasses(status),
         className,
       )}
       role="status"
@@ -68,35 +84,18 @@ export function HubBookStatusBadge({
   );
 }
 
-export function p2pBadgeVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" | "success" {
-  switch (status) {
-    case "approved":
-      return "success";
-    case "available":
-      return "default";
-    case "sold":
-      return "secondary";
-    case "listed":
-      return "outline";
-    case "pending_dropoff":
-      return "outline";
-    case "borrowed":
-    case "reserved":
-      return "default";
-    case "rejected":
-      return "destructive";
-    default:
-      return "outline";
-  }
-}
-
 export function P2pStatusBadge({ status, className }: { status: string; className?: string }) {
   return (
-    <Badge variant={p2pBadgeVariant(status)} className={cn("text-[10px] uppercase", className)}>
-      {status.toUpperCase().replace("_", " ")}
-    </Badge>
+    <span
+      className={cn(
+        uniformBadgeShape,
+        getStatusColorClasses(status),
+        className,
+      )}
+      role="status"
+    >
+      {status.replace(/_/g, " ")}
+    </span>
   );
 }
 
@@ -116,31 +115,9 @@ export function p2pPipelineStatusLabel(s: string): string {
     case "expired":
       return "Expired";
     case "rejected":
-      return "rejected";
+      return "Rejected";
     default:
       return s.replace(/_/g, " ");
-  }
-}
-
-function p2pPipelineChipTone(status: string): string {
-  switch (status) {
-    case "listed":
-      return "border-sky-500/35 bg-sky-500/10 text-sky-950 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-100";
-    case "pending_dropoff":
-      return "border-violet-500/35 bg-violet-500/10 text-violet-950 dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-100";
-    case "approved":
-      return STATUS_CHIP_EMERALD;
-    case "available":
-      return STATUS_CHIP_EMERALD;
-    case "reserved":
-      return "border-amber-500/35 bg-amber-500/10 text-amber-950 dark:text-amber-100";
-    case "sold":
-      return "border-muted-foreground/25 bg-muted/50 text-muted-foreground";
-    case "expired":
-    case "rejected":
-      return "border-destructive/30 bg-destructive/10 text-destructive";
-    default:
-      return "";
   }
 }
 
@@ -149,36 +126,16 @@ export function P2pPipelineCoverStatusBadge({ status, className }: { status: str
   return (
     <span
       className={cn(
-        shelfFilterChipClass,
+        uniformBadgeShape,
         shelfFilterChipOnCoverClass,
-        p2pPipelineChipTone(status),
-        "normal-case", // labels like "Listed (online)" are mixed case
-        "font-semibold",
+        getStatusColorClasses(status),
         className,
       )}
       role="status"
     >
-      {p2pPipelineStatusLabel(status).toUpperCase()}
+      {p2pPipelineStatusLabel(status)}
     </span>
   );
-}
-
-/** Peer tiles on the shelf: **approved** is labeled **available** (same idea as hub on-shelf). */
-function shelfPeerChipTone(status: string): string {
-  switch (status) {
-    case "approved":
-    case "available":
-      return STATUS_CHIP_EMERALD;
-    case "sold":
-      return "border-muted-foreground/25 bg-muted/50 text-muted-foreground";
-    case "borrowed":
-    case "reserved":
-      return "border-amber-500/35 bg-amber-500/10 text-amber-950 dark:text-amber-100";
-    case "rejected":
-      return "border-destructive/30 bg-destructive/10 text-destructive";
-    default:
-      return "";
-  }
 }
 
 export function ShelfPeerStatusBadge({
@@ -190,17 +147,19 @@ export function ShelfPeerStatusBadge({
   className?: string;
   onCover?: boolean;
 }) {
+  let label = status;
+  if (status === "approved") label = "available"; // Peer tiles on the shelf: approved is labeled available
   return (
     <span
       className={cn(
-        shelfFilterChipClass,
+        uniformBadgeShape,
         onCover ? shelfFilterChipOnCoverClass : null,
-        shelfPeerChipTone(status),
+        getStatusColorClasses(status),
         className,
       )}
       role="status"
     >
-      {peerShelfStatusLabel(status)}
+      {label.replace(/_/g, " ")}
     </span>
   );
 }
@@ -227,20 +186,17 @@ export function requestStatusLabel(status: string): string {
 }
 
 export function RequestStatusBadge({ status, className }: { status: string; className?: string }) {
-  const variant =
-    status === "expired" || status === "cancelled"
-      ? ("destructive" as const)
-      : status === "ready"
-        ? ("default" as const)
-        : status === "picked"
-          ? ("secondary" as const)
-          : status === "fulfilled"
-            ? ("default" as const)
-            : ("outline" as const);
   const label = requestStatusLabel(status);
   return (
-    <Badge variant={variant} className={cn("text-[10px] capitalize", className)}>
+    <span
+      className={cn(
+        uniformBadgeShape,
+        getStatusColorClasses(status),
+        className,
+      )}
+      role="status"
+    >
       {label}
-    </Badge>
+    </span>
   );
 }

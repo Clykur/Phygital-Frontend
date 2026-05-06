@@ -8,7 +8,7 @@ import { userFacingErrorMessage } from "@/lib/error-messages";
 import { SUPER_ADMIN_OVERVIEW_PATH } from "@/lib/app-paths";
 import { SuperAdminRoute } from "@/components/super-admin-route";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import {
   Table,
   TableBody,
@@ -339,15 +339,14 @@ function SuperAdminOperationsContent() {
                   {sortedIssues.map((i) => (
                     <TableRow key={i.id} className={cn("border-border", severityClass(i.severity))}>
                       <TableCell className="pl-4 sm:pl-6">
-                        <Badge
-                          variant="outline"
+                        <span
                           className={cn(
-                            "h-7 rounded-md px-2.5 text-[10px] font-semibold uppercase leading-none",
-                            severityBadgeClass(i.severity),
+                            uniformBadgeShape,
+                            getStatusColorClasses(i.severity === "critical" ? "rejected" : i.severity === "warning" ? "set aside" : "approved"),
                           )}
                         >
                           {i.severity}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="min-w-[16rem] text-sm">{i.description}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
@@ -408,15 +407,14 @@ function SuperAdminOperationsContent() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(d.updatedAt).toLocaleString()}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
+                        <span
                           className={cn(
-                            "h-7 rounded-md px-2.5 text-[10px] font-semibold uppercase leading-none",
-                            d.status === "failed" ? "border-destructive/50 text-destructive" : "",
+                            uniformBadgeShape,
+                            getStatusColorClasses(d.status === "failed" ? "rejected" : "available"),
                           )}
                         >
                           {deliveryStatusLabel(d.status)}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="pr-4 sm:pr-6">
                         {d.status === "failed" ? (

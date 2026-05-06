@@ -168,8 +168,8 @@ export default function StudentAlertsPage() {
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
-            {hubDesk ? "Hub portal" : "Neeve"}
-          </p>  
+            {user?.baseRole === "super_admin" ? "Super admin" : hubDesk ? "Hub portal" : "Student"}
+          </p>
           <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
             Alerts
           </h1>
@@ -218,8 +218,8 @@ export default function StudentAlertsPage() {
                               <div
                                 key={n.id}
                                 className={cn(
-                                  "rounded-lg border border-border bg-card/60 p-3 text-sm",
-                                  !n.readAt && "border-amber-500/30 bg-amber-500/5",
+                                  "rounded-lg border border-border p-3 text-sm",
+                                  !n.readAt && "border-gray-500/30",
                                 )}
                               >
                                 <div className="flex flex-wrap items-center justify-between gap-2">

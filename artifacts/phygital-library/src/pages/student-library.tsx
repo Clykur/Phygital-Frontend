@@ -313,7 +313,7 @@ export default function StudentLibraryPage() {
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
-            {hubDesk ? "Hub portal" : "Neeve"}
+            {hubDesk ? "Hub portal" : "student"}
           </p>
           <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
             My library

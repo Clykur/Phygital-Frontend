@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -120,24 +121,15 @@ function deskRequestSimpleLabel(status: string): string {
 
 function DeskRequestStatusBadge({ status }: { status: string }) {
   const label = deskRequestSimpleLabel(status);
-  const tone =
-    status === "expired" || status === "cancelled"
-      ? "border-destructive/30 bg-destructive/10 text-destructive"
-      : status === "ready" || status === "picked"
-        ? "border-primary/30 bg-primary/10 text-foreground"
-        : status === "fulfilled"
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
-          : "border-border bg-muted/40 text-foreground";
   return (
-    <Badge
-      variant="outline"
+    <span
       className={cn(
-        "inline-flex h-7 items-center rounded-md border px-3 text-[11px] font-semibold leading-none",
-        tone,
+        uniformBadgeShape,
+        getStatusColorClasses(status)
       )}
     >
       {label}
-    </Badge>
+    </span>
   );
 }
 
@@ -754,9 +746,9 @@ export default function HubBookRequestsPage() {
                           {(ACTIVE_PIPELINE as readonly string[]).includes(r.status) &&
                             r.createdAt &&
                             requestAgeIsPriority(r.createdAt) ? (
-                            <Badge variant="destructive" className="text-[10px] font-semibold">
+                            <span className={cn(uniformBadgeShape, getStatusColorClasses("overdue"))}>
                               Past SLA
-                            </Badge>
+                            </span>
                           ) : null}
                         </div>
                         {r.createdAt ? (
@@ -796,9 +788,9 @@ export default function HubBookRequestsPage() {
                             <>
                               <span className="font-mono text-foreground/90">{r.assignedCopyRefId ?? "Linked copy"}</span>
                               {r.assignmentVerified === false ? (
-                                <Badge variant="outline" className="ml-2 border-primary/40 text-[10px] text-primary">
+                                <span className={cn(uniformBadgeShape, getStatusColorClasses("set aside"), "ml-2")}>
                                   Unverified
-                                </Badge>
+                                </span>
                               ) : null}
                             </>
                           ) : (

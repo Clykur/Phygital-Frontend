@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getStatusColorClasses, uniformBadgeShape } from "@/lib/status-badges";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -639,17 +640,14 @@ export default function HubOverviewPage() {
                     {ov.hub ? (
                       <>
                         <span className="text-sm text-muted-foreground">{hubKindLabel(ov.hub.kind)}</span>
-                        <Badge
-                          variant="outline"
+                        <span
                           className={cn(
-                            "h-7 rounded-md px-3 text-[11px] font-semibold uppercase tracking-wide",
-                            ov.hub.isActive
-                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
-                              : "border-border bg-muted/30 text-muted-foreground",
+                            uniformBadgeShape,
+                            getStatusColorClasses(ov.hub.isActive ? "available" : "cancelled"),
                           )}
                         >
                           {ov.hub.isActive ? "Active" : "Inactive"}
-                        </Badge>
+                        </span>
                       </>
                     ) : (
                       <span className="text-sm text-muted-foreground">All locations in scope</span>
@@ -807,19 +805,20 @@ export default function HubOverviewPage() {
                       className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5"
                     >
                       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                        <Badge
-                          variant="outline"
+                        <span
                           className={cn(
-                            "shrink-0 text-[10px] font-semibold uppercase tracking-wide",
-                            (a.severity ?? "warning") === "critical" &&
-                              "border-destructive/50 text-destructive",
-                            a.severity === "warning" &&
-                              "border-accent/40 bg-accent/5 text-foreground dark:bg-accent/10",
-                            a.severity === "info" && "text-muted-foreground",
+                            uniformBadgeShape,
+                            getStatusColorClasses(
+                              (a.severity ?? "warning") === "critical"
+                                ? "rejected"
+                                : a.severity === "warning"
+                                  ? "set aside"
+                                  : "approved"
+                            ),
                           )}
                         >
                           {a.severity ?? "warning"}
-                        </Badge>
+                        </span>
                         <span className="min-w-0 text-sm text-foreground">{a.message}</span>
                       </div>
                       {a.count != null ? (
