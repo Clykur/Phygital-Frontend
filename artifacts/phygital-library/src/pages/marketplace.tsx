@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
+  BookMarked,
   BookOpen,
   ImagePlus,
   Loader2,
