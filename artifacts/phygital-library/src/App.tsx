@@ -133,6 +133,13 @@ function StudentBorrowRoute() {
   return <Marketplace studentMode="browse" />;
 }
 
+function MarketplaceLoggedInRoute() {
+  const { user } = useAuth();
+  if (user?.baseRole === "super_admin") return <Redirect to={SUPER_ADMIN_OVERVIEW_PATH} />;
+  if (user?.baseRole === "hub") return <Redirect to={HUB_OVERVIEW_PATH} />;
+  return <Marketplace studentMode="browse" />;
+}
+
 function HubCatalogRoute() {
   const { user } = useAuth();
   if (!hasHubPortalAccess(user?.baseRole)) return <Redirect to={STUDENT_BORROW_PATH} />;
@@ -406,9 +413,7 @@ function LoggedInRoutes() {
         <Route path="/library">
           <LoggedInHomeRedirect />
         </Route>
-        <Route path="/marketplace">
-          <LoggedInHomeRedirect />
-        </Route>
+        <Route path="/marketplace" component={MarketplaceLoggedInRoute} />
         <Route path="/sign-in">
           <LoggedInHomeRedirect />
         </Route>
