@@ -291,14 +291,14 @@ export function DeskSidebarNav({
                   className={cn(
                     "group flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-amber-500/15 text-amber-950 dark:bg-amber-400/12 dark:text-amber-50"
+                      ? "bg-primary/10 text-foreground dark:bg-primary/15"
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                   )}
                 >
                   <Icon
                     className={cn(
                       "h-4 w-4 shrink-0",
-                      active ? "text-amber-800 dark:text-amber-200" : "opacity-80",
+                      active ? "text-primary" : "opacity-80",
                     )}
                     aria-hidden
                   />
@@ -307,7 +307,7 @@ export function DeskSidebarNav({
                     <span
                       className={cn(
                         "truncate text-[10px] font-normal",
-                        active ? "text-amber-900/70 dark:text-amber-100/75" : "text-muted-foreground/90",
+                        active ? "text-primary/75" : "text-muted-foreground/90",
                       )}
                     >
                       {tab.hint}
@@ -350,8 +350,8 @@ export function HubDeskMobileTabStrip() {
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                 active
-                  ? "border-amber-500/40 bg-amber-500/12 text-amber-950 dark:border-amber-400/35 dark:bg-amber-400/12 dark:text-amber-50"
-                  : "border-border/50 text-muted-foreground hover:border-amber-500/25 hover:bg-muted/50 hover:text-foreground",
+                  ? "border-primary/35 bg-primary/10 text-foreground dark:border-primary/40 dark:bg-primary/12"
+                  : "border-border/50 text-muted-foreground hover:border-primary/25 hover:bg-muted/50 hover:text-foreground",
               )}
             >
               <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" aria-hidden />

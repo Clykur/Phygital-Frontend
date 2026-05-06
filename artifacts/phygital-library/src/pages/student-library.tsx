@@ -14,6 +14,11 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import {
+  STATUS_CHIP_AMBER_SOFT,
+  STATUS_CHIP_DESTRUCTIVE_SOFT,
+  STATUS_CHIP_EMERALD,
+} from "@/lib/status-chip-tones";
 import { isHubAccount } from "@/lib/app-paths";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -21,10 +26,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { RotateCcw } from "lucide-react";
 
 type Hub = { id: string; name: string };
 type BookRow = {
@@ -88,9 +95,9 @@ function StatusChip({ state }: { state: "active" | "soon" | "overdue" }) {
     <span
       className={cn(
         "inline-flex h-7 items-center rounded-sm border px-3 text-[10px] font-semibold uppercase tracking-wide",
-        state === "active" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100",
-        state === "soon" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100",
-        state === "overdue" && "border-destructive/30 bg-destructive/10 text-destructive",
+        state === "active" && STATUS_CHIP_EMERALD,
+        state === "soon" && STATUS_CHIP_AMBER_SOFT,
+        state === "overdue" && STATUS_CHIP_DESTRUCTIVE_SOFT,
       )}
     >
       {statusLabel(state)}
@@ -142,7 +149,7 @@ function Section({
                   className={cn(
                     "even:bg-muted/[0.35]",
                     r.state === "overdue" && "border-l-2 border-l-destructive/80",
-                    r.state === "soon" && "border-l-2 border-l-amber-500/80",
+                    r.state === "soon" && "border-l-2 border-l-accent/80",
                   )}
                   data-library-row-id={r.id}
                 >
@@ -294,9 +301,9 @@ export default function StudentLibraryPage() {
     const el = document.querySelector(`[data-library-row-id="${CSS.escape(ref)}"]`);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+    el.classList.add("ring-2", "ring-primary/50", "bg-primary/5");
     const t = window.setTimeout(() => {
-      el.classList.remove("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+      el.classList.remove("ring-2", "ring-primary/50", "bg-primary/5");
     }, 2600);
     return () => window.clearTimeout(t);
   }, [pendingPickupPurchases]);
@@ -305,10 +312,12 @@ export default function StudentLibraryPage() {
     <div className={cn("min-h-[100dvh] bg-background pb-20", top)}>
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
-            {hubDesk ? "Hub portal" : "Library"}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+            {hubDesk ? "Hub portal" : "Neeve"}
           </p>
-          <h1 className="mt-1 font-serif text-lg font-light text-foreground">My library</h1>
+          <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
+            My library
+          </h1>
           <p className="mt-1 text-xs text-muted-foreground">
             Active responsibilities only: rentals and pickup-pending items.
           </p>
@@ -321,28 +330,64 @@ export default function StudentLibraryPage() {
         <Separator className="my-8" />
       </div>
       <Dialog open={!!confirmReturn} onOpenChange={(o) => !o && setConfirmReturn(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm return</DialogTitle>
-            <DialogDescription>
-              Return <span className="font-medium text-foreground">{confirmReturn?.title}</span> at{" "}
-              <span className="font-medium text-foreground">{confirmReturn?.hubName}</span>.
-            </DialogDescription>
-          </DialogHeader>
-          <Button
-            className="w-full rounded-md"
-            disabled={returnHubBook.isPending || returnPeerBorrow.isPending || !confirmReturn}
-            onClick={() => {
-              if (!confirmReturn) return;
-              if (confirmReturn.type === "hub") {
-                returnHubBook.mutate(confirmReturn.id);
-              } else {
-                returnPeerBorrow.mutate(confirmReturn.id);
-              }
-            }}
-          >
-            Confirm return
-          </Button>
+        <DialogContent className="gap-0 p-0 sm:max-w-md">
+          <div className="p-6 pb-0">
+            <DialogHeader className="space-y-3 text-left">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Return book
+              </p>
+              <DialogTitle className="font-[var(--font-display)] text-xl font-bold tracking-tight text-foreground">
+                Confirm return
+              </DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed">
+                Hand the physical copy to the hub desk, then confirm here so your loan clears in Neeve.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          {confirmReturn ? (
+            <div className="mx-6 mt-5 flex gap-3 rounded-md border border-border bg-muted/25 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
+                <RotateCcw className="h-5 w-5" aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {confirmReturn.type === "hub" ? "Borrowed from hub" : "Peer borrow · drop-off hub"}
+                </p>
+                <p className="mt-1.5 font-medium leading-snug text-foreground">{confirmReturn.title}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{confirmReturn.hubName}</span>
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          <DialogFooter className="mt-6 border-t border-border bg-muted/15 px-6 py-4 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 rounded-none border-border sm:min-w-[100px]"
+              disabled={returnHubBook.isPending || returnPeerBorrow.isPending}
+              onClick={() => setConfirmReturn(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="h-11 rounded-none font-semibold sm:min-w-[160px]"
+              disabled={returnHubBook.isPending || returnPeerBorrow.isPending || !confirmReturn}
+              onClick={() => {
+                if (!confirmReturn) return;
+                if (confirmReturn.type === "hub") {
+                  returnHubBook.mutate(confirmReturn.id);
+                } else {
+                  returnPeerBorrow.mutate(confirmReturn.id);
+                }
+              }}
+            >
+              {returnHubBook.isPending || returnPeerBorrow.isPending ? "Returning…" : "Confirm return"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

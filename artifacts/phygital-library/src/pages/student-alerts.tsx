@@ -167,10 +167,12 @@ export default function StudentAlertsPage() {
     <div className={cn("min-h-[100dvh] bg-background pb-20", top)}>
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
-            {hubDesk ? "Hub portal" : "Library"}
-          </p>
-          <h1 className="mt-1 font-serif text-lg font-light text-foreground">Alerts</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+            {hubDesk ? "Hub portal" : "Neeve"}
+          </p>  
+          <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
+            Alerts
+          </h1>
           <p className="mt-1 text-xs text-muted-foreground">
             Prioritized for pickup, request updates, and purchase confirmations.
           </p>

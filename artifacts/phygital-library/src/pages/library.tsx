@@ -129,6 +129,8 @@ export function CatalogBookCard({
   /** P2P pipeline listing state — shown on cover (takes priority over `shelfStatus` when both set). */
   pipelineListingStatus,
   action,
+  /** Square cover area — no radius on placeholder/image clip (e.g. marketplace grid). */
+  sharpCover,
 }: {
   title: string;
   coverUrl: string | null | undefined;
@@ -145,18 +147,29 @@ export function CatalogBookCard({
   shelfStatus?: string;
   pipelineListingStatus?: string;
   action: React.ReactNode;
+  sharpCover?: boolean;
 }) {
 
 
   return (
     <motion.article
-      layout
+      layout={!sharpCover}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex w-full flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm"
+      className={cn(
+        STUDENT_CARD_SURFACE,
+        sharpCover && "!rounded-none",
+        "group relative",
+        sharpCover ? "w-full" : "h-full",
+      )}
     >
-      <div className="relative w-full overflow-hidden bg-muted sm:h-full sm:min-h-[200px]" style={{ aspectRatio: "3/4" }}>
+      <div
+        className={cn(
+          "relative w-full overflow-hidden bg-muted",
+          sharpCover ? "aspect-[2/3]" : "h-full min-h-[200px]",
+        )}
+      >
         {!isSample && (pipelineListingStatus || shelfStatus) ? (
           <div className="absolute right-2 top-2 z-10 max-w-[min(100%,12rem)]">
             {pipelineListingStatus ? (
@@ -169,7 +182,10 @@ export function CatalogBookCard({
         <BookCoverImage
           src={coverUrl}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className={cn(
+            "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]",
+            sharpCover && "rounded-none",
+          )}
         />
 
         {/* Resting label */}
@@ -255,6 +271,7 @@ export function PeerListingCard({
   borrowPriceDisplay,
   priceOk,
   onOpen,
+  sharpCover,
 }: {
   title: string;
   coverUrl: string | null | undefined;
@@ -269,6 +286,7 @@ export function PeerListingCard({
   borrowPriceDisplay?: string;
   priceOk: boolean;
   onOpen: () => void;
+  sharpCover?: boolean;
 }) {
   const hasUserCover = hasBookCover(coverUrl);
 
@@ -283,13 +301,15 @@ export function PeerListingCard({
     <motion.article
       role="button"
       tabIndex={0}
-      layout
+      layout={!sharpCover}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         STUDENT_CARD_SURFACE,
-        "group relative h-full cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        sharpCover && "!rounded-none",
+        "group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        sharpCover ? "w-full" : "h-full",
       )}
       onClick={onOpen}
       onKeyDown={onKeyDown}
@@ -303,7 +323,10 @@ export function PeerListingCard({
         <BookCoverImage
           src={coverUrl}
           alt={title}
-          className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className={cn(
+            "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]",
+            sharpCover && "rounded-none",
+          )}
         />
 
         <div

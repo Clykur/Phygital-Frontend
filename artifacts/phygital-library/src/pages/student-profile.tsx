@@ -16,6 +16,7 @@ import { userFacingErrorMessage } from "@/lib/error-messages";
 import { hubKindLabel, hubMembershipRoleLabel } from "@/lib/hub-display";
 import { isHubAccount } from "@/lib/app-paths";
 import { isPremiumOk } from "@/lib/rbac";
+import { STATUS_CHIP_EMERALD } from "@/lib/status-chip-tones";
 import { PORTAL_PAGE_CONTAINER } from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -121,10 +122,12 @@ export default function StudentProfilePage() {
     <div className={cn("min-h-[100dvh] bg-background pb-20", top)}>
       <div className={cn("mx-auto", pageWrap)}>
         <div className="mb-8 border-b border-border/30 pb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
-            {hubDesk ? "Hub portal" : "Library"}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+            {hubDesk ? "Hub portal" : "Neeve"}
           </p>
-          <h1 className="mt-1 font-serif text-lg font-light text-foreground">Profile</h1>
+          <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
+            Profile
+          </h1>
         </div>
 
         <section className={cn(outline, "overflow-hidden p-6 sm:p-8")}>
@@ -215,9 +218,7 @@ export default function StudentProfilePage() {
                 <span
                   className={cn(
                     "inline-flex h-7 items-center rounded-md border px-3 text-[11px] font-semibold uppercase tracking-wide",
-                    isPremiumOk(user)
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
-                      : "border-border bg-muted/30 text-foreground",
+                    isPremiumOk(user) ? STATUS_CHIP_EMERALD : "border-border bg-muted text-foreground",
                   )}
                 >
                   {isPremiumOk(user)
@@ -245,7 +246,7 @@ export default function StudentProfilePage() {
           {!isPremiumOk(user) && (
             <Button
               type="button"
-              className="mt-8 w-full rounded-md bg-amber-500 text-slate-950 hover:bg-amber-400 sm:w-auto"
+              className="mt-8 h-11 w-full rounded-none font-semibold sm:w-auto"
               onClick={() => setUpgradeOpen(true)}
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -256,15 +257,17 @@ export default function StudentProfilePage() {
       </div>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="rounded-none sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="font-serif">Demo premium</DialogTitle>
+            <DialogTitle className="font-[var(--font-display)] text-lg font-bold tracking-tight">
+              Demo premium
+            </DialogTitle>
             <DialogDescription>
               Unlock borrow, requests, and peer buy/sell for this prototype session.
             </DialogDescription>
           </DialogHeader>
           <Button
-            className="w-full rounded-md bg-amber-500 text-slate-950 hover:bg-amber-400"
+            className="h-11 w-full rounded-none font-semibold"
             disabled={upgradeBusy}
             onClick={() => void runUpgrade()}
           >

@@ -33,7 +33,12 @@ import { userFacingErrorMessage } from "@/lib/error-messages";
 import { BookCoverImage } from "@/components/ui/book-cover-image";
 import { portalPathsForUser } from "@/lib/app-paths";
 import { hubKindLabel } from "@/lib/hub-display";
-import { PORTAL_PAGE_GUTTER_X, STUDENT_CARD_SURFACE } from "@/lib/student-ui";
+import {
+  PORTAL_INLINE_LINK,
+  PORTAL_KICKER_COLOR,
+  PORTAL_PAGE_GUTTER_X,
+  STUDENT_CARD_SURFACE,
+} from "@/lib/student-ui";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Check, ChevronsUpDown, ImagePlus, Loader2, Plus, Shield } from "lucide-react";
@@ -107,7 +112,7 @@ function CopyLifecycleStrip({ status }: { status: string }) {
               i < idx
                 ? "text-emerald-800/80 dark:text-emerald-200/80"
                 : i === idx
-                  ? "bg-amber-500/20 text-amber-950 dark:text-amber-100"
+                  ? "bg-primary/15 text-foreground"
                   : "text-muted-foreground/50",
             )}
           >
@@ -539,7 +544,7 @@ export default function HubInventoryPage() {
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                "text-amber-600/90 dark:text-amber-400/90",
+                PORTAL_KICKER_COLOR,
               )}
             >
               {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -550,10 +555,7 @@ export default function HubInventoryPage() {
                 Every row is a <span className="font-semibold text-foreground">physical copy</span> (hub stock or student
                 consignment on shelf). P2P listings that are not a copy yet are not mixed in here; open{" "}
                 {deskPaths ? (
-                  <Link
-                    href={deskPaths.p2pListings}
-                    className="font-medium text-amber-700 underline-offset-2 hover:underline dark:text-amber-400"
-                  >
+                  <Link href={deskPaths.p2pListings} className={PORTAL_INLINE_LINK}>
                     P2P Listings
                   </Link>
                 ) : (
@@ -569,10 +571,7 @@ export default function HubInventoryPage() {
                 <span className="font-semibold text-foreground">Source</span> to separate hub stock from student consignment
                 on shelf. Pre–drop-off peer listings are under{" "}
                 {deskPaths ? (
-                  <Link
-                    href={deskPaths.p2pListings}
-                    className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-400"
-                  >
+                  <Link href={deskPaths.p2pListings} className={PORTAL_INLINE_LINK}>
                     P2P Listings
                   </Link>
                 ) : null}
@@ -798,14 +797,14 @@ export default function HubInventoryPage() {
                       </div>
                       <CopyLifecycleStrip status={b.status} />
                       {b.status === "reserved" && b.request ? (
-                        <div className="space-y-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 p-2 text-xs">
+                        <div className="space-y-1.5 rounded-md border border-primary/25 bg-primary/[0.04] p-2 text-xs">
                           <div className="flex items-center gap-2">
                             <p
                               className={cn(
                                 "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest",
                                 b.request.assignmentVerified
                                   ? "bg-emerald-500/20 text-emerald-950 dark:text-emerald-200"
-                                  : "bg-amber-500/20 text-amber-950 dark:text-amber-200",
+                                  : "bg-primary/15 text-foreground",
                               )}
                             >
                               {b.request.assignmentVerified ? "Verified" : "Unverified"}
@@ -842,7 +841,7 @@ export default function HubInventoryPage() {
                         action={
                           <div className="mt-3 w-full space-y-2 text-left text-xs text-foreground md:text-white/90">
                             {inInterHubTransfer && b.targetHubName ? (
-                              <p className="font-medium leading-snug text-amber-600 md:text-amber-200/95">
+                              <p className="font-medium leading-snug text-foreground md:text-blue-100">
                                 Transferring to {b.targetHubName}
                               </p>
                             ) : null}
@@ -901,7 +900,7 @@ export default function HubInventoryPage() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="w-full rounded-md bg-amber-500 text-amber-950 hover:bg-amber-400"
+                                className="h-8 w-full rounded-md border border-accent/50 bg-accent/90 text-[11px] text-accent-foreground shadow-sm hover:bg-accent"
                                 disabled={adminForceRelease.isPending}
                                 onClick={() => {
                                   if (

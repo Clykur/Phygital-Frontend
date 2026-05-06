@@ -31,6 +31,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { hubMembershipRoleLabel } from "@/lib/hub-display";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PORTAL_INLINE_LINK, PORTAL_KICKER_COLOR } from "@/lib/student-ui";
 import { BOOK_COVER_PLACEHOLDER_URL, bookCoverDisplayUrl } from "@/lib/book-cover-display";
 
 type UserPayload = {
@@ -225,7 +226,7 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                "text-amber-600/90 dark:text-amber-400/90",
+                PORTAL_KICKER_COLOR,
               )}
             >
               {isSuperAdmin ? "Super admin" : "Hub portal"}
@@ -308,7 +309,7 @@ function AdminUserDetailContent({ userId }: { userId: string }) {
                   {memberships.map((m) => (
                     <TableRow key={m.hubId} className="border-border">
                       <TableCell className="pl-4 sm:pl-6">
-                        <Link href={adminHubPath(m.hubId)} className="font-medium text-amber-900 hover:underline dark:text-amber-200">
+                        <Link href={adminHubPath(m.hubId)} className={PORTAL_INLINE_LINK}>
                           {m.hubName}
                         </Link>
                       </TableCell>

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { STATUS_CHIP_EMERALD } from "@/lib/status-chip-tones"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
@@ -20,8 +21,7 @@ const badgeVariants = cva(
         destructive:
           // @replit shadow-xs instead of shadow, no hover because we use hover-elevate
           "border-transparent bg-destructive text-destructive-foreground shadow-xs",
-        success:
-          "border-transparent bg-emerald-500 text-emerald-50 shadow-xs",
+        success: cn("shadow-xs", STATUS_CHIP_EMERALD),
           // @replit shadow-xs" - use badge outline variable
         outline: "text-foreground border [border-color:var(--badge-outline)]",
       },

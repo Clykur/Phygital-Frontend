@@ -50,7 +50,6 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  BookMarked,
   BookOpen,
   ImagePlus,
   Loader2,
@@ -101,6 +100,22 @@ function isValidBorrowFee(price: number) {
   return Number.isFinite(price) && Number.isInteger(price) && price >= 0;
 }
 
+/** API may return amounts as strings or floats; catalog browse needs whole rupees. */
+function rupeeInt(n: unknown): number {
+  if (n == null) return NaN;
+  if (typeof n === "number" && Number.isFinite(n)) return Math.round(n);
+  if (typeof n === "string" && n.trim() !== "") {
+    const x = Number.parseFloat(n);
+    return Number.isFinite(x) ? Math.round(x) : NaN;
+  }
+  return NaN;
+}
+
+/** Shown in the hub+peer browse grid (not draft/pipeline states only staff/seller need). */
+function peerRowVisibleInPublicBrowse(status: string) {
+  return status === "available" || status === "approved";
+}
+
 function MarketplacePeerCard({
   listing: l,
   onSelect,
@@ -127,6 +142,7 @@ function MarketplacePeerCard({
       priceDisplay={priceDisplay}
       borrowPriceDisplay={borrowPriceDisplay}
       priceOk={priceOk}
+      sharpCover
       onOpen={() => {
         pushRecentViewedTitle(l.bookTitle);
         onSelect(l);
@@ -205,8 +221,8 @@ function CopyLifecycleStrip({ status }: { status: string }) {
               i < idx
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                 : i === idx
-                  ? "bg-amber-500 text-amber-950 shadow-sm dark:bg-amber-400 dark:text-amber-950"
-                  : "text-muted-foreground/40 opacity-60",
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground/50",
             )}
           >
             {label}
@@ -218,7 +234,7 @@ function CopyLifecycleStrip({ status }: { status: string }) {
 }
 
 function peerStatusToLifecycle(status: string): "available" | "reserved" | "checked_out" {
-  if (status === "available") return "available";
+  if (status === "available" || status === "approved") return "available";
   if (status === "reserved" || status === "borrowed") return "checked_out";
   return "reserved";
 }
@@ -271,7 +287,8 @@ type MarketplaceProps = { studentMode?: "browse" | "sell" };
 
 export default function Marketplace(props?: MarketplaceProps) {
   const { studentMode } = props ?? {};
-  const isBrowseMode = studentMode === "browse";
+  /** Public `/marketplace` has no `studentMode` prop: treat it like browse (hub + peer), not sell-only. */
+  const isBrowseMode = studentMode !== "sell";
   const { token, user } = useAuth();
   const portalPaths = portalPathsForUser(user);
   const hubDesk = !!user && isHubAccount(user);
@@ -394,10 +411,15 @@ export default function Marketplace(props?: MarketplaceProps) {
 
   const gridSource = useMemo((): P2pListing[] => {
     const raw = !useDemoPreview
-      ? live.map((l) => ({
-        ...l,
-        borrowPrice: typeof l.borrowPrice === "number" ? l.borrowPrice : 0,
-      }))
+      ? live.map((l) => {
+          const price = rupeeInt(l.price);
+          const borrow = rupeeInt(l.borrowPrice);
+          return {
+            ...l,
+            price: Number.isFinite(price) ? price : 0,
+            borrowPrice: Number.isFinite(borrow) ? borrow : 0,
+          };
+        })
       : DEMO_MARKETPLACE_LISTINGS.map((d, i) => ({
         id: `demo-${i}`,
         ownerId: "__demo__",
@@ -438,10 +460,10 @@ export default function Marketplace(props?: MarketplaceProps) {
       const uid = user.userId.toLowerCase();
       return gridSourcePeerVisible.filter(
         (l) =>
-          String(l.ownerId).toLowerCase() !== uid && l.status === "available",
+          String(l.ownerId).toLowerCase() !== uid && peerRowVisibleInPublicBrowse(l.status),
       );
     }
-    return gridSourcePeerVisible.filter((l) => l.status === "available");
+    return gridSourcePeerVisible.filter((l) => peerRowVisibleInPublicBrowse(l.status));
   }, [gridSourcePeerVisible, studentMode, inShell, user]);
 
   const hubBooksSorted = useMemo(() => {
@@ -536,9 +558,9 @@ export default function Marketplace(props?: MarketplaceProps) {
       document.querySelector(`[data-book-ref-id="${CSS.escape(ref)}"]`);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+    el.classList.add("ring-2", "ring-primary/40", "bg-primary/5");
     const t = window.setTimeout(() => {
-      el.classList.remove("ring-2", "ring-amber-500/60", "bg-amber-500/5");
+      el.classList.remove("ring-2", "ring-primary/40", "bg-primary/5");
     }, 2600);
     return () => window.clearTimeout(t);
   }, [isBrowseMode, browseRows]);
@@ -819,7 +841,9 @@ export default function Marketplace(props?: MarketplaceProps) {
 
   const peerListingsError = listingsQueryEnabled && listingsQ.isError;
 
-  const topPad = inShell ? "" : "pt-24";
+  /** Public `/marketplace` (`studentMode` unset): extra space below fixed navbar — Layout only applies `pt-16`. */
+  const topPad =
+    !inShell && studentMode === undefined ? "pt-8 md:pt-10" : "";
   const upgradeHint = inShell ? "Upgrade in the sidebar" : "Upgrade in the header";
 
   const hubNameBorrow = (id: string) =>
@@ -828,45 +852,46 @@ export default function Marketplace(props?: MarketplaceProps) {
   const hero = isBrowseMode
     ? hubDesk
       ? {
-        kicker: "Hub catalog",
-        title: "Network sourcing",
-        accent: "Browse, compare, acquire.",
-        body: inShell
-          ? "Use the union catalog to find titles for members, fill gaps, or buy/borrow as this hub login. Inventory remains the system of record for what you physically hold; this view is for discovery and checkout."
-          : "Browse hub and peer copies to support members. Sign in for the full desk experience.",
-      }
+          kicker: "Hub catalog",
+          title: "Network sourcing",
+          accent: "Browse, compare, acquire.",
+          body: inShell
+            ? "Use the union catalog to find titles for members, fill gaps, or buy/borrow as this hub login. Inventory remains the system of record for what you physically hold; this view is for discovery and checkout."
+            : "Browse hub and peer copies to support members. Sign in for the full desk experience.",
+        }
       : {
-        kicker: "Browse books",
-        title: "Browse books",
-        accent: "Together in one place.",
-        body: inShell
-          ? "Use the filters and search to focus on shelf copies, student sellers, or both. Premium unlocks checkout and purchases after hub approval."
-          : "Browse hub and peer copies in one view. Sign in for checkout, requests, and purchases.",
-      }
+          kicker: "Browse books",
+          title: "Browse books",
+          accent: "Together in one place.",
+          body: inShell
+            ? "Use the filters and search to focus on shelf copies, student sellers, or both. Premium unlocks checkout and purchases after hub approval."
+            : "Browse hub and peer copies in one view. Sign in for checkout, requests, and purchases.",
+        }
     : studentMode === "sell"
       ? hubDesk
         ? {
-          kicker: "Consignment",
-          title: "Peer shelf at your hub",
-          accent: "Drop-offs & approvals.",
-          body: inShell
-            ? "Track listings that name your hub for drop-off. Members still own their listings—you facilitate shelf space and desk pickup."
-            : "Consignment flows use your hub as the handoff point.",
-        }
+            kicker: "Consignment",
+            title: "Peer shelf at your hub",
+            accent: "Drop-offs & approvals.",
+            body: inShell
+              ? "Track listings that name your hub for drop-off. Members still own their listings—you facilitate shelf space and desk pickup."
+              : "Consignment flows use your hub as the handoff point.",
+          }
         : {
-          kicker: "Sell",
-          title: inShell ? "Your peer listings" : "List on the peer shelf",
-          accent: inShell ? "Only books you’ve listed appear here." : "One copy, campus pickup.",
-          body: inShell
-            ? "Publish a listing, submit drop-off at a hub, and track status until it sells. Use List a book to add another title."
-            : "Set a fair price, drop the book at your hub for approval, and buyers collect it from the desk when it’s ready.",
-        }
+            kicker: "Sell",
+            title: inShell ? "Your peer listings" : "List on the peer shelf",
+            accent: inShell ? "Only books you’ve listed appear here." : "One copy, campus pickup.",
+            body: inShell
+              ? "Publish a listing, submit drop-off at a hub, and track status until it sells. Use List a book to add another title."
+              : "Set a fair price, drop the book at your hub for approval, and buyers collect it from the desk when it’s ready.",
+          }
       : {
-        kicker: "Discover",
-        title: "Peer shelf",
-        accent: "browse every listing.",
-        body: "Explore listings without signing in. Listing, drop-off, and purchase need an account (buying also needs Premium after the hub approves the copy).",
-      };
+          kicker: "Discover",
+          title: "Peer shelf",
+          accent: "browse every listing.",
+          body:
+            "Explore listings without signing in. Listing, drop-off, and purchase need an account (buying also needs Premium after the hub approves the copy).",
+        };
 
   const showListCta = studentMode === "sell" || !studentMode;
 
@@ -886,15 +911,10 @@ export default function Marketplace(props?: MarketplaceProps) {
           <div>
             {hubDeskBrowse ? (
               <>
-                <p
-                  className={cn(
-                    "text-[10px] font-semibold uppercase tracking-[0.35em]",
-                    "text-amber-600/90 dark:text-amber-400/90",
-                  )}
-                >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                   {isSuperAdmin ? "Super admin" : "Hub portal"}
                 </p>
-                <h1 className="mt-1 font-serif text-lg font-light text-foreground">
+                <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
                   {isSuperAdmin && inShell ? "All copies" : isSuperAdmin ? "Hub & peer catalog" : "Hub catalog"}
                 </h1>
                 {isSuperAdmin && inShell ? (
@@ -902,7 +922,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     The separate hub+peer grid is for hub staff and students. Your desk view for every physical copy:{" "}
                     <Link
                       href={SUPER_ADMIN_INVENTORY_PATH}
-                      className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+                      className="font-medium text-primary underline-offset-2 hover:underline"
                     >
                       All copies
                     </Link>
@@ -913,7 +933,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     Hubs and peer listings in one grid. Physical stock:{" "}
                     <Link
                       href={portalPaths.inventory}
-                      className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+                      className="font-medium text-primary underline-offset-2 hover:underline"
                     >
                       All copies
                     </Link>
@@ -931,34 +951,41 @@ export default function Marketplace(props?: MarketplaceProps) {
               </>
             ) : inShell && !hubDesk ? (
               <>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                   Library
                 </p>
-                <h1 className="mt-1 font-serif text-lg font-light text-foreground">
+                <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
                   {isBrowseMode ? "Browse books" : studentMode === "sell" ? "Sell" : hero.title}
                 </h1>
               </>
             ) : (
               <>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-600/90">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                   {hero.kicker}
                 </p>
-                <h1 className="mt-4 font-serif text-[2.25rem] font-light leading-[1.1] tracking-[-0.02em] md:text-5xl">
-                  {hero.title}
-                  <span className="mt-1 block font-serif italic text-amber-600">{hero.accent}</span>
+                <h1 className="mt-4 max-w-3xl font-[var(--font-display)] text-[2rem] font-extrabold leading-[1.12] tracking-tight text-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.1]">
+                  {hero.title}{" "}
+                  <span className="border-b-2 border-[#F97316] pb-0.5">{hero.accent}</span>
                 </h1>
-                <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground md:text-base">
+                <p
+                  className={cn(
+                    "mt-5 leading-[1.7] text-[#334155]",
+                    isBrowseMode && !hubDesk && !inShell
+                      ? "max-w-full whitespace-nowrap overflow-x-auto text-sm sm:text-[15px] md:text-lg [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                      : "max-w-xl text-base md:text-lg",
+                  )}
+                >
                   {hero.body}{" "}
                   {isBrowseMode && inShell && (
                     <>
-                      <Link href={portalPaths.sell} className="font-medium text-amber-600 underline-offset-4 hover:underline">
+                      <Link href={portalPaths.sell} className="font-medium text-primary underline-offset-4 hover:underline">
                         Selling instead?
                       </Link>
                     </>
                   )}
                   {studentMode === "sell" && inShell && (
                     <>
-                      <Link href={portalPaths.borrow} className="font-medium text-amber-600 underline-offset-4 hover:underline">
+                      <Link href={portalPaths.borrow} className="font-medium text-primary underline-offset-4 hover:underline">
                         Browse books
                       </Link>
                     </>
@@ -973,13 +1000,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 {upgradeHint} to list on the shelf or complete a purchase.
               </p>
             )}
-            {!user ? (
-              <Button asChild className={cn("h-12 px-8", studentShellFlat ? "rounded-md" : "rounded-full")}>
-                <Link href={signInHref("/marketplace")}>
-                  {isBrowseMode ? "Sign in to borrow or buy" : "Sign in to list or buy"}
-                </Link>
-              </Button>
-            ) : showListCta ? (
+            {user && showListCta ? (
               <Dialog
                 open={listOpen}
                 onOpenChange={(open) => {
@@ -997,7 +1018,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 }}
               >
                 <Button
-                  className={cn("h-12 px-8", studentShellFlat ? "rounded-md" : "rounded-full")}
+                  className={cn("h-12 px-8", studentShellFlat ? "rounded-md" : "")}
                   disabled={!canList}
                   onClick={() => {
                     if (!canList) {
@@ -1011,7 +1032,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 </Button>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle className="font-serif">New listing</DialogTitle>
+                    <DialogTitle className="font-[var(--font-display)] text-xl font-bold tracking-tight">New listing</DialogTitle>
                     <DialogDescription>
                       Choose the campus hub, then add a title, a <strong>buy</strong> price and an optional{" "}
                       <strong>borrow</strong> fee (whole rupees; borrow may be ₹0 for sell-only copies).
@@ -1100,7 +1121,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       />
                     </div>
                     <Button
-                      className={cn("w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                      className={cn("w-full", studentShellFlat ? "rounded-md" : "")}
                       disabled={
                         !newTitle.trim() ||
                         !newListingPriceValid ||
@@ -1125,7 +1146,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 You’re browsing as a guest — hub tiles and peer listings update from the live API.{" "}
                 <Link
                   href={signInHref("/marketplace")}
-                  className="font-medium text-amber-600 underline-offset-4 hover:underline"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
                 >
                   Sign in
                 </Link>{" "}
@@ -1136,7 +1157,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 You’re browsing as a guest — these covers are real listings when peers publish them.{" "}
                 <Link
                   href={signInHref("/marketplace")}
-                  className="font-medium text-amber-600 underline-offset-4 hover:underline"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
                 >
                   Sign in
                 </Link>{" "}
@@ -1164,7 +1185,7 @@ export default function Marketplace(props?: MarketplaceProps) {
             </div>
             <Button
               variant="outline"
-              className={cn("shrink-0", studentShellFlat ? "rounded-md" : "rounded-full")}
+              className={cn("shrink-0", studentShellFlat ? "rounded-md" : "")}
               onClick={() => void listingsQ.refetch()}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -1174,8 +1195,8 @@ export default function Marketplace(props?: MarketplaceProps) {
         )}
 
         {useDemoPreview && !peerListingsError && (
-          <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-sm text-foreground">
-            <span className="font-medium text-amber-800 dark:text-amber-200">No live listings yet.</span>{" "}
+          <div className="mb-6 border border-primary/20 bg-[#EFF6FF] px-4 py-3 text-sm text-foreground">
+            <span className="font-semibold text-foreground">No live listings yet.</span>{" "}
             Showing sample covers so guests see how Discover looks — start the API with seeding (e.g.{" "}
             <code className="rounded bg-muted px-1 text-xs">AUTO_SEED=1</code>) or publish a listing
             after signing in.
@@ -1224,7 +1245,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                           ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
                           : studentShellFlat
                             ? "mt-1.5 flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
-                            : "mt-1 flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
+                            : "mt-1 flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-12 sm:px-4",
                       )}
                     >
                       <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
@@ -1313,7 +1334,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                     : "h-11 rounded-full border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
                             )}
                           >
-                            <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <BookMarked className="h-4 w-4 text-primary" />
                             Request a book
                           </Button>
                         }
@@ -1334,7 +1355,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         )}
                       >
                         <Link href={signInHref(inShell ? portalPaths.borrow : "/marketplace")}>
-                          <BookMarked className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <BookMarked className="h-4 w-4 text-primary" />
                           Request a book
                         </Link>
                       </Button>
@@ -1353,7 +1374,7 @@ export default function Marketplace(props?: MarketplaceProps) {
               Super admin desk: every physical copy (hub and peer) lives in one place. Open{" "}
               <Link
                 href={SUPER_ADMIN_INVENTORY_PATH}
-                className="font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-200/90"
+                className="font-medium text-primary underline-offset-2 hover:underline"
               >
                 All copies
               </Link>
@@ -1375,7 +1396,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       ? "flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
                       : studentShellFlat
                         ? "flex h-10 items-center gap-2 rounded-md border border-border bg-background px-3"
-                        : "flex h-11 items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-amber-500/35 focus-within:ring-2 focus-within:ring-amber-500/20 sm:h-12 sm:px-4",
+                        : "flex h-11 items-center gap-2 border border-border bg-background px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-12 sm:px-4",
                   )}
                 >
                   <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
@@ -1784,7 +1805,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       <Button
                         type="button"
                         variant="secondary"
-                        className={cn(studentShellFlat ? "rounded-md px-5" : "rounded-full px-6")}
+                        className={cn("px-6", studentShellFlat && "rounded-md px-5")}
                       >
                         Request this book
                       </Button>
@@ -1805,7 +1826,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 )}
               >
                 <p className="text-sm">Sign in to see the books you&apos;re selling.</p>
-                <Button className={cn(studentShellFlat ? "rounded-md" : "rounded-full")} asChild>
+                <Button className={cn(studentShellFlat ? "rounded-md" : "")} asChild>
                   <Link href={signInHref(portalPaths.sell)}>Sign in</Link>
                 </Button>
               </div>
@@ -1823,11 +1844,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 </p>
                 {canList && (
                   <Button
-                    className={cn(
-                      studentShellFlat
-                        ? "rounded-md bg-amber-500 text-slate-950 hover:bg-amber-400"
-                        : "rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                    )}
+                    className={cn(studentShellFlat && "rounded-md")}
                     onClick={() => setListOpen(true)}
                   >
                     List a book
@@ -1864,17 +1881,17 @@ export default function Marketplace(props?: MarketplaceProps) {
                     borrow ₹{selected.borrowPrice.toLocaleString("en-IN")}, status {selected.status}.
                   </DialogDescription>
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <DialogTitle className="font-serif text-xl font-light leading-snug tracking-tight md:text-2xl">
+                    <DialogTitle className="font-[var(--font-display)] text-xl font-bold leading-snug tracking-tight md:text-2xl">
                       {selected.bookTitle}
                     </DialogTitle>
                     <ShelfPeerStatusBadge status={selected.status} className="shrink-0" onCover={false} />
                   </div>
                   <div className="flex flex-col gap-2 text-sm text-foreground">
                     <div className="flex flex-wrap gap-x-6 gap-y-1">
-                      <p className="text-lg font-semibold tabular-nums tracking-tight text-amber-700 dark:text-amber-300">
+                      <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground">
                         Buy ₹{selected.price.toLocaleString("en-IN")}
                       </p>
-                      <p className="text-lg font-semibold tabular-nums tracking-tight text-amber-700/85 dark:text-amber-300/90">
+                      <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground/90">
                         Borrow ₹{selected.borrowPrice.toLocaleString("en-IN")}
                       </p>
                     </div>
@@ -1915,8 +1932,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                   </div>
 
                   {isDemoListingId(selected.id) && (
-                    <p className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-foreground">
-                      <span className="font-medium text-amber-800 dark:text-amber-200">
+                    <p className="border border-primary/20 bg-[#EFF6FF] px-4 py-3 text-sm leading-relaxed text-foreground">
+                      <span className="font-semibold text-foreground">
                         Sample listing.
                       </span>{" "}
                       Preview only — sign in and list a book (or use a seeded API) for real peer copies.
@@ -1933,7 +1950,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         )}
                       >
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                             Your listing
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
@@ -1997,7 +2014,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             accept="image/jpeg,image/png,image/webp,image/gif"
                             className={cn(
                               "h-11 cursor-pointer text-sm file:mr-3 file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium",
-                              studentShellFlat ? "file:rounded-md" : "file:rounded-full",
+                              studentShellFlat ? "file:rounded-md" : "file:rounded-none",
                             )}
                             onChange={(e) => {
                               const f = e.target.files?.[0] ?? null;
@@ -2034,7 +2051,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         </div>
                         <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
                           <Button
-                            className={cn(studentShellFlat ? "rounded-md sm:flex-1" : "rounded-full sm:flex-1")}
+                            className={cn("sm:flex-1", studentShellFlat && "rounded-md")}
                             disabled={
                               updateListing.isPending ||
                               !editTitle.trim() ||
@@ -2050,7 +2067,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             className={cn(
                               studentShellFlat
                                 ? "rounded-md border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1"
-                                : "rounded-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1",
+                                : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1",
                             )}
                             disabled={deleteListing.isPending}
                             onClick={() => deleteListing.mutate(selected.id)}
@@ -2072,7 +2089,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         )}
                       >
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                             Drop-off
                           </p>
                           <p className="mt-1 text-sm text-muted-foreground">
@@ -2096,8 +2113,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                         </div>
                         <Button
                           className={cn(
-                            "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                            studentShellFlat ? "rounded-md" : "rounded-full",
+                            "h-11 w-full",
+                            studentShellFlat ? "rounded-md" : "",
                           )}
                           disabled={!dropHubId || submitDropoff.isPending}
                           onClick={() =>
@@ -2138,12 +2155,14 @@ export default function Marketplace(props?: MarketplaceProps) {
 
                   <Separator className="opacity-60" />
 
-                  {selected.status === "available" && !user && !isDemoListingId(selected.id) && (
+                  {(selected.status === "available" || selected.status === "approved") &&
+                    !user &&
+                    !isDemoListingId(selected.id) && (
                     <Button
                       asChild
                       className={cn(
-                        "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                        studentShellFlat ? "rounded-md" : "rounded-full",
+                        "h-11 w-full",
+                        studentShellFlat ? "rounded-md" : "",
                       )}
                     >
                       <Link href={signInHref("/marketplace")}>
@@ -2157,8 +2176,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                     <Button
                       asChild
                       className={cn(
-                        "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                        studentShellFlat ? "rounded-md" : "rounded-full",
+                        "h-11 w-full",
+                        studentShellFlat ? "rounded-md" : "",
                       )}
                     >
                       <Link href={signInHref("/marketplace")}>Sign in for real listings</Link>
@@ -2170,7 +2189,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     selected.ownerId !== user.userId &&
                     selected.status === "available" &&
                     !isPremiumOk(user) && (
-                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                      <p className="text-sm text-muted-foreground">
                         Premium required to borrow or buy — use Upgrade in the{" "}
                         {inShell ? "sidebar" : "header"}.
                       </p>
@@ -2182,8 +2201,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                     selected.status === "reserved" && (
                       <Button
                         className={cn(
-                          "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                          studentShellFlat ? "rounded-md" : "rounded-full",
+                          "h-11 w-full",
+                          studentShellFlat ? "rounded-md" : "",
                         )}
                         disabled={returnPeerBorrow.isPending}
                         onClick={() => returnPeerBorrow.mutate(selected.id)}
@@ -2208,8 +2227,8 @@ export default function Marketplace(props?: MarketplaceProps) {
                         {(selected.type ?? "sell") === "rent" && (
                           <Button
                             className={cn(
-                              "h-11 w-full bg-amber-500 text-slate-950 hover:bg-amber-400",
-                              studentShellFlat ? "rounded-md" : "rounded-full",
+                              "h-11 w-full",
+                              studentShellFlat ? "rounded-md" : "",
                             )}
                             onClick={() => openPeerCheckout(selected, "borrow")}
                           >
@@ -2220,7 +2239,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                           variant="secondary"
                           className={cn(
                             "h-11 w-full border border-border",
-                            studentShellFlat ? "rounded-md" : "rounded-full",
+                            studentShellFlat ? "rounded-md" : "",
                           )}
                           onClick={() => openPeerCheckout(selected, "buy")}
                         >
@@ -2236,7 +2255,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     selected.status !== "sold" &&
                     selected.status !== "available" && (
                       <Button
-                        className={cn("h-11 w-full", studentShellFlat ? "rounded-md" : "rounded-full")}
+                        className={cn("h-11 w-full", studentShellFlat ? "rounded-md" : "")}
                         variant="secondary"
                         disabled
                       >

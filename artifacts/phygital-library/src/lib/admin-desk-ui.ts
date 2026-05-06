@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { PORTAL_KICKER_COLOR } from "@/lib/student-ui";
 
 /** Matches hub book-requests + super admin overview filter chrome. */
 export const ADMIN_STICKY_HEADER = cn(
@@ -6,7 +7,8 @@ export const ADMIN_STICKY_HEADER = cn(
 );
 
 export const ADMIN_EYEBROW = cn(
-  "text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-600/90 dark:text-amber-400/90",
+  "text-[10px] font-semibold uppercase tracking-[0.35em]",
+  PORTAL_KICKER_COLOR,
 );
 
 export const ADMIN_PAGE_TITLE = cn("mt-1 font-serif text-lg font-light text-foreground");

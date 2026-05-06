@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,22 @@ export default function SignInPage() {
   const [hubLocation, setHubLocation] = useState("");
   const [hubKind, setHubKind] = useState<HubKindValue>("other");
   const [busy, setBusy] = useState(false);
+
+  const dismiss = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    setLocation("/");
+  }, [setLocation]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [dismiss]);
 
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,36 +100,75 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pt-28 pb-20">
-      <div className="mx-auto max-w-md px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-600/90">
-            Phygital Library
+    <div
+      className="fixed inset-0 z-[100] flex min-h-[100dvh] items-start justify-center overflow-y-auto bg-[#0F172A]/55 px-4 py-10 pb-16 backdrop-blur-[3px] sm:items-center sm:py-12"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sign-in-title"
+    >
+      {/* Click-away closes like a modal */}
+      <button
+        type="button"
+        aria-label="Close sign-in"
+        className="fixed inset-0 z-0 cursor-default"
+        onClick={dismiss}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[440px] border border-border bg-card shadow-2xl ring-1 ring-black/[0.06] dark:ring-white/[0.06]"
+      >
+        <div className="absolute right-3 top-3 z-20 flex gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-none text-muted-foreground hover:bg-muted hover:text-foreground"
+            onClick={dismiss}
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <div className="px-6 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-11">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+            Neeve
           </p>
-          <h1 className="mt-4 font-serif text-3xl font-light tracking-tight text-foreground">
+          <h1
+            id="sign-in-title"
+            className="mt-3 font-[var(--font-display)] text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-[1.65rem]"
+          >
             Student Library Network
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to borrow, request titles, and trade on the campus shelf.
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Sign in to browse the marketplace, borrow or buy at hubs, and list your copies.
           </p>
 
-          <Tabs defaultValue="signin" className="mt-10">
-            <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/60 p-1">
-              <TabsTrigger value="signin" className="rounded-full">
+          <Tabs defaultValue="signin" className="mt-8">
+            <TabsList className="grid h-11 w-full grid-cols-2 gap-0 rounded-none border border-border bg-muted/50 p-0">
+              <TabsTrigger
+                value="signin"
+                className="rounded-none border-0 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground"
+              >
                 Sign in
               </TabsTrigger>
-              <TabsTrigger value="register" className="rounded-full">
+              <TabsTrigger
+                value="register"
+                className="rounded-none border-0 py-2.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground"
+              >
                 Register
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="signin" className="mt-8">
-              <form onSubmit={onLogin} className="space-y-5">
+
+            <TabsContent value="signin" className="mt-7 outline-none">
+              <form onSubmit={onLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="si-email">Email</Label>
+                  <Label htmlFor="si-email" className="text-foreground">
+                    Email
+                  </Label>
                   <Input
                     id="si-email"
                     type="email"
@@ -120,11 +176,13 @@ export default function SignInPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-card"
+                    className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="si-password">Password</Label>
+                  <Label htmlFor="si-password" className="text-foreground">
+                    Password
+                  </Label>
                   <Input
                     id="si-password"
                     type="password"
@@ -132,59 +190,55 @@ export default function SignInPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-card"
+                    className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={busy}
-                  className="h-12 w-full rounded-full bg-foreground text-background"
-                >
+                <Button type="submit" disabled={busy} className="mt-2 h-11 w-full rounded-none font-semibold">
                   {busy ? "…" : "Continue"}
                 </Button>
               </form>
             </TabsContent>
-            <TabsContent value="register" className="mt-8">
-              <form onSubmit={onRegister} className="space-y-5">
+
+            <TabsContent value="register" className="mt-7 outline-none">
+              <form onSubmit={onRegister} className="space-y-4">
                 <div className="space-y-3">
                   <Label className="text-foreground">I am signing up as</Label>
                   <RadioGroup
                     value={registerAs}
                     onValueChange={(v) => setRegisterAs(v as "student" | "hub")}
-                    className="grid gap-3"
+                    className="grid gap-2"
                   >
                     <label
                       className={cn(
-                        "flex cursor-pointer gap-3 rounded-xl border p-3 text-left transition-colors",
+                        "flex cursor-pointer gap-3 border p-3 text-left transition-colors rounded-none",
                         registerAs === "student"
-                          ? "border-amber-500/60 bg-amber-500/5"
-                          : "border-border bg-card hover:bg-muted/40",
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/25"
+                          : "border-border bg-background hover:bg-muted/50",
                       )}
                     >
-                      <RadioGroupItem value="student" id="reg-student" className="mt-0.5" />
+                      <RadioGroupItem value="student" id="reg-student" className="mt-0.5 border-primary" />
                       <span className="min-w-0">
                         <span className="block text-sm font-medium text-foreground">Student</span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
-                          Borrow, buy, and sell books. You stay a standard member account.
+                          Borrow, buy, and sell books on the campus shelf.
                         </span>
                       </span>
                     </label>
                     <label
                       className={cn(
-                        "flex cursor-pointer gap-3 rounded-xl border p-3 text-left transition-colors",
+                        "flex cursor-pointer gap-3 border p-3 text-left transition-colors rounded-none",
                         registerAs === "hub"
-                          ? "border-amber-500/60 bg-amber-500/5"
-                          : "border-border bg-card hover:bg-muted/40",
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/25"
+                          : "border-border bg-background hover:bg-muted/50",
                       )}
                     >
-                      <RadioGroupItem value="hub" id="reg-hub" className="mt-0.5" />
+                      <RadioGroupItem value="hub" id="reg-hub" className="mt-0.5 border-primary" />
                       <span className="min-w-0">
                         <span className="block text-sm font-medium text-foreground">
                           Library hub (desk)
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
-                          Register a lending location. You become hub lead and can use the desk
-                          tools for this hub.
+                          Register a lending location and use hub desk tools.
                         </span>
                       </span>
                     </label>
@@ -192,15 +246,13 @@ export default function SignInPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reg-name">
-                    {registerAs === "hub" ? "Your name" : "Name"}
-                  </Label>
+                  <Label htmlFor="reg-name">{registerAs === "hub" ? "Your name" : "Name"}</Label>
                   <Input
                     id="reg-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="bg-card"
+                    className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                   />
                 </div>
                 {registerAs === "hub" ? (
@@ -213,7 +265,7 @@ export default function SignInPage() {
                         onChange={(e) => setHubName(e.target.value)}
                         required
                         placeholder="e.g. North Campus Reading Room"
-                        className="bg-card"
+                        className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
@@ -224,19 +276,19 @@ export default function SignInPage() {
                         onChange={(e) => setHubLocation(e.target.value)}
                         required
                         placeholder="City, campus, or address"
-                        className="bg-card"
+                        className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="reg-hub-kind">Hub type</Label>
-                      <Select
-                        value={hubKind}
-                        onValueChange={(v) => setHubKind(v as HubKindValue)}
-                      >
-                        <SelectTrigger id="reg-hub-kind" className="bg-card">
+                      <Select value={hubKind} onValueChange={(v) => setHubKind(v as HubKindValue)}>
+                        <SelectTrigger
+                          id="reg-hub-kind"
+                          className="h-11 rounded-none border-border bg-background focus:ring-primary"
+                        >
                           <SelectValue placeholder="Choose type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-none border-border">
                           {HUB_KIND_OPTIONS.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
@@ -256,7 +308,7 @@ export default function SignInPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-card"
+                    className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -269,27 +321,23 @@ export default function SignInPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={8}
-                    className="bg-card"
+                    className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={busy}
-                  className="h-12 w-full rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
-                >
+                <Button type="submit" disabled={busy} className="mt-2 h-11 w-full rounded-none font-semibold">
                   {busy ? "…" : registerAs === "hub" ? "Create hub & account" : "Create account"}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
 
-          <p className="mt-10 text-center text-sm text-muted-foreground">
-            <Link href="/" className="text-amber-600 hover:text-amber-700">
+          <p className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
+            <Link href="/" className="font-medium text-primary underline-offset-4 hover:underline">
               ← Back to home
             </Link>
           </p>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
