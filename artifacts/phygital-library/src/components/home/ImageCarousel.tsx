@@ -8,12 +8,15 @@ export function ImageCarousel({
   className,
   autoAdvanceMs = 4500,
   minimal = false,
+  full = false,
 }: {
   images: CarouselImage[];
   className?: string;
   autoAdvanceMs?: number;
   /** Lighter chrome for hero and editorial layouts */
   minimal?: boolean;
+  /** Full height mode for backgrounds */
+  full?: boolean;
 }) {
   const safeImages = useMemo(() => images.filter(Boolean), [images]);
   const [index, setIndex] = useState(0);
@@ -31,21 +34,24 @@ export function ImageCarousel({
   const current = safeImages[Math.min(index, safeImages.length - 1)];
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full h-full", className)}>
       <div
         className={cn(
-          "relative overflow-hidden bg-white",
-          minimal ? "border-b-2 border-primary" : "border border-border",
+          "relative overflow-hidden bg-slate-100 h-full",
+          !minimal && "border border-border",
         )}
       >
         {!minimal && <div className="h-1 w-full bg-primary" aria-hidden />}
         <img
           src={current.src}
           alt={current.alt}
-          className={cn("w-full object-cover", minimal ? "h-52 md:h-64 lg:h-[17.5rem]" : "h-56 md:h-60")}
+          className={cn(
+            "w-full object-cover transition-opacity duration-1000",
+            full ? "h-full" : minimal ? "h-52 md:h-64 lg:h-[17.5rem]" : "h-56 md:h-60"
+          )}
           loading="lazy"
         />
-        {safeImages.length > 1 && (
+        {safeImages.length > 1 && !full && (
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
             {safeImages.map((_, i) => (
               <button
@@ -67,7 +73,7 @@ export function ImageCarousel({
             ))}
           </div>
         )}
-        {safeImages.length > 1 && (
+        {safeImages.length > 1 && !full && (
           <div className="absolute right-3 top-3 flex gap-1">
             <button
               type="button"
@@ -97,4 +103,3 @@ export function ImageCarousel({
     </div>
   );
 }
-

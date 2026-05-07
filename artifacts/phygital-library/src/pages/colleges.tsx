@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { Link } from "wouter";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, Building2, CheckCircle2, Handshake, MapPin, ScanLine, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Handshake, MapPin, ScanLine, ShieldCheck, Sparkles, Users, Zap, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/home/Container";
 import { Section } from "@/components/home/Section";
@@ -9,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ImageCarousel } from "@/components/home/ImageCarousel";
 
 const PAGE_TITLE = "Partner with Neeve | Campus library hubs & textbook network";
 const PAGE_DESCRIPTION =
@@ -100,23 +102,35 @@ export default function Colleges() {
   useCollegesSeo();
   const reduceMotion = useReducedMotion();
   const [partnerDialogOpen, setPartnerDialogOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const opacityParallax = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const HERO_BG_IMAGES = [
+    { src: "/images/community-hub.png", alt: "Collaborative Student Hub" },
+    { src: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2000&auto=format&fit=crop", alt: "Academic Excellence" },
+    { src: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2000&auto=format&fit=crop", alt: "Student Collaboration" },
+  ];
 
   const fadeUp = {
-    hidden: { opacity: 0, y: reduceMotion ? 0 : 20 },
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 30 },
     visible: {
-      opacity: 1,
-      y: 0,
-      transition: reduceMotion
-        ? { duration: 0 }
-        : { type: "spring" as const, stiffness: 380, damping: 30, mass: 0.85 },
+      opacity: 1, y: 0,
+      transition: reduceMotion ? { duration: 0 } : { type: "spring" as const, stiffness: 300, damping: 25, mass: 0.8 },
     },
   };
+
   const stagger = {
     hidden: {},
-    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.05, delayChildren: reduceMotion ? 0 : 0.03 } },
+    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.08, delayChildren: reduceMotion ? 0 : 0.1 } },
   };
 
-  const card = "home-interactive-card border border-border bg-white p-6 md:p-8";
+  const card = "bento-card border border-blue-100 bg-white p-6 md:p-8 rounded-none transition-all hover:shadow-lg hover:-translate-y-1";
 
   const handlePartnerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,23 +141,23 @@ export default function Colleges() {
   return (
     <>
       <Dialog open={partnerDialogOpen} onOpenChange={setPartnerDialogOpen}>
-        <DialogContent className="max-h-[min(90vh,760px)] max-w-[440px] gap-0 overflow-y-auto rounded-none p-0 sm:max-w-[440px]">
+        <DialogContent className="w-[calc(100%-32px)] sm:w-full max-h-[min(90vh,760px)] max-w-[440px] gap-0 overflow-y-auto rounded-none p-0">
           <div className="px-6 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-11">
             <DialogHeader className="space-y-3 text-left">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+              <p className="caption-scale font-semibold uppercase tracking-[0.22em] text-[#64748B]">
                 Partner colleges
               </p>
-              <DialogTitle className="font-[var(--font-display)] text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-[1.65rem]">
+              <DialogTitle className="font-[var(--font-display)] h3-scale font-extrabold leading-tight tracking-tight text-foreground sm:text-[1.65rem]">
                 Pilot a hub with Neeve
               </DialogTitle>
-              <DialogDescription className="text-base leading-relaxed text-[#64748B]">
+              <DialogDescription className="body-scale leading-relaxed text-[#64748B]">
                 Share a few details. Our partnerships team typically responds within two business days.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handlePartnerSubmit} className="mt-8 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="collegeName" className="text-foreground">
+                <Label htmlFor="collegeName" className="text-foreground small-scale">
                   Institution name
                 </Label>
                 <Input
@@ -156,7 +170,7 @@ export default function Colleges() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactName" className="text-foreground">
+                <Label htmlFor="contactName" className="text-foreground small-scale">
                   Your name
                 </Label>
                 <Input
@@ -169,7 +183,7 @@ export default function Colleges() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobTitle" className="text-foreground">
+                <Label htmlFor="jobTitle" className="text-foreground small-scale">
                   Job role / title
                 </Label>
                 <Input
@@ -182,7 +196,7 @@ export default function Colleges() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">
+                <Label htmlFor="email" className="text-foreground small-scale">
                   Work email
                 </Label>
                 <Input
@@ -196,7 +210,7 @@ export default function Colleges() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city" className="text-foreground">
+                <Label htmlFor="city" className="text-foreground small-scale">
                   City and state
                 </Label>
                 <Input
@@ -208,7 +222,7 @@ export default function Colleges() {
                   className="h-11 rounded-none border-border bg-background focus-visible:ring-primary"
                 />
               </div>
-              <Button type="submit" className="mt-2 h-11 w-full rounded-none font-semibold">
+              <Button type="submit" className="mt-2 h-11 w-full rounded-none font-semibold small-scale">
                 Submit
               </Button>
             </form>
@@ -216,213 +230,259 @@ export default function Colleges() {
         </DialogContent>
       </Dialog>
 
-      <div className="w-full bg-background">
-      {/* Fills first viewport below fixed navbar (h-16): only this block + nav on initial load */}
-      <section
-        aria-labelledby="colleges-partner-heading"
-        className="flex min-h-[calc(100dvh-4rem)] flex-col justify-center border-b border-border bg-white py-10 md:py-12"
-      >
-        <Container className="px-4 md:px-6">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-stretch lg:gap-10 xl:gap-14">
-            <div className="flex flex-col justify-center lg:col-span-7 lg:max-w-none">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">For partner colleges</p>
-              <h1
-                id="colleges-partner-heading"
-                className="mt-4 max-w-2xl text-balance font-[var(--font-display)] text-[2rem] font-extrabold leading-[1.12] tracking-tight text-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.1]"
-              >
-                Upgrade underused library space into a{" "}
-                <span className="border-b-2 border-[#F97316] pb-0.5">Neeve study hub</span> with{" "}
-                <span className="text-primary">zero upfront capex</span>.
-              </h1>
-              <p className="mt-5 max-w-xl text-base leading-[1.75] text-[#334155] md:text-lg">
-                Start with one MoU and one pilot hub. We align on space, traffic, and operations, then scale when your institution is
-                ready. Students use the same app for borrowing, P2P, and retail pickup across the network.
-              </p>
-              <div className="mt-9">
-                <Button size="lg" type="button" className="w-full sm:w-auto" onClick={() => setPartnerDialogOpen(true)}>
-                  Schedule a conversation
-                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
-                </Button>
-              </div>
-            </div>
+      <div className="w-full bg-[#FAFAFA] font-sans selection:bg-primary/20 selection:text-primary">
+        {/* 1. HERO SECTION */}
+        <section id="hero" ref={heroRef} className="relative min-h-[90dvh] flex flex-col justify-center overflow-hidden bg-primary">
+          {/* Background Image Carousel */}
+          <div className="absolute inset-0 z-0">
+            <ImageCarousel
+              images={HERO_BG_IMAGES}
+              full
+              minimal
+              autoAdvanceMs={6000}
+              className="opacity-100"
+            />
+            <div className="absolute inset-0 bg-primary/40 backdrop-blur-[1px]" />
+          </div>
 
-            <div className="flex flex-col justify-center lg:col-span-5">
-              <div className="flex h-full flex-col overflow-hidden border border-border border-l-[3px] border-l-[#F97316] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
-                <div className="border-b border-border bg-[#FAFBFC] px-5 py-5 md:px-6 md:py-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Pilot checklist</p>
-                  <p className="mt-2 font-[var(--font-display)] text-lg font-bold leading-snug tracking-tight text-foreground md:text-xl">
-                    What we align on before go live
+          <Container className="relative z-10 px-4 py-16 md:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+
+              {/* Left Column: Typography & CTA */}
+              <motion.div variants={stagger} initial="hidden" animate="visible" className="max-w-2xl">
+                <motion.div variants={fadeUp}>
+                  <div className="inline-flex items-center gap-2 rounded-none border border-white/20 bg-white/10 px-4 py-1.5 caption-scale font-semibold text-blue-200 backdrop-blur-md shadow-sm">
+                    <Building2 className="h-3.5 w-3.5 fill-primary text-primary" />
+                    <span>Institutional Partnerships</span>
+                  </div>
+                </motion.div>
+
+                <motion.h1
+                  variants={fadeUp}
+                  className="mt-8 text-balance font-[var(--font-display)] hero-title text-white"
+                >
+                  Upgrade library space into a <span className="text-blue-400">Neeve study hub.</span>
+                </motion.h1>
+
+                <motion.p variants={fadeUp} className="mt-6 body-scale text-slate-200 max-w-xl">
+                  Start with zero upfront capex. We align on space, traffic, and operations, then scale when your institution is ready.
+                </motion.p>
+
+                <motion.div variants={stagger} className="mt-8 flex flex-col sm:flex-row items-center gap-4">
+                  <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      onClick={() => setPartnerDialogOpen(true)}
+                      className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none bg-primary px-8 py-4 small-scale font-bold text-white shadow-md transition-all hover:bg-blue-700 hover:-translate-y-0.5 h-auto"
+                    >
+                      Schedule a Conversation <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+
+              {/* Right Column: Floating Visuals */}
+              <motion.div
+                className="relative hidden lg:block h-[500px] w-full perspective-1000"
+                style={{ y: yParallax, opacity: opacityParallax }}
+              >
+                <div className="absolute top-[10%] right-[10%] w-[380px] h-[450px] overflow-hidden rounded-none border border-white/20 bg-white shadow-2xl">
+                  <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
+                    <p className="caption-scale font-bold uppercase tracking-wider text-slate-500">Pilot Checklist</p>
+                    <p className="mt-1 h3-scale font-bold text-slate-900">Go-live alignment</p>
+                  </div>
+                  <ul className="divide-y divide-slate-100 bg-white">
+                    {[
+                      "Space audit: shelving & flow",
+                      "Traffic & term calendar",
+                      "Inventory & handoff rules",
+                      "MoU scope & success gates",
+                    ].map((line, i) => (
+                      <li key={i} className="flex gap-4 px-6 py-4 items-center">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                        <span className="small-scale text-slate-600 font-medium">{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute bottom-[10%] -left-[5%] bento-card p-4 flex items-center gap-3 w-[220px] z-20"
+                >
+                  <div className="h-10 w-10 rounded-none bg-emerald-50 flex items-center justify-center">
+                    <Zap className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="caption-scale font-bold text-slate-500 uppercase tracking-wider">Zero Capex</p>
+                    <p className="small-scale font-bold text-slate-900 leading-none">Instant Activation</p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="py-20 bg-white border-y border-slate-100">
+          <Container>
+            <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce}>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center border border-slate-200 bg-slate-50/50 p-8 md:p-12 rounded-none relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+
+                <div className="lg:col-span-5 relative z-10">
+                  <div className="inline-flex items-center gap-2 rounded-none bg-blue-50 px-4 py-1.5 caption-scale font-bold uppercase tracking-widest text-primary mb-6">
+                    Why Partner
+                  </div>
+                  <motion.h2
+                    variants={fadeUp}
+                    className="font-[var(--font-display)] h1-scale text-slate-900 text-balance mb-6"
+                  >
+                    Foot traffic, underused space, a modern desk experience.
+                  </motion.h2>
+                  <motion.p variants={fadeUp} className="body-scale text-slate-600 leading-relaxed">
+                    Neeve is infrastructure. We help you turn library adjacency into a staffed hub for discovery, pickup, and accountable
+                    peer exchanges, without a large capital project on day one.
+                  </motion.p>
+                </div>
+
+                <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
+                  {[
+                    {
+                      accent: "bg-primary",
+                      icon: Sparkles,
+                      title: "Physical experience",
+                      body: "Refresh underused stacks and desk workflows so the library feels current.",
+                    },
+                    {
+                      accent: "bg-emerald-500",
+                      icon: Users,
+                      title: "Modern student flow",
+                      body: "App-based discovery and desk handoff match retail expectations.",
+                    },
+                    {
+                      accent: "bg-orange-400",
+                      icon: ShieldCheck,
+                      title: "Traceable handoffs",
+                      body: "Desk-assisted pickup ensures condition and accountability stay visible.",
+                    },
+                  ].map((item) => (
+                    <motion.article key={item.title} variants={fadeUp} className="bg-white p-6 rounded-none border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                      <div className={`mb-6 h-1 w-12 rounded-none ${item.accent}`} aria-hidden />
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-none bg-slate-50 text-slate-600">
+                        <item.icon className="h-5 w-5" strokeWidth={1.5} />
+                      </div>
+                      <h3 className="small-scale font-bold text-slate-900 mb-2">{item.title}</h3>
+                      <p className="caption-scale text-slate-500 leading-relaxed">{item.body}</p>
+                    </motion.article>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </Container>
+        </section>
+
+        <section className="py-24 bg-[#FAFAFA]">
+          <Container>
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              className="overflow-hidden rounded-none border border-slate-200 bg-white shadow-sm"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 border-b border-slate-100 bg-slate-50/50 p-8 md:p-12">
+                <div className="lg:col-span-5">
+                  <div className="inline-flex items-center gap-2 rounded-none bg-blue-50 px-4 py-1.5 caption-scale font-bold uppercase tracking-widest text-primary mb-6">
+                    Pilot Process
+                  </div>
+                  <h2 className="font-[var(--font-display)] h1-scale text-slate-900 text-balance">
+                    From MoU to first desk day.
+                  </h2>
+                </div>
+                <div className="flex flex-col justify-center lg:col-span-7">
+                  <p className="body-scale text-slate-600 leading-relaxed">
+                    Legal scope, physical upgrade, training, then a controlled launch. Your gates for scale stay explicit from kickoff through
+                    review.
                   </p>
                 </div>
-                <ul className="flex flex-1 flex-col divide-y divide-border bg-white" role="list">
-                  {[
-                    "Space audit: shelving, desk, and student flow",
-                    "Traffic and term calendar for staffing",
-                    "Inventory and handoff rules with your team",
-                    "MoU scope: one hub, clear success gates",
-                  ].map((line) => (
-                    <li key={line} className="flex gap-3.5 px-5 py-4 md:px-6 md:py-[1.125rem]">
-                      <CheckCircle2 className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#EA580C]" aria-hidden />
-                      <span className="text-[0.9375rem] leading-relaxed text-[#334155]">{line}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-              <p className="mt-4 max-w-md text-xs leading-relaxed text-[#64748B] md:mt-5">
-                Utilization varies by campus. We model impact with your inputs and keep MoU language grounded.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
 
-      <section className="border-t border-border bg-white py-12 md:py-16">
-        <Container>
-          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={viewportOnce}>
-            <div className="grid grid-cols-1 gap-8 border border-border bg-background p-6 md:grid-cols-12 md:gap-10 md:p-8 lg:p-10">
-              <div className="md:col-span-5 md:border-r md:border-border md:pr-8">
-                <p className="home-kicker">WHY PARTNER</p>
-                <motion.h2
-                  variants={fadeUp}
-                  className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl"
-                >
-                  Foot traffic, underused space, a modern desk experience
-                </motion.h2>
-              </div>
-              <div className="md:col-span-7">
-                <motion.p variants={fadeUp} className="text-base leading-relaxed text-[#334155] md:pt-1 md:text-[1.05rem]">
-                  Neeve is infrastructure. We help you turn library adjacency into a staffed hub for discovery, pickup, and accountable
-                  peer exchanges, without a large capital project on day one.
-                </motion.p>
-              </div>
-            </div>
-
-            <motion.div variants={stagger} className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
-              {[
-                {
-                  accent: "bg-primary" as const,
-                  icon: Sparkles,
-                  title: "Lift the physical experience",
-                  body: "Refresh underused stacks and desk workflows so the library feels current. We co-design the hub layout with your team.",
-                },
-                {
-                  accent: "bg-[#F97316]" as const,
-                  icon: Users,
-                  title: "Match how students move",
-                  body: "App-based discovery, reservations, and desk handoff match expectations set by retail and mobility products.",
-                },
-                {
-                  accent: "bg-primary" as const,
-                  icon: ShieldCheck,
-                  title: "Clear rules, traceable handoffs",
-                  body: "P2P and retail use desk-assisted pickup so condition, fees, and accountability stay visible to staff.",
-                },
-              ].map((item) => (
-                <motion.article key={item.title} variants={fadeUp} className={card}>
-                  <div className={`mb-4 h-1 w-12 ${item.accent}`} aria-hidden />
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center border border-border bg-[#EFF6FF] text-primary">
-                    <item.icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-[#64748B]">{item.body}</p>
-                </motion.article>
-              ))}
-            </motion.div>
-          </motion.div>
-        </Container>
-      </section>
-
-      <Section className="border-t border-border bg-[#EEF2F6]">
-        <Container>
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border border-border bg-white shadow-[0_1px_0_rgba(15,23,42,0.04)]"
-          >
-            <div className="grid grid-cols-1 gap-8 border-b border-border bg-[#FAFBFC] p-6 md:grid-cols-12 md:gap-10 md:p-8 lg:p-10 lg:gap-12">
-              <div className="md:col-span-5 md:border-r md:border-border md:pr-8 lg:pr-10">
-                <p className="home-kicker">HOW THE PILOT WORKS</p>
-                <h2 className="mt-4 font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-                  From MoU to first desk day
-                </h2>
-              </div>
-              <div className="flex flex-col justify-center md:col-span-7">
-                <p className="text-base leading-relaxed text-[#334155] md:text-[1.05rem]">
-                  Legal scope, physical upgrade, training, then a controlled launch. Your gates for scale stay explicit from kickoff through
-                  review.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white px-5 py-10 md:px-10 md:py-12 lg:px-12">
-              <ol className="relative m-0 list-none space-y-0 p-0">
-                {PILOT_STEPS.map((step, idx) => {
-                  const Icon = step.icon;
-                  const isLast = idx === PILOT_STEPS.length - 1;
-                  return (
-                    <motion.li
-                      key={step.title}
-                      initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-                      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.15 }}
-                      transition={{ duration: 0.4, delay: reduceMotion ? 0 : idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                      className="relative flex gap-5 pb-12 last:pb-0 md:gap-8"
-                    >
-                      {!isLast ? (
-                        <span
-                          className="absolute left-[21px] top-11 h-[calc(100%-0.25rem)] w-px bg-gradient-to-b from-primary/35 via-border to-[#F97316]/35"
-                          aria-hidden
-                        />
-                      ) : null}
-                      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center border border-border bg-white text-sm font-extrabold tabular-nums text-primary shadow-[0_1px_2px_rgba(15,23,42,0.06)] ring-2 ring-white">
-                        {(idx + 1).toString().padStart(2, "0")}
-                      </div>
-                      <div className="min-w-0 flex-1 pt-0.5">
-                        <div className="border border-border border-l-[3px] border-l-primary bg-[#F8FAFC] p-5 md:p-6">
-                          <div className="flex flex-wrap items-start gap-3">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border bg-white text-primary">
-                              <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">Step {(idx + 1).toString()}</p>
-                              <h3 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground md:text-xl">
-                                {step.title}
-                              </h3>
-                              <p className="mt-3 text-sm leading-relaxed text-[#64748B] md:text-[0.9375rem]">{step.body}</p>
-                            </div>
+              <div className="bg-white p-8 md:p-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {PILOT_STEPS.map((step, idx) => {
+                    const Icon = step.icon;
+                    return (
+                      <motion.div
+                        key={step.title}
+                        variants={fadeUp}
+                        className="relative group"
+                      >
+                        <div className="mb-6 flex items-center gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-none border border-slate-200 bg-white text-lg font-bold tabular-nums text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+                            {(idx + 1).toString().padStart(2, "0")}
                           </div>
+                          <div className="h-px flex-1 bg-slate-100 hidden lg:block group-last:hidden" />
                         </div>
-                      </div>
-                    </motion.li>
-                  );
-                })}
-              </ol>
-            </div>
-          </motion.div>
-        </Container>
-      </Section>
-
-      <Section className="border-t border-border bg-white pb-16 md:pb-20">
-        <Container>
-          <div className="border border-border border-t-4 border-t-primary bg-[#F8FAFC] p-8 md:p-12">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-[var(--font-display)] text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-                Ready to talk about one pilot hub?
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-[#334155]">
-                We walk through space, staffing, and timelines, and only scale when your institution is comfortable.
-              </p>
-              <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
-                <Button size="lg" className="w-full sm:w-auto" onClick={() => setPartnerDialogOpen(true)}>
-                  Schedule a conversation
-                </Button>
+                        <div className="p-6 rounded-none border border-slate-100 bg-[#F8FAFC] transition-all hover:shadow-md hover:-translate-y-1">
+                          <div className="flex items-center gap-3 mb-4">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-none bg-white border border-slate-200 text-primary">
+                              <Icon className="h-4 w-4" strokeWidth={1.5} />
+                            </span>
+                            <p className="caption-scale font-bold uppercase tracking-wider text-slate-400">Step {idx + 1}</p>
+                          </div>
+                          <h3 className="small-scale font-bold text-slate-900 mb-3">{step.title}</h3>
+                          <p className="caption-scale text-slate-500 leading-relaxed">{step.body}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
-        </Container>
-      </Section>
+            </motion.div>
+          </Container>
+        </section>
+
+        <section className="py-24 bg-white border-t border-slate-100">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={viewportOnce}
+              className="rounded-none bg-slate-900 p-12 md:p-20 text-center relative overflow-hidden shadow-2xl"
+            >
+              <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-400/10 blur-[80px] rounded-full pointer-events-none" />
+
+              <div className="relative z-10 max-w-3xl mx-auto">
+                <h2 className="font-[var(--font-display)] hero-title text-white mb-8">
+                  Ready to talk about one pilot hub?
+                </h2>
+                <p className="body-scale text-slate-400 mb-12">
+                  We walk through space, staffing, and timelines, and only scale when your institution is comfortable.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-6">
+                  <Button
+                    size="lg"
+                    onClick={() => setPartnerDialogOpen(true)}
+                    className="bg-primary text-white hover:bg-blue-600 h-14 px-8 rounded-none font-bold small-scale transition-all hover:-translate-y-1 shadow-lg"
+                  >
+                    Schedule a Conversation
+                  </Button>
+                  <Link href="/about">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-white/20 bg-white/5 text-white hover:bg-white/10 h-14 px-8 rounded-none font-bold small-scale backdrop-blur-md transition-all hover:-translate-y-1"
+                    >
+                      Learn More About Neeve
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </Container>
+        </section>
       </div>
     </>
   );
