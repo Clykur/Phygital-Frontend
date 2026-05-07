@@ -140,7 +140,7 @@ export function CheckoutFlowDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-md gap-0 overflow-hidden p-0 sm:rounded-2xl",
+          "gap-0 overflow-hidden p-0 w-[calc(100%-1rem)] max-w-[calc(100%-1rem)] sm:max-w-md sm:rounded-2xl",
           STUDENT_CARD_CHROME,
         )}
       >
@@ -278,18 +278,18 @@ export function CheckoutFlowDialog({
                 />
               </div>
               {payError && <p className="text-sm text-destructive">{payError}</p>}
-              <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-row gap-2 sm:flex-row">
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 rounded-full"
+                  className="flex-1 rounded-none"
                   disabled={pending}
                   onClick={() => setStep("details")}
                 >
                   Back
                 </Button>
                 <Button
-                  className="flex-1 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"
+                  className="flex-1 rounded-none bg-primary/90 text-slate-950 hover:bg-primary/30"
                   disabled={
                     pending ||
                     !cardName.trim() ||
@@ -327,7 +327,7 @@ export function CheckoutFlowDialog({
                 <p className="mt-1 text-[11px] text-muted-foreground">QR support can be added on top of this ref in the next phase.</p>
               </div>
               <Button
-                className="w-full rounded-full"
+                className="w-full rounded-none"
                 onClick={() => {
                   onOpenChange(false);
                   setStep("details");
