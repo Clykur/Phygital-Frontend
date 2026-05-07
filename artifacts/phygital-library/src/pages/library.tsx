@@ -202,7 +202,7 @@ export function CatalogBookCard({
 
         {/* Hover / focus overlay — desktop only (hidden on touch) */}
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/92 via-black/55 to-black/25 opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-          <div className="space-y-3 p-4 pt-10 text-white">
+          <div className="space-y-2 p-3 pt-10 text-white">
             <div>
               <p className="font-serif text-lg font-medium leading-snug tracking-tight">{title}</p>
               {isSample && (
@@ -212,7 +212,7 @@ export function CatalogBookCard({
                 </p>
               )}
             </div>
-            <dl className="grid gap-2 text-xs text-white/88">
+            <dl className="grid gap-1.5 text-xs text-white/88">
               <div className="flex gap-2">
                 <dt className="shrink-0 text-white/55">
                   <span className="inline-flex items-center gap-1">
@@ -343,7 +343,7 @@ export function PeerListingCard({
         </div>
 
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/92 via-black/55 to-black/25 opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-          <div className="space-y-3 p-4 pt-10 text-white">
+          <div className="space-y-2 p-3 pt-10 text-white">
             <div>
               <p className="font-serif text-lg font-medium leading-snug tracking-tight">{title}</p>
               {isSample && (
@@ -353,7 +353,7 @@ export function PeerListingCard({
                 </p>
               )}
             </div>
-            <dl className="grid gap-2 text-xs text-white/88">
+            <dl className="grid gap-1.5 text-xs text-white/88">
               <div className="flex gap-2">
                 <dt className="shrink-0 text-white/55">
                   <span className="inline-flex items-center gap-1">
@@ -503,12 +503,12 @@ export default function LibraryPage() {
   const topPad = inShell ? "" : "pt-24";
 
   return (
-    <div className={cn("min-h-[100dvh] bg-background pb-24", topPad)}>
+    <div className={cn("min-h-[100dvh] bg-background pb-12", topPad)}>
       <div className={cn("mx-auto w-full", inShell ? "max-w-none" : "max-w-7xl px-6 lg:px-10")}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between"
+          className="mb-6 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between"
         >
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-amber-600/90">
@@ -615,7 +615,7 @@ export default function LibraryPage() {
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin" />
             <p className="text-sm">Loading catalog…</p>
           </div>
@@ -744,7 +744,7 @@ export default function LibraryPage() {
             </div>
             {!showSampleLayout && catalogTotalPages > 1 && (
               <nav
-                className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
+                className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row"
                 aria-label="Catalog pagination"
               >
                 <div className="flex items-center gap-2">

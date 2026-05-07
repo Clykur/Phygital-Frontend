@@ -897,16 +897,16 @@ export default function Marketplace(props?: MarketplaceProps) {
   const showListCta = studentMode === "sell" || !studentMode;
 
   return (
-    <div className={cn("min-h-[100dvh] bg-background pb-20 sm:pb-32 text-foreground", topPad)}>
+    <div className={cn("min-h-[100dvh] bg-background pb-8 sm:pb-12 text-foreground", topPad)}>
       <div className={cn("mx-auto w-full", inShell ? "" : PORTAL_PAGE_CONTAINER)}>
         <div
           className={cn(
-            "flex flex-col items-start justify-between gap-6 sm:gap-8 md:flex-row md:items-end",
+            "flex flex-col items-start justify-between gap-4 sm:gap-6 md:flex-row md:items-end",
             hubDeskBrowse
               ? "mb-4"
               : inShell && (!hubDesk || isBrowseMode)
-                ? "mb-6 sm:mb-8 border-b border-border/30 pb-4 sm:pb-6"
-                : "mb-8 sm:mb-12",
+                ? "mb-4 sm:mb-6 border-b border-border/30 pb-4"
+                : "mb-4 sm:mb-6",
           )}
         >
           <div>
@@ -952,25 +952,25 @@ export default function Marketplace(props?: MarketplaceProps) {
               </>
             ) : inShell && !hubDesk ? (
               <>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+                <p className="section-kicker">
                   {user?.baseRole === "super_admin" ? "Super admin" : "Student"}
                 </p>
-                <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground">
+                <h1 className="mt-1 font-[var(--font-display)] text-lg font-bold tracking-tight text-foreground text-balance">
                   {isBrowseMode ? "Browse books" : studentMode === "sell" ? "Sell" : hero.title}
                 </h1>
               </>
             ) : (
               <>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
+                <p className="section-kicker">
                   {hero.kicker}
                 </p>
-                <h1 className="mt-4 max-w-3xl font-[var(--font-display)] text-[2rem] font-extrabold leading-[1.12] tracking-tight text-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.1]">
+                <h1 className="mt-4 max-w-3xl font-[var(--font-display)] text-[2rem] font-extrabold leading-[1.12] tracking-tight text-foreground sm:text-4xl md:text-[2.65rem] md:leading-[1.1] text-balance">
                   {hero.title}{" "}
-                  <span className="border-b-2 border-[#F97316] pb-0.5">{hero.accent}</span>
+                  <span className="border-b-2 border-primary pb-0.5">{hero.accent}</span>
                 </h1>
                 <p
                   className={cn(
-                    "mt-4 sm:mt-5 leading-[1.6] sm:leading-[1.7] text-[#334155]",
+                    "mt-3 sm:mt-4 leading-[1.6] sm:leading-[1.7] text-[#334155]",
                     isBrowseMode && !hubDesk && !inShell
                       ? "max-w-full text-sm sm:text-[15px] md:text-lg"
                       : "max-w-xl text-sm sm:text-base md:text-lg",
@@ -1019,7 +1019,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 }}
               >
                 <Button
-                  className={cn("h-12 px-8", studentShellFlat ? "rounded-none" : "")}
+                  className={cn("h-12 px-8", studentShellFlat ? "rounded-xl" : "")}
                   disabled={!canList}
                   onClick={() => {
                     if (!canList) {
@@ -1122,7 +1122,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       />
                     </div>
                     <Button
-                      className={cn("w-full", studentShellFlat ? "rounded-none" : "")}
+                      className={cn("w-full", studentShellFlat ? "rounded-xl" : "")}
                       disabled={
                         !newTitle.trim() ||
                         !newListingPriceValid ||
@@ -1145,7 +1145,7 @@ export default function Marketplace(props?: MarketplaceProps) {
         )}
 
         {peerListingsError && (
-          <div className="mb-8 flex flex-col gap-4 rounded-none border border-destructive/30 bg-destructive/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-8 flex flex-col gap-4 rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
               <div>
@@ -1158,7 +1158,7 @@ export default function Marketplace(props?: MarketplaceProps) {
             </div>
             <Button
               variant="outline"
-              className={cn("shrink-0", studentShellFlat ? "rounded-none" : "")}
+              className={cn("shrink-0", studentShellFlat ? "rounded-xl" : "")}
               onClick={() => void listingsQ.refetch()}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -1200,7 +1200,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     Search
                   </Label>
                   {hubDesk && isBrowseMode && inShell ? (
-                    <div className="mt-1.5 flex h-10 items-center gap-2 rounded-none border border-border bg-background px-3 text-sm">
+                    <div className="mt-1.5 flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm">
                       <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <input
                         type="text"
@@ -1215,10 +1215,10 @@ export default function Marketplace(props?: MarketplaceProps) {
                     <div
                       className={cn(
                         studentShellBrowse
-                          ? "mt-1.5 flex h-10 items-center gap-2 rounded-none border border-border bg-background px-3"
+                          ? "mt-1.5 flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3"
                           : studentShellFlat
-                            ? "mt-1.5 flex h-10 items-center gap-2 rounded-none border border-border bg-background px-3"
-                            : "mt-1 flex h-11 items-center gap-2 rounded-none border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-12 sm:px-4",
+                            ? "mt-1.5 flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3"
+                            : "mt-1 flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-background/90 px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-10 sm:px-4",
                       )}
                     >
                       <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
@@ -1252,10 +1252,10 @@ export default function Marketplace(props?: MarketplaceProps) {
                       className={cn(
                         "mt-1 w-full shrink-0",
                         hubDesk && isBrowseMode && inShell
-                          ? "h-10 rounded-none border-border bg-background px-2 text-xs"
+                          ? "h-10 rounded-xl border-border bg-background px-2 text-xs"
                           : studentShellBrowse
-                            ? "h-10 rounded-none border border-border bg-background px-2 text-xs"
-                            : "h-11 rounded-none border border-border/60 bg-background/80 px-2 text-xs sm:h-12",
+                            ? "h-10 rounded-xl border border-border bg-background px-2 text-xs"
+                            : "h-10 rounded-xl border border-border/60 bg-background/80 px-2 text-xs sm:h-10",
                       )}
                       aria-label={hubDesk ? "Browse source" : "Catalog source"}
                     >
@@ -1310,12 +1310,12 @@ export default function Marketplace(props?: MarketplaceProps) {
                             className={cn(
                               "w-full min-w-0 gap-1 px-0 sm:px-4 shrink",
                               hubDesk && isBrowseMode && inShell
-                                ? "h-10 rounded-none border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                ? "h-10 rounded-xl border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
                                 : studentShellBrowse
-                                  ? "h-10 rounded-none border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                  ? "h-10 rounded-xl border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
                                   : studentShellFlat
-                                    ? "h-10 rounded-none border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
-                                    : "h-11 rounded-none border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-12 sm:min-w-[10.5rem] sm:px-5",
+                                    ? "h-10 rounded-xl border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
+                                    : "h-10 rounded-xl border border-border/60 bg-muted/40 px-4 text-sm shadow-sm hover:bg-muted/70 sm:h-10 sm:min-w-[10.5rem] sm:px-5",
                             )}
                           >
                             <BookMarked className="h-4 w-4 text-primary" />
@@ -1359,10 +1359,10 @@ export default function Marketplace(props?: MarketplaceProps) {
                 <div
                   className={cn(
                     studentShellBrowse
-                      ? "flex h-10 items-center gap-2 rounded-none border border-border bg-background px-3"
+                      ? "flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3"
                       : studentShellFlat
-                        ? "flex h-10 items-center gap-2 rounded-none border border-border bg-background px-3"
-                        : "flex h-11 items-center gap-2 border border-border bg-background px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-12 sm:px-4",
+                        ? "flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3"
+                        : "flex h-10 items-center gap-2 border border-border bg-background px-3 shadow-sm transition-[box-shadow] focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15 sm:h-10 sm:px-4",
                   )}
                 >
                   <Search className="h-4 w-4 shrink-0 text-muted-foreground sm:h-[1.125rem] sm:w-[1.125rem]" />
@@ -1397,7 +1397,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         key={`recent-${s}`}
                         size="sm"
                         variant="outline"
-                        className="h-7 rounded-none border-border/80 bg-muted/20 px-2 text-[11px]"
+                        className="h-7 rounded-xl border-border/80 bg-muted/20 px-2 text-[11px]"
                         onClick={() => setSearch(s)}
                       >
                         {s}
@@ -1413,7 +1413,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     value={soldToFilter}
                     onValueChange={(v) => setSoldToFilter(v as "all" | "peer" | "hub")}
                   >
-                    <SelectTrigger className="mt-1 h-10 rounded-none border border-border bg-background px-2.5 text-sm">
+                    <SelectTrigger className="mt-1 h-10 rounded-xl border border-border bg-background px-2.5 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1431,7 +1431,7 @@ export default function Marketplace(props?: MarketplaceProps) {
         {isBrowseMode && !superAdminShellBrowse
           ? browseLoading
             ? (
-              <div className="flex justify-center py-24">
+              <div className="flex justify-center py-12">
                 <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
               </div>
             )
@@ -1489,7 +1489,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                     className={cn(
                                       "w-full bg-primary text-primary-foreground hover:bg-primary/90",
                                       "min-w-0",
-                                      studentShellFlat ? "rounded-none" : "rounded-none",
+                                      studentShellFlat ? "rounded-xl" : "rounded-xl",
                                     )}
                                     asChild
                                   >
@@ -1526,7 +1526,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                           variant="secondary"
                                           className={cn(
                                             "w-full border border-border bg-muted/50 hover:bg-muted/70",
-                                            studentShellFlat ? "rounded-none" : "rounded-none",
+                                            studentShellFlat ? "rounded-xl" : "rounded-xl",
                                           )}
                                         >
                                           Request from hub
@@ -1539,7 +1539,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                   <Button
                                     size="sm"
                                     variant="secondary"
-                                    className={cn("w-full", studentShellFlat ? "rounded-none" : "rounded-none")}
+                                    className={cn("w-full", studentShellFlat ? "rounded-xl" : "rounded-xl")}
                                     onClick={() =>
                                       toast.message(
                                         `Premium unlocks borrow and buy. Use Upgrade in the ${upgradeWhere}.`,
@@ -1555,7 +1555,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                     size="sm"
                                     className={cn(
                                       "w-full bg-primary text-primary-foreground hover:bg-primary/90",
-                                      studentShellFlat ? "rounded-none" : "rounded-none",
+                                      studentShellFlat ? "rounded-xl" : "rounded-xl",
                                     )}
                                     onClick={() =>
                                     (pushRecentViewedTitle(b.title),
@@ -1625,13 +1625,13 @@ export default function Marketplace(props?: MarketplaceProps) {
                 />
                 {studentShellBrowse ? (
                   <section className="mt-8 space-y-4">
-                    <div className="rounded-none border border-border bg-card/60 p-5">
+                    <div className="rounded-xl border border-border bg-card/60 p-5">
                       <h3 className="text-base font-semibold tracking-tight text-foreground">Smart recommendations</h3>
                       <p className="mt-1 text-xs text-muted-foreground">
                         Quick picks based on your browsing and hub activity.
                       </p>
                       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                        <div className="rounded-none border border-border/70 bg-background p-3">
+                        <div className="rounded-xl border border-border/70 bg-background p-3">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                             Similar books
                           </p>
@@ -1641,7 +1641,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                 key={`sim-${t}`}
                                 size="sm"
                                 variant="outline"
-                                className="h-7 rounded-none border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                className="h-7 rounded-xl border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
                                 onClick={() => setSearch(t)}
                               >
                                 {t}
@@ -1649,7 +1649,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             ))}
                           </div>
                         </div>
-                        <div className="rounded-none border border-border/70 bg-background p-3">
+                        <div className="rounded-xl border border-border/70 bg-background p-3">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                             Popular at your hub
                           </p>
@@ -1659,7 +1659,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                 key={`pop-${t}`}
                                 size="sm"
                                 variant="outline"
-                                className="h-7 rounded-none border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                className="h-7 rounded-xl border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
                                 onClick={() => setSearch(t)}
                               >
                                 {t}
@@ -1667,7 +1667,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             ))}
                           </div>
                         </div>
-                        <div className="rounded-none border border-border/70 bg-background p-3">
+                        <div className="rounded-xl border border-border/70 bg-background p-3">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                             Recently requested
                           </p>
@@ -1677,7 +1677,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                                 key={`req-${t}`}
                                 size="sm"
                                 variant="outline"
-                                className="h-7 rounded-none border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
+                                className="h-7 rounded-xl border-border/80 bg-muted/20 px-2 text-[11px] hover:bg-muted/50"
                                 onClick={() => setSearch(t)}
                               >
                                 {t}
@@ -1704,9 +1704,9 @@ export default function Marketplace(props?: MarketplaceProps) {
                   <>
                     <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-fr">
                       {peerGridRows.map((l) => (
-                        <div key={l.id} className={cn(studentMode === "sell" && inShell ? "flex min-w-0 flex-col gap-1.5" : "")}>
+                        <div key={l.id} className={cn(studentMode === "sell" && inShell ? "flex min-w-0 flex-col gap-1" : "")}>
                           {studentMode === "sell" && inShell ? (
-                            <div className="mb-2 space-y-1.5 px-1">
+                            <div className="mb-1 space-y-1 px-1">
                               <div className="flex flex-col items-start gap-0.5">
                                 <span
                                   className={cn(
@@ -1783,7 +1783,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       <Button
                         type="button"
                         variant="secondary"
-                        className={cn("px-6", studentShellFlat && "rounded-none px-5")}
+                        className={cn("px-6", studentShellFlat && "rounded-xl px-5")}
                       >
                         Request this book
                       </Button>
@@ -1804,7 +1804,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 )}
               >
                 <p className="text-sm">Sign in to see the books you&apos;re selling.</p>
-                <Button className={cn(studentShellFlat ? "rounded-none" : "")} asChild>
+                <Button className={cn(studentShellFlat ? "rounded-xl" : "")} asChild>
                   <Link href={signInHref(portalPaths.sell)}>Sign in</Link>
                 </Button>
               </div>
@@ -1822,7 +1822,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 </p>
                 {canList && (
                   <Button
-                    className={cn(studentShellFlat && "rounded-none")}
+                    className={cn(studentShellFlat && "rounded-xl")}
                     onClick={() => setListOpen(true)}
                   >
                     List a book
@@ -1846,7 +1846,7 @@ export default function Marketplace(props?: MarketplaceProps) {
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent
           className={cn(
-            "max-h-[min(95vh,720px)] w-[95vw] sm:w-full max-w-lg gap-0 overflow-hidden p-0 sm:rounded-none",
+            "max-h-[min(95vh,720px)] w-[95vw] sm:w-full max-w-lg gap-0 overflow-hidden p-0 sm:rounded-xl",
             STUDENT_CARD_CHROME,
           )}
         >
@@ -1924,7 +1924,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     (selected.status === "listed" || selected.status === "pending_dropoff") && (
                       <div
                         className={cn(
-                          "space-y-4 rounded-none border border-border/80 bg-card/60 p-4 shadow-sm",
+                          "space-y-4 rounded-xl border border-border/80 bg-card/60 p-4 shadow-sm",
                         )}
                       >
                         <div>
@@ -1992,7 +1992,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             accept="image/jpeg,image/png,image/webp,image/gif"
                             className={cn(
                               "h-11 cursor-pointer text-sm file:mr-3 file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium",
-                              studentShellFlat ? "file:rounded-none" : "file:rounded-none",
+                              studentShellFlat ? "file:rounded-xl" : "file:rounded-xl",
                             )}
                             onChange={(e) => {
                               const f = e.target.files?.[0] ?? null;
@@ -2029,7 +2029,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         </div>
                         <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
                           <Button
-                            className={cn("sm:flex-1", studentShellFlat && "rounded-none")}
+                            className={cn("sm:flex-1", studentShellFlat && "rounded-xl")}
                             disabled={
                               updateListing.isPending ||
                               !editTitle.trim() ||
@@ -2044,7 +2044,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             variant="outline"
                             className={cn(
                               studentShellFlat
-                                ? "rounded-none border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1"
+                                ? "rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1"
                                 : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1",
                             )}
                             disabled={deleteListing.isPending}
@@ -2063,7 +2063,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     hubsQ.data && (
                       <div
                         className={cn(
-                          "space-y-4 rounded-none border border-border/80 bg-card/40 p-4 shadow-sm",
+                          "space-y-4 rounded-xl border border-border/80 bg-card/40 p-4 shadow-sm",
                         )}
                       >
                         <div>
@@ -2092,7 +2092,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         <Button
                           className={cn(
                             "h-11 w-full",
-                            studentShellFlat ? "rounded-none" : "",
+                            studentShellFlat ? "rounded-xl" : "",
                           )}
                           disabled={!dropHubId || submitDropoff.isPending}
                           onClick={() =>
@@ -2140,7 +2140,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                         asChild
                         className={cn(
                           "h-11 w-full",
-                          studentShellFlat ? "rounded-none" : "",
+                          studentShellFlat ? "rounded-xl" : "",
                         )}
                       >
                         <Link href={signInHref("/marketplace")}>
@@ -2155,7 +2155,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       asChild
                       className={cn(
                         "h-11 w-full",
-                        studentShellFlat ? "rounded-none" : "",
+                        studentShellFlat ? "rounded-xl" : "",
                       )}
                     >
                       <Link href={signInHref("/marketplace")}>Sign in for real listings</Link>
@@ -2180,7 +2180,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                       <Button
                         className={cn(
                           "h-11 w-full",
-                          studentShellFlat ? "rounded-none" : "",
+                          studentShellFlat ? "rounded-xl" : "",
                         )}
                         disabled={returnPeerBorrow.isPending}
                         onClick={() => returnPeerBorrow.mutate(selected.id)}
@@ -2206,7 +2206,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                           <Button
                             className={cn(
                               "h-11 w-full",
-                              studentShellFlat ? "rounded-none" : "",
+                              studentShellFlat ? "rounded-xl" : "",
                             )}
                             onClick={() => openPeerCheckout(selected, "borrow")}
                           >
@@ -2217,7 +2217,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                           variant="secondary"
                           className={cn(
                             "h-11 w-full border border-border",
-                            studentShellFlat ? "rounded-none" : "",
+                            studentShellFlat ? "rounded-xl" : "",
                           )}
                           onClick={() => openPeerCheckout(selected, "buy")}
                         >
@@ -2233,7 +2233,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                     selected.status !== "sold" &&
                     selected.status !== "available" && (
                       <Button
-                        className={cn("h-11 w-full", studentShellFlat ? "rounded-none" : "")}
+                        className={cn("h-11 w-full", studentShellFlat ? "rounded-xl" : "")}
                         variant="secondary"
                         disabled
                       >

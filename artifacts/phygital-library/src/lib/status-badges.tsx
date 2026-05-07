@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 // Standardized visual shape for all status badges everywhere
-export const uniformBadgeShape = "inline-flex items-center justify-center whitespace-nowrap px-2.5 py-0.5 rounded-md text-[11px] font-semibold tracking-wide uppercase";
+export const uniformBadgeShape = "inline-flex items-center justify-center whitespace-nowrap px-2.5 py-0.5 rounded-none text-[11px] font-semibold tracking-wide uppercase";
 
 // Keep this around for backwards compatibility where the cover shape was expected,
 // but now just map it to the new uniform shape + backdrop blur.
