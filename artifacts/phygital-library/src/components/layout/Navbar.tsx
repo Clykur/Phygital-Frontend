@@ -37,6 +37,13 @@ export function Navbar() {
     { name: "About", path: "/about" },
   ];
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (location === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <header
       className={cn(
@@ -45,29 +52,8 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center border border-border bg-white">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-foreground">
-              <path
-                d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H10.5C11.3284 3 12 3.67157 12 4.5V19.5C12 20.3284 11.3284 21 10.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 4.5C12 3.67157 12.6716 3 13.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H13.5C12.6716 21 12 20.3284 12 19.5V4.5Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path d="M12 4.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <span className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground">
-            Neeve
-          </span>
+        <Link href="/" onClick={handleLogoClick} className="flex items-center gap-3">
+          <img src="/images/neev.png" alt="Neeve Logo" className="h-15 w-30" />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
@@ -79,7 +65,7 @@ export function Navbar() {
                 href={link.path}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "text-sm font-medium transition-colors",
+                  "text-sm md:text-base font-medium transition-colors",
                   isActive ? "font-semibold text-primary" : "text-[#334155] hover:text-foreground",
                 )}
               >

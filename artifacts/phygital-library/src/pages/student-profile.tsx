@@ -261,7 +261,7 @@ export default function StudentProfilePage() {
       </div>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent className="rounded-none sm:max-w-sm">
+        <DialogContent className="w-[calc(100%-32px)] sm:w-full rounded-none sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-[var(--font-display)] text-lg font-bold tracking-tight">
               Demo premium

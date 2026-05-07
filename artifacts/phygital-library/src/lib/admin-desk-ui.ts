@@ -16,13 +16,13 @@ export const ADMIN_PAGE_TITLE = cn("mt-1 font-serif text-lg font-light text-fore
 export const adminFilterLabel = "text-[10px] text-muted-foreground";
 
 export const adminSelectTrigger = cn(
-  "mt-1 h-9 w-full rounded-xl border-border/60 bg-background/80 text-sm",
+  "mt-1 h-9 w-full rounded-none border-border/60 bg-background/80 text-sm",
 );
 
 export const adminSearchInput = cn(
-  "mt-1 h-9 w-full rounded-xl border-border/60 bg-background/80 text-sm",
+  "mt-1 h-9 w-full rounded-none border-border/60 bg-background/80 text-sm",
 );
 
 export const adminPanel = cn(
-  "rounded-2xl border border-border/50 bg-card/60 shadow-sm backdrop-blur-sm dark:border-white/[0.06] dark:bg-card/40",
+  "rounded-none border border-border/50 bg-card/60 shadow-sm backdrop-blur-sm dark:border-white/[0.06] dark:bg-card/40",
 );
