@@ -9,9 +9,8 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className={cn("py-14 md:py-20", className)}>
+    <section className={cn("py-10 md:py-14", className)}>
       {children}
     </section>
   );
 }
-
