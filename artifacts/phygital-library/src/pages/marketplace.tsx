@@ -247,10 +247,10 @@ function unavailableReason(status: string) {
 }
 
 function listingStatusLabel(status: string) {
-  if (status === "listed") return "Listed (Draft)";
+  if (status === "listed") return "Draft";
   if (status === "pending_dropoff") return "Pending Drop-off";
-  if (status === "approved") return "Approved (On-shelf)";
-  if (status === "available") return "On-shelf";
+  if (status === "approved") return "On Shelf";
+  if (status === "available") return "On Shelf";
   if (status === "sold") return "Sold";
   if (status === "rejected") return "Rejected";
   return status.replace(/_/g, " ");
@@ -259,10 +259,10 @@ function listingStatusLabel(status: string) {
 function listingNextStep(status: string) {
   if (status === "listed") return "Choose drop-off hub to start.";
   if (status === "pending_dropoff") return "Drop at hub desk to activate.";
-  if (status === "approved") return "Wait for buyer or borrower.";
-  if (status === "available") return "Wait for buyer or borrower.";
+  if (status === "approved") return "Available in shelf.";
+  if (status === "available") return "Available on the shelf.";
   if (status === "sold") return "Completed. Edits are locked.";
-  if (status === "rejected") return "Listing rejected. No further action.";
+  if (status === "rejected") return "Rejected. No further action.";
   return "Track status updates from this page.";
 }
 
@@ -1186,11 +1186,11 @@ export default function Marketplace(props?: MarketplaceProps) {
             <>
               <div
                 className={cn(
-                  "grid grid-cols-[minmax(0,1fr)_90px_56px] items-end gap-2 w-full md:flex md:flex-row md:gap-4",
-                  hubDesk && isBrowseMode && inShell && "sm:flex-row sm:flex-wrap sm:items-end",
+                  "flex w-full items-end gap-2 min-w-0",
+                  hubDesk && isBrowseMode && inShell && "flex-nowrap",
                 )}
               >
-                <div className="flex min-w-0 flex-col md:flex-1">
+                <div className="flex min-w-0 flex-1 flex-col">
                   <Label
                     className={cn(
                       "text-[10px] text-muted-foreground",
@@ -1234,7 +1234,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                   )}
                 </div>
 
-                <div className="flex min-w-0 flex-col md:w-[120px] md:shrink-0">
+                <div className="flex w-[72px] shrink flex-col sm:w-[90px] md:w-[100px]">
                   <Label
                     className={cn(
                       "text-[10px] text-muted-foreground",
@@ -1243,6 +1243,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                   >
                     {hubDesk ? "Source" : "Catalog"}
                   </Label>
+
                   <Select
                     value={sourceFilter}
                     onValueChange={(v) => setSourceFilter(v as "all" | "hub" | "peers")}
@@ -1251,16 +1252,17 @@ export default function Marketplace(props?: MarketplaceProps) {
                       className={cn(
                         "mt-1 w-full shrink-0",
                         hubDesk && isBrowseMode && inShell
-                          ? "h-10 rounded-none border-border bg-background px-2.5 text-sm"
+                          ? "h-10 rounded-none border-border bg-background px-2 text-xs"
                           : studentShellBrowse
-                            ? "h-10 rounded-none border border-border bg-background px-2.5 text-sm"
-                            : "h-11 rounded-none border border-border/60 bg-background/80 px-2.5 text-sm sm:h-12",
+                            ? "h-10 rounded-none border border-border bg-background px-2 text-xs"
+                            : "h-11 rounded-none border border-border/60 bg-background/80 px-2 text-xs sm:h-12",
                       )}
                       aria-label={hubDesk ? "Browse source" : "Catalog source"}
                     >
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+
+                    <SelectContent className="w-[72px] min-w-[72px] sm:w-[90px] sm:min-w-[90px] md:w-[100px] md:min-w-[100px]">
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="hub">Hubs</SelectItem>
                       <SelectItem value="peers">Peers</SelectItem>
@@ -1271,7 +1273,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 {user && (
                   <div
                     className={cn(
-                      "flex min-w-0 flex-col md:w-auto md:shrink-0",
+                      "flex w-[52px] shrink flex-col sm:w-auto",
                       hubDesk && isBrowseMode && inShell
                         ? "md:max-w-[12rem] md:justify-self-end"
                         : "md:w-auto",
@@ -1306,7 +1308,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                             variant="secondary"
                             size="default"
                             className={cn(
-                              "w-10 px-0 sm:w-auto sm:px-4 gap-2 shrink-0",
+                              "w-full min-w-0 gap-1 px-0 sm:px-4 shrink",
                               hubDesk && isBrowseMode && inShell
                                 ? "h-10 rounded-none border border-border bg-muted/50 px-4 text-sm hover:bg-muted/80"
                                 : studentShellBrowse
@@ -1317,7 +1319,9 @@ export default function Marketplace(props?: MarketplaceProps) {
                             )}
                           >
                             <BookMarked className="h-4 w-4 text-primary" />
-                            <span className="hidden sm:inline">Request a book</span>
+                            <span className="truncate text-[11px] sm:text-sm">
+                              Request a book
+                            </span>
                             <span className="sr-only sm:hidden">Request a book</span>
                           </Button>
                         }
@@ -1403,7 +1407,7 @@ export default function Marketplace(props?: MarketplaceProps) {
                 ) : null}
               </div>
               {studentMode === "sell" && inShell ? (
-                <div className="flex w-full shrink-0 flex-col sm:w-[12rem]">
+                <div className="flex w-[92px] shrink-0 flex-col sm:w-[120px]">
                   <Label className="text-[10px] text-muted-foreground">Sold to</Label>
                   <Select
                     value={soldToFilter}
@@ -1484,13 +1488,19 @@ export default function Marketplace(props?: MarketplaceProps) {
                                     size="sm"
                                     className={cn(
                                       "w-full bg-primary text-primary-foreground hover:bg-primary/90",
+                                      "min-w-0",
                                       studentShellFlat ? "rounded-none" : "rounded-none",
                                     )}
                                     asChild
                                   >
-                                    <Link href={signInHref(portalPaths.borrow)}>
-                                      <BookOpen className="mr-2 h-4 w-4" />
-                                      Sign in to borrow
+                                    <Link
+                                      href={signInHref(portalPaths.borrow)}
+                                      className="flex min-w-0 items-center justify-center gap-2 px-2 text-center"
+                                    >
+                                      <BookOpen className="h-4 w-4 shrink-0" />
+                                      <span className="truncate sm:whitespace-nowrap">
+                                        Sign in to borrow
+                                      </span>
                                     </Link>
                                   </Button>
                                 )}
@@ -1698,7 +1708,22 @@ export default function Marketplace(props?: MarketplaceProps) {
                           {studentMode === "sell" && inShell ? (
                             <div className="mb-2 space-y-1.5 px-1">
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                <span
+                                  className={cn(
+                                    "text-[10px] font-bold uppercase tracking-wider",
+                                    l.status === "available" || l.status === "approved"
+                                      ? "text-emerald-700 dark:text-emerald-400"
+                                      : l.status === "pending_dropoff"
+                                        ? "text-amber-700 dark:text-amber-400"
+                                        : l.status === "listed"
+                                          ? "text-sky-700 dark:text-sky-400"
+                                          : l.status === "sold"
+                                            ? "text-violet-700 dark:text-violet-400"
+                                            : l.status === "rejected"
+                                              ? "text-red-700 dark:text-red-400"
+                                              : "text-muted-foreground",
+                                  )}
+                                >
                                   {listingStatusLabel(l.status)}
                                 </span>
                                 <span className="font-mono text-[10.5px] font-medium tracking-wide text-muted-foreground/70">

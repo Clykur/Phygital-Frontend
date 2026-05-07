@@ -881,7 +881,14 @@ export function RequestBookSection({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent
+        className="
+    max-h-[90vh] overflow-y-auto
+    w-[calc(100%-1rem)]
+    max-w-[calc(100%-1rem)]
+    sm:max-w-lg
+  "
+        onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-600">
             Neeve
