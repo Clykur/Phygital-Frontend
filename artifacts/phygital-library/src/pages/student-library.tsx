@@ -340,7 +340,7 @@ export default function StudentLibraryPage() {
                 Confirm return
               </DialogTitle>
               <DialogDescription className="text-sm leading-relaxed">
-                Hand the physical copy to the hub desk, then confirm here so your loan clears in Neeve.
+                Hand the physical copy to the hub desk, then confirm here so your loan clears in Neev.
               </DialogDescription>
             </DialogHeader>
           </div>

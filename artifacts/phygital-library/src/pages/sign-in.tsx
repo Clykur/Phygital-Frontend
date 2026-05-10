@@ -135,7 +135,7 @@ export default function SignInPage() {
 
         <div className="px-6 pb-8 pt-10 sm:px-8 sm:pb-10 sm:pt-11">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">
-            Neeve
+            Neev
           </p>
           <h1
             id="sign-in-title"

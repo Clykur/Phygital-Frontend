@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Uppercase kicker (Hub portal / Neeve / student) — same slate as marketing `home-kicker` and profile pages.
+ * Uppercase kicker (Hub portal / Neev / student) — same slate as marketing `home-kicker` and profile pages.
  * Use with `text-[10px] font-semibold uppercase tracking-[0.35em]` or `tracking-[0.22em]`.
  */
 export const PORTAL_KICKER_COLOR = "text-[#64748B] dark:text-slate-400";

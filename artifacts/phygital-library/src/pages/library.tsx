@@ -891,7 +891,7 @@ export function RequestBookSection({
         onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-600">
-            Neeve
+            Neev
           </p>
           <DialogTitle className="font-serif">Request via Hub</DialogTitle>
           <DialogDescription>
