@@ -11,10 +11,14 @@ export function Navbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isHome = location === "/";
-  const [showNav, setShowNav] = useState(!isHome);
+  const isColleges = location === "/colleges";
+  const isAbout = location === "/about";
+  const hasHero = isHome || isColleges || isAbout;
+  
+  const [showNav, setShowNav] = useState(!hasHero);
 
   useEffect(() => {
-    if (!isHome) {
+    if (!hasHero) {
       setShowNav(true);
       return;
     }
@@ -28,7 +32,7 @@ export function Navbar() {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [isHome]);
+  }, [hasHero]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -53,7 +57,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-6">
         <Link href="/" onClick={handleLogoClick} className="flex items-center gap-3">
-          <img src="/images/neev.png" alt="Neeve Logo" className="h-15 w-30" />
+          <img src="/images/neev.png" alt="Neev Logo" className="h-15 w-30" />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
@@ -78,7 +82,7 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <div className="hidden md:flex">
             <Button asChild size="default">
-              <Link href="/sign-in">Get Started</Link>
+              <Link href="/login">Get Started</Link>
             </Button>
           </div>
 
@@ -86,7 +90,7 @@ export function Navbar() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="md:hidden inline-flex h-12 w-12 items-center justify-center border border-border bg-white text-foreground"
+                className="md:hidden inline-flex h-11 w-11 items-center justify-center border border-border bg-white text-foreground"
                 aria-label="Open menu"
               >
                 <Menu className="w-5 h-5" />
@@ -106,7 +110,7 @@ export function Navbar() {
                       onClick={() => setMobileMenuOpen(false)}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "text-lg font-semibold transition-colors",
+                        "text-xl font-bold transition-colors",
                         isActive ? "text-primary" : "text-foreground",
                       )}
                     >
@@ -115,9 +119,9 @@ export function Navbar() {
                   );
                 })}
               </div>
-              <div className="mt-auto flex flex-col gap-3 border-t border-border pt-8">
-                <Button asChild onClick={() => setMobileMenuOpen(false)}>
-                  <Link href="/sign-in">Get Started</Link>
+              <div className="mt-auto flex flex-col gap-4 border-t border-border pt-10 pb-6">
+                <Button asChild size="lg" className="h-14 text-base font-bold" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/login">Get Started</Link>
                 </Button>
               </div>
             </SheetContent>

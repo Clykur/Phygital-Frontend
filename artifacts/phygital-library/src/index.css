@@ -114,19 +114,19 @@
   /* -------------------------------- */
 
   .hero-title {
-    @apply text-4xl leading-[0.95] tracking-[-0.05em] sm:text-5xl md:text-6xl lg:text-7xl;
+    @apply text-4xl leading-[0.95] tracking-[-0.05em] sm:text-5xl md:text-6xl lg:text-7xl font-bold;
   }
 
   .h1-scale {
-    @apply text-3xl leading-[1] tracking-[-0.045em] font-semibold sm:text-4xl md:text-5xl lg:text-6xl;
+    @apply text-3xl leading-[1] tracking-[-0.045em] font-bold sm:text-4xl md:text-5xl lg:text-6xl;
   }
 
   .h2-scale {
-    @apply text-2xl leading-[1.05] tracking-[-0.04em] font-semibold sm:text-3xl md:text-4xl;
+    @apply text-2xl leading-[1.05] tracking-[-0.04em] font-bold sm:text-3xl md:text-4xl;
   }
 
   .h3-scale {
-    @apply text-lg leading-[1.15] font-semibold sm:text-xl md:text-2xl;
+    @apply text-lg leading-[1.15] font-bold sm:text-xl md:text-2xl;
   }
 
   .body-scale {
@@ -198,15 +198,15 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-none bg-primary px-7 py-4 text-sm md:text-base font-semibold text-white shadow-[0_10px_30px_rgba(37,99,235,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-[0_18px_40px_rgba(37,99,235,0.30)];
+    @apply inline-flex items-center justify-center gap-2 rounded-none bg-primary px-7 py-4 text-sm md:text-base font-bold text-white shadow-[0_10px_30px_rgba(37,99,235,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-[0_18px_40px_rgba(37,99,235,0.30)];
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-none border border-slate-200 bg-white px-7 py-4 text-sm md:text-base font-semibold text-slate-900 transition-all duration-300 hover:border-slate-300 hover:bg-slate-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-none border border-slate-200 bg-white px-7 py-4 text-sm md:text-base font-bold text-slate-900 transition-all duration-300 hover:border-slate-300 hover:bg-slate-50;
   }
 
   .btn-glass {
-    @apply inline-flex items-center justify-center gap-2 rounded-none border border-white/10 bg-white/10 backdrop-blur-xl px-7 py-4 text-sm md:text-base font-semibold text-white transition-all duration-300 hover:bg-white/15;
+    @apply inline-flex items-center justify-center gap-2 rounded-none border border-white/10 bg-white/10 backdrop-blur-xl px-7 py-4 text-sm md:text-base font-bold text-white transition-all duration-300 hover:bg-white/15;
   }
 
   /* -------------------------------- */
@@ -266,7 +266,7 @@
   /* -------------------------------- */
 
   .home-kicker {
-    @apply border-l-4 border-primary pl-3 text-xs font-semibold tracking-wide text-[#64748B];
+    @apply border-l-4 border-primary pl-3 text-xs font-bold tracking-wide text-[#64748B];
   }
 
   .home-interactive-card {

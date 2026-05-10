@@ -129,7 +129,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
               href={shellHome}
               className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground"
             >
-              Neeve
+              Neev
             </Link>
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-3">
@@ -163,7 +163,7 @@ export function StudentAppShell({ children }: { children: ReactNode }) {
                 <SheetContent side="left" className="w-64 border-border bg-[#F8FAFC] p-0">
                   <div className="flex h-14 items-center border-b border-border px-4">
                     <span className="font-[var(--font-display)] text-sm font-extrabold tracking-tight text-foreground">
-                      Neeve
+                      Neev
                     </span>
                   </div>
                   <div className="flex h-[calc(100dvh-3.5rem)] flex-col gap-6 overflow-y-auto p-3">

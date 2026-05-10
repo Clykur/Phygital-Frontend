@@ -18,7 +18,7 @@ export type RegisterPayload =
       name: string;
       email: string;
       password: string;
-      accountType?: "student";
+      accountType?: "user";
     }
   | {
       name: string;
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: payload.name,
             email: payload.email,
             password: payload.password,
-            accountType: "student" as const,
+            accountType: "user" as const,
           };
     const data = await apiFetch<{
       token: string;

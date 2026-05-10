@@ -1,21 +1,21 @@
 import { Link } from "wouter";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
-  ArrowRight, BookOpen, Zap, Sparkles, Network, ShieldCheck, CheckCircle2
+  ArrowRight, BookOpen, Zap, Sparkles, Network, ShieldCheck, CheckCircle2, MapPin, ChevronDown,
+  Check
 } from "lucide-react";
 import { Container } from "@/components/home/Container";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useRef } from "react";
-import { ImageCarousel } from "@/components/home/ImageCarousel";
+import { useRef, useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 
-const viewportOnce = { once: true, margin: "-80px", amount: 0.2 } as const;
+const viewportOnce = { once: true, margin: "-20px", amount: 0.1 } as const;
 
 const SHOWCASE_BOOKS = [
   "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800&auto=format&fit=crop",
@@ -30,11 +30,48 @@ const SHOWCASE_BOOKS = [
   "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop",
 ];
+const titleWords = ["Your", "textbook", "network,"];
+const highlightWords = ["upgraded."];
+
+const wordAnimation = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+    rotateX: -90,
+  },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  }),
+};
 
 export default function Home() {
   const reduceMotion = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
   const lotusRef = useRef<HTMLDivElement>(null);
+
+  // Carousel State
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"]
@@ -58,11 +95,7 @@ export default function Home() {
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const opacityParallax = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  const HERO_BG_IMAGES = [
-    { src: "/images/hero-library.png", alt: "Premium Futuristic Library" },
-    { src: "/images/community-hub.png", alt: "Collaborative Student Hub" },
-    { src: "https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=2000&auto=format&fit=crop", alt: "Academic Success" },
-  ];
+  // HERO_BG_IMAGES removed in favor of video hero
 
   const fadeUp = {
     hidden: { opacity: 0, y: reduceMotion ? 0 : 30 },
@@ -82,55 +115,133 @@ export default function Home() {
 
       {/* 1. HERO SECTION */}
       <section id="hero" ref={heroRef} className="relative min-h-[100dvh] flex flex-col justify-center overflow-hidden bg-primary">
-        {/* Background Image Carousel */}
+        {/* Background Video */}
         <div className="absolute inset-0 z-0">
-          <ImageCarousel
-            images={HERO_BG_IMAGES}
-            full
-            minimal
-            autoAdvanceMs={6000}
-            className="opacity-100"
-          />
-          <div className="absolute inset-0 bg-primary/40 backdrop-blur-[1px]" />
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="h-full w-full object-cover"
+          >
+            <source src="/14543425-uhd_3840_2160_24fps.mp4" type="video/mp4" />
+          </video>
         </div>
 
-        <Container className="relative z-10 px-4 py-16 md:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
 
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 10 }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Scroll to explore</span>
+          <ChevronDown className="h-6 w-6" />
+        </motion.div>
+      </section>
+
+      {/* INTRO SECTION - Moved from Hero */}
+      <section className="relative bg-white pt-20 pb-12 md:pt-32 md:pb-24">
+        <Container>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Left Column: Typography & CTA */}
-            <motion.div variants={stagger} initial="hidden" animate="visible" className="max-w-2xl">
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              className="max-w-2xl"
+            >
               <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center gap-2 rounded-none border border-white/20 bg-white/10 px-4 py-1.5 caption-scale font-semibold text-blue-200 backdrop-blur-md shadow-sm">
-                  <Zap className="h-3.5 w-3.5 fill-primary text-primary" />
+                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
                   <span>The Futuristic Reading Platform</span>
                 </div>
               </motion.div>
 
               <motion.h1
-                variants={fadeUp}
-                className="mt-8 text-balance font-[var(--font-display)] hero-title text-white"
+                className="mt-4 hero-title text-slate-900 font-bold"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
               >
-                Intelligent libraries for the <span className="text-blue-400">modern mind.</span>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 sm:gap-x-4 sm:gap-y-2">
+                  {titleWords.map((word, i) => (
+                    <motion.span
+                      key={word}
+                      custom={i}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={wordAnimation}
+                      className="inline-block font-[var(--font-display)]"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+
+                  {highlightWords.map((word, i) => (
+                    <motion.span
+                      key={word}
+                      custom={i + titleWords.length}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={wordAnimation}
+                      className="inline-block font-[var(--font-display)] text-primary"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                </div>
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="mt-6 body-scale text-slate-200 max-w-xl">
-                Neeve upgrades campus spaces into premium discovery hubs. Experience seamless physical borrowing powered by smart routing and community intelligence.
+              <motion.p
+                variants={{
+                  hidden: {
+                    opacity: 0,
+                    y: 30,
+                    filter: "blur(10px)",
+                  },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: {
+                      delay: 0.45,
+                      duration: 1,
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="visible"
+                className="mt-6 max-w-xl body-scale text-slate-600"
+              >
+                Neev upgrades campus spaces into premium discovery hubs.
+                Experience seamless physical borrowing powered by smart
+                routing and community intelligence.
               </motion.p>
 
-              <motion.div variants={stagger} className="mt-8 flex flex-col sm:flex-row items-center gap-4">
+              <motion.div variants={stagger} className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <motion.div variants={fadeUp} className="w-full sm:w-auto">
-                  <Link href="/sign-in" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none bg-primary px-6 py-3 small-scale font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:-translate-y-0.5">
+                  <Link href="/login" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none bg-primary px-6 py-3 small-scale font-bold text-white shadow-md transition-all hover:bg-blue-700 hover:-translate-y-0.5">
                     Explore Network <ArrowRight className="h-4 w-4" />
                   </Link>
                 </motion.div>
                 <motion.div variants={fadeUp} className="w-full sm:w-auto">
-                  <Link href="/colleges" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none border border-white/20 bg-white/10 backdrop-blur-md px-6 py-3 small-scale font-semibold text-white shadow-sm transition-all hover:border-white/30 hover:bg-white/20 hover:-translate-y-0.5">
+                  <Link href="/colleges" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none border border-slate-200 bg-white px-6 py-3 small-scale font-bold text-slate-900 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 hover:-translate-y-0.5">
                     Partner With Us
                   </Link>
                 </motion.div>
               </motion.div>
 
-              <motion.div variants={fadeUp} className="mt-12 flex items-center gap-6 border-t border-white/10 pt-8">
+              <motion.div variants={fadeUp} className="mt-12 flex items-center gap-6 border-t border-slate-100 pt-8">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map((i) => (
@@ -140,73 +251,89 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="small-scale">
-                    <p className="font-semibold text-white">12k+</p>
-                    <p className="caption-scale text-slate-300">Active Readers</p>
+                    <p className="font-bold text-slate-900">12k+</p>
+                    <p className="caption-scale text-slate-500">Active Readers</p>
                   </div>
                 </div>
-                <div className="h-8 w-px bg-white/10" />
+                <div className="h-8 w-px bg-slate-100" />
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-blue-400" />
+                  <ShieldCheck className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="font-semibold text-white small-scale">Verified</p>
-                    <p className="caption-scale text-slate-300">Campus Hubs</p>
+                    <p className="font-bold text-slate-900 small-scale">Verified</p>
+                    <p className="caption-scale text-slate-500">Campus Hubs</p>
                   </div>
                 </div>
               </motion.div>
             </motion.div>
 
-            {/* Right Column: Floating Visuals */}
             <motion.div
-              className="relative hidden lg:block h-[600px] w-full perspective-1000"
-              style={{ y: yParallax, opacity: opacityParallax }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              variants={fadeUp}
+              className="relative block mt-12 lg:mt-0 h-[400px] sm:h-[500px] w-full perspective-1000"
             >
-              {/* Decorative Book Stack */}
-              <motion.div
-                animate={{ y: [0, -10, 0], rotateX: [10, 11, 10], rotateY: [-15, -13, -15] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[10%] right-[10%] w-[280px] h-[400px] rounded-none shadow-lg overflow-hidden border border-white/50 bg-white"
-              >
-                <img src={SHOWCASE_BOOKS[0]} alt="Book Cover" className="w-full h-full object-cover opacity-95" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />
-              </motion.div>
+              {/* Book Stack Wrapper */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                {/* Decorative Book Stack */}
+                <motion.div
+                  animate={{ y: [0, -10, 0], rotateX: [10, 11, 10], rotateY: [-15, -13, -15] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative w-[280px] h-[380px] rounded-none shadow-xl overflow-visible border border-slate-100 bg-white"
+                >
+                  <img
+                    src={SHOWCASE_BOOKS[0]}
+                    alt="Book Cover"
+                    className="w-full h-full object-cover opacity-95"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />
 
-              {/* Floating UI Card 1 */}
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute top-[50%] -left-[10%] bento-card p-3 flex items-center gap-2.5 w-[180px] z-20"
-              >
-                <div className="h-8 w-8 rounded-none bg-blue-50 flex items-center justify-center">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Available Now</p>
-                  <p className="small-scale font-bold text-slate-900 leading-none">12,450+ Titles</p>
-                </div>
-              </motion.div>
+                  {/* Floating UI Card */}
+                  <motion.div
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1,
+                    }}
+                    className="absolute -top-6 -left-14 bento-card p-3 flex items-center gap-2.5 w-[160px] z-30 shadow-2xl bg-white border-slate-100"
+                  >
+                    <div className="h-8 w-8 rounded-none flex items-center justify-center">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.15em]">AVAILABLE NOW</p>
+                      <p className="flex items-baseline gap-1 text-[15px] font-bold text-slate-900 leading-none">
+                        <span className="text-primary">12,450+</span>
+                        <span>Titles</span>
+                      </p>
+                    </div>
+                  </motion.div>
 
-              {/* Floating UI Card 2 */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute bottom-[20%] right-[5%] bento-card p-3 flex items-center gap-2.5 w-[160px] z-20"
-              >
-                <div className="h-8 w-8 rounded-none bg-emerald-50 flex items-center justify-center">
-                  <Network className="h-4 w-4 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Hub Network</p>
-                  <p className="small-scale font-bold text-slate-900 leading-none">Connected</p>
-                </div>
-              </motion.div>
-
+                  {/* Floating UI Card 2 */}
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                    className="absolute -bottom-8 -right-10 bento-card p-3 flex items-center gap-2.5 w-[160px] z-30 shadow-2xl bg-white border-slate-100"
+                  >
+                    <div className="h-8 w-8 rounded-none flex items-center justify-center">
+                      <Network className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Hub Network</p>
+                      <p className="small-scale font-bold text-slate-900 leading-none">Connected</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </Container>
       </section>
 
       {/* FLOATING FEATURE CARDS */}
-      <section className="relative overflow-hidden py-16 bg-[#FAFAFA]">
+      <section className="relative overflow-hidden py-24 md:py-32 bg-[#FAFAFA]">
         <Container>
           <motion.div
             variants={stagger}
@@ -218,19 +345,27 @@ export default function Home() {
             {/* Heading */}
             <motion.div
               variants={fadeUp}
-              className="max-w-5xl mx-auto text-center mb-16"
+              className="flex flex-col items-center text-center"
             >
-              <h2 className="
-          font-[var(--font-display)]
-          h1-scale
-          text-slate-900
-        ">
-                Find the knowledge path
-                <br />
-                that aligns with your ambition.
-              </h2>
+              {/* Badge */}
+              <motion.div variants={fadeUp}>
+                <div className="inline-flex items-center justify-center rounded-none border border-blue-100 bg-blue-50 px-4 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm">
+                  <span>Flexible Access</span>
+                </div>
+              </motion.div>
 
-              <p className="mt-6 body-scale text-slate-500 max-w-2xl mx-auto">
+              {/* Title */}
+              <motion.div
+                variants={fadeUp}
+                className="mb-8 mt-8 font-[var(--font-display)] text-slate-900 text-center"
+              >
+                <h2 className="h2-scale">
+                  Borrow, buy, and exchange locally.
+                </h2>
+              </motion.div>
+
+              {/* Paragraph */}
+              <p className="mt-6 max-w-2xl body-scale leading-relaxed text-slate-500">
                 Discover curated libraries, intelligent recommendations,
                 and premium campus reading experiences.
               </p>
@@ -392,19 +527,23 @@ export default function Home() {
               </div>
 
               {/* MOBILE CAROUSEL VIEW */}
-              <div className="block md:hidden w-full px-4">
+              <div className="block md:hidden w-full">
                 <Carousel
+                  setApi={setApi}
                   opts={{
                     align: "center",
                     loop: true,
                   }}
                   className="w-full"
                 >
-                  <CarouselContent className="-ml-2 md:-ml-4">
+                  <CarouselContent className="-ml-1 md:-ml-4">
                     {/* CARD 1 */}
-                    <CarouselItem className="pl-2 basis-[85%]">
+                    <CarouselItem className="pl-1 basis-[90%] sm:basis-[85%]">
                       <motion.div
-                        style={{ y: mobileY, opacity: mobileOpacity }}
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                         className="relative h-[420px] rounded-none overflow-hidden border border-blue-50 shadow-md bg-white"
                       >
                         <img
@@ -423,9 +562,12 @@ export default function Home() {
                     </CarouselItem>
 
                     {/* CARD 2 */}
-                    <CarouselItem className="pl-2 basis-[85%]">
+                    <CarouselItem className="pl-1 basis-[90%] sm:basis-[85%]">
                       <motion.div
-                        style={{ y: mobileY, opacity: mobileOpacity }}
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                         className="relative h-[420px] rounded-none overflow-hidden border border-blue-50 shadow-md bg-white"
                       >
                         <img
@@ -444,9 +586,12 @@ export default function Home() {
                     </CarouselItem>
 
                     {/* CARD 3 */}
-                    <CarouselItem className="pl-2 basis-[85%]">
+                    <CarouselItem className="pl-1 basis-[90%] sm:basis-[85%]">
                       <motion.div
-                        style={{ y: mobileY, opacity: mobileOpacity }}
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                         className="relative h-[420px] rounded-none overflow-hidden border border-blue-50 shadow-md bg-white"
                       >
                         <img
@@ -465,6 +610,23 @@ export default function Home() {
                     </CarouselItem>
                   </CarouselContent>
                 </Carousel>
+
+                {/* Carousel Indicators */}
+                <div className="flex justify-center gap-2 mt-8">
+                  {Array.from({ length: count }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => api?.scrollTo(i)}
+                      className={cn(
+                        "h-1.5 rounded-none transition-all duration-300",
+                        current === i + 1
+                          ? "w-8 bg-primary"
+                          : "w-2 bg-slate-300 hover:bg-slate-400"
+                      )}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -475,14 +637,11 @@ export default function Home() {
       <section className="py-16 overflow-hidden bg-white border-y border-slate-100">
         <motion.div
           variants={fadeUp}
-          className="max-w-5xl mx-auto text-center mb-16"
+          className="mb-8 font-[var(--font-display)] text-slate-900 text-center"
         >
-          <h2 className="
-          font-[var(--font-display)]
-          h1-scale
-          text-slate-900
-        ">
-            Curated Premium Selection</h2>
+          <h2 className="h2-scale">
+            Trending at your hubs
+          </h2>
         </motion.div>
 
         {/* Infinite Scroll Container */}
@@ -505,7 +664,7 @@ export default function Home() {
                 <img src={src} alt="Book Mockup" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                  <p className="text-white font-semibold small-scale truncate">Premium Title</p>
+                  <p className="text-white font-bold small-scale truncate">Premium Title</p>
                   <p className="text-white/80 caption-scale">Available at 3 Hubs</p>
                 </div>
               </div>
@@ -527,19 +686,20 @@ export default function Home() {
             {/* HERO HEADING */}
             <motion.div
               variants={fadeUp}
-              className="max-w-5xl mx-auto text-center mb-16"
+              className="text-center mb-16 font-[var(--font-display)] text-slate-900"
             >
-              <h2 className="
-          font-[var(--font-display)]
-          h1-scale
-          text-slate-900
-        ">
-                Transform reading into an ecosystem that lives beyond books.
+              <motion.div variants={fadeUp}>
+                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
+                  <span>Smart Discovery</span>
+                </div>
+              </motion.div>
+              <h2 className="h2-scale">
+                A smarter way to access books.
               </h2>
             </motion.div>
 
             {/* FEATURE GRID */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-20 lg:gap-24 items-start">
 
               {/* LEFT COLUMN */}
               <motion.div
@@ -547,18 +707,18 @@ export default function Home() {
                 className="space-y-6"
               >
                 <div>
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="h-[2px] w-16 bg-emerald-300" />
-                    <span className="small-scale font-bold uppercase tracking-widest text-slate-500">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-[2px] w-12 bg-primary" />
+                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
                       Smart Discovery
                     </span>
                   </div>
 
-                  <h3 className="h3-scale text-slate-900 mb-5">
+                  <h3 className="h3-scale text-slate-900 mb-6">
                     Smart Discovery
                   </h3>
 
-                  <p className="body-scale text-slate-500">
+                  <p className="body-scale text-slate-600 leading-relaxed">
                     Discover books, research material,
                     and community insights naturally through
                     intelligent campus-driven recommendations.
@@ -570,18 +730,14 @@ export default function Home() {
                   transition={{ duration: 0.3 }}
                   className="
               relative
-              overflow-hidden
               rounded-none
-              shadow-sm
             "
                 >
                   <img
-                    src="/images/smart-discovery.png"
+                    src="/images/Library-rafiki.png"
                     alt=""
-                    className="w-full h-[240px] md:h-[320px] object-cover"
+                    className="w-full h-[240px] md:h-[320px] object-contain"
                   />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </motion.div>
               </motion.div>
 
@@ -597,33 +753,29 @@ export default function Home() {
               order-2
               lg:order-1
               relative
-              overflow-hidden
               rounded-none
-              shadow-md
             "
                 >
                   <img
-                    src="/images/community-hub.png"
+                    src="/images/college_project-rafiki.png"
                     alt=""
-                    className="w-full h-[220px] md:h-[280px] object-cover"
+                    className="w-full h-[220px] md:h-[280px] object-contain"
                   />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </motion.div>
 
                 <div className="order-1 lg:order-2">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="h-[2px] w-16 bg-orange-200" />
-                    <span className="small-scale font-bold uppercase tracking-widest text-slate-500">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-[2px] w-12 bg-primary" />
+                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
                       Community Driven
                     </span>
                   </div>
 
-                  <h3 className="h3-scale text-slate-900 mb-5">
+                  <h3 className="h3-scale text-slate-900 mb-6">
                     Collaborative Knowledge
                   </h3>
 
-                  <p className="body-scale text-slate-500">
+                  <p className="body-scale text-slate-600 leading-relaxed">
                     Join reading communities, campus discussions,
                     and peer-powered discovery experiences that
                     make learning feel alive.
@@ -637,18 +789,18 @@ export default function Home() {
                 className="space-y-6"
               >
                 <div>
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="h-[2px] w-16 bg-blue-200" />
-                    <span className="small-scale font-bold uppercase tracking-widest text-slate-500">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-[2px] w-12 bg-primary" />
+                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
                       Physical + Digital
                     </span>
                   </div>
 
-                  <h3 className="h3-scale text-slate-900 mb-5">
+                  <h3 className="h3-scale text-slate-900 mb-6">
                     Real Campus Experience
                   </h3>
 
-                  <p className="body-scale text-slate-500">
+                  <p className="body-scale text-slate-600 leading-relaxed">
                     Seamlessly connect online discovery
                     with trusted physical library hubs and
                     premium student pickup experiences.
@@ -660,418 +812,83 @@ export default function Home() {
                   transition={{ duration: 0.3 }}
                   className="
               relative
-              overflow-hidden
               rounded-none
-              shadow-sm
             "
                 >
                   <img
-                    src="/images/hero-library.png"
+                    src="/images/Team work-amico.png"
                     alt=""
-                    className="w-full h-[240px] md:h-[320px] object-cover"
+                    className="w-full h-[240px] md:h-[320px] object-contain"
                   />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </motion.div>
               </motion.div>
             </div>
-
-            {/* PREMIUM LIBRARY STORY SECTION */}
-            <motion.section
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              className="
-    relative
-    mt-12
-    md:mt-24
-    overflow-hidden
-  "
-            >
-              {/* BACKGROUND */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {/* MAIN BLUE GLOW */}
-                <div
-                  className="
-        absolute
-        left-1/2
-        top-1/2
-        h-[500px]
-        w-[500px]
-        -translate-x-1/2
-        -translate-y-1/2
-        rounded-full
-        bg-primary/5
-        blur-[100px]
-      "
-                />
-
-                {/* SMALL GLOWS */}
-                <div
-                  className="
-        absolute
-        left-[15%]
-        top-[20%]
-        h-32
-        w-32
-        rounded-full
-        bg-primary/5
-        blur-[70px]
-      "
-                />
-
-                <div
-                  className="
-        absolute
-        right-[10%]
-        bottom-[10%]
-        h-40
-        w-40
-        rounded-full
-        bg-primary/5
-        blur-[80px]
-      "
-                />
-              </div>
-
-              <div
-                className="
-      relative
-      mx-auto
-      flex
-      max-w-7xl
-      flex-col
-      items-center
-    "
-              >
-                {/* TOP LABEL */}
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5 }}
-                  className="
-        mb-6
-        inline-flex
-        items-center
-        gap-2
-        rounded-none
-        border
-        border-primary/10
-        bg-primary/5
-        px-4
-        py-1.5
-        caption-scale
-        font-semibold
-        uppercase
-        tracking-widest
-        text-primary
-      "
-                >
-                  <div className="h-1.5 w-1.5 rounded-none bg-primary" />
-                  Smart Campus Ecosystem
-                </motion.div>
-
-                {/* HEADING */}
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7 }}
-                  className="
-        max-w-5xl
-        text-center
-      "
-                >
-                  <h2
-                    className="font-[var(--font-display)] h1-scale text-slate-900"
-                  >
-                    Designed for the
-                    <span className="text-primary"> next generation </span>
-                    of campus libraries.
-                  </h2>
-
-                  <p
-                    className="
-          mx-auto
-          mt-6
-          max-w-2xl
-          body-scale
-          text-slate-600
-        "
-                  >
-                    Neeve combines intelligent discovery,
-                    peer-to-peer exchange, digital tracking,
-                    and modern library infrastructure into one
-                    seamless premium platform.
-                  </p>
-                </motion.div>
-
-                {/* CENTER VISUAL */}
-                <div
-                  className="
-        relative
-        mt-12
-        md:mt-24
-        flex
-        items-center
-        justify-center
-        min-h-[420px]
-        md:min-h-[600px]
-      "
-                >
-                  {/* LEFT FLOATING CARD */}
-                  <motion.div
-                    animate={{
-                      y: [0, -12, 0],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 5,
-                    }}
-                    className="
-          absolute
-          left-[-140px]
-          top-[80px]
-          hidden
-          rounded-none
-          border
-          border-white/50
-          bg-white/90
-          p-5
-          shadow-md
-          backdrop-blur-xl
-          lg:block
-        "
-                  >
-                    <p className="small-scale font-medium text-slate-500">
-                      Active Library Hubs
-                    </p>
-
-                    <div className="mt-4 flex items-end gap-2">
-                      <h4 className="h1-scale text-slate-900">
-                        120+
-                      </h4>
-
-                      <span className="mb-2 small-scale text-primary">
-                        Connected
-                      </span>
-                    </div>
-
-                    <div className="mt-4 flex gap-1.5">
-                      <div className="h-1.5 w-12 rounded-none bg-primary" />
-                      <div className="h-1.5 w-6 rounded-none bg-primary/20" />
-                    </div>
-                  </motion.div>
-
-                  {/* MAIN IMAGE CONTAINER */}
-                  <motion.div
-                    whileHover={{
-                      y: -8,
-                      rotate: -1.5,
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      ease: "easeOut",
-                    }}
-                    className="
-          relative
-          overflow-hidden
-          rounded-md
-          border
-          border-white/60
-          bg-white
-          shadow-[0_40px_120px_rgba(37,99,235,0.18)]
-        "
-                  >
-                    {/* LIGHT REFLECTION */}
-                    <div
-                      className="
-            absolute
-            inset-0
-            z-20
-            bg-gradient-to-b
-            from-white/20
-            via-transparent
-            to-transparent
-            pointer-events-none
-          "
-                    />
-
-                    {/* IMAGE */}
-                    <img
-                      src="/images/book-collection.png"
-                      alt="Premium Library Books"
-                      className="
-            h-[380px]
-            w-[320px]
-            md:h-[540px]
-            md:w-[440px]
-            object-cover
-          "
-                    />
-
-                    {/* BOTTOM OVERLAY */}
-                    <div
-                      className="
-            absolute
-            inset-x-0
-            bottom-0
-            z-10
-            bg-gradient-to-t
-            from-black/70
-            via-black/20
-            to-transparent
-            p-4
-            md:p-8
-          "
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className="
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-none
-                bg-primary
-                shadow-sm
-              "
-                        >
-                          <BookOpen className="h-5 w-5 text-white" />
-                        </div>
-
-                        <div>
-                          <p className="small-scale text-white/70">
-                            Intelligent Discovery
-                          </p>
-
-                          <h4 className="mt-1 h3-scale text-white">
-                            Premium Campus Experience
-                          </h4>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* RIGHT FLOATING CARD */}
-                  <motion.div
-                    animate={{
-                      y: [0, 10, 0],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 4,
-                    }}
-                    className="
-          absolute
-          right-[-150px]
-          bottom-[70px]
-          hidden
-          rounded-none
-          border
-          border-white/50
-          bg-slate-950
-          p-5
-          text-white
-          shadow-xl
-          lg:block
-        "
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="
-              flex
-              h-10
-              w-10
-              items-center
-              justify-center
-              rounded-none
-              bg-primary
-            "
-                      >
-                        <Sparkles className="h-4 w-4 text-white" />
-                      </div>
-
-                      <div>
-                        <p className="small-scale text-white/60">
-                          AI Recommendations
-                        </p>
-
-                        <h4 className="mt-1 h3-scale">
-                          Smart Discovery
-                        </h4>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 space-y-2.5">
-                      <div className="h-1.5 w-32 rounded-none bg-white/10">
-                        <div className="h-1.5 w-24 rounded-none bg-primary" />
-                      </div>
-
-                      <div className="h-1.5 w-24 rounded-none bg-white/10" />
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* BOTTOM MINI FEATURES */}
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7 }}
-                  className="
-        mt-16
-        grid
-        w-full
-        max-w-5xl
-        grid-cols-1
-        gap-5
-        md:grid-cols-3
-      "
-                >
-                  {[
-                    {
-                      title: "Intelligent Discovery",
-                      desc: "AI-powered search across connected campus libraries.",
-                    },
-                    {
-                      title: "Seamless Borrowing",
-                      desc: "Modern cross-campus book exchange and tracking.",
-                    },
-                    {
-                      title: "Community Learning",
-                      desc: "Shared insights, highlights, and collaborative reading.",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.title}
-                      className="
-            rounded-none
-            border
-            border-primary/10
-            bg-white/80
-            p-6
-            shadow-sm
-            backdrop-blur-xl
-          "
-                    >
-                      <h4 className="h3-scale text-slate-900">
-                        {item.title}
-                      </h4>
-
-                      <p className="mt-3 small-scale text-slate-600">
-                        {item.desc}
-                      </p>
-                    </div>
-                  ))}
-                </motion.div>
-              </div>
-            </motion.section>
           </motion.div>
         </Container>
+      </section>
+
+      <section id="roadmap" className="py-12 md:py-24 bg-[#FAFAFA] overflow-hidden relative">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="group rounded-none border-y border-slate-200 bg-white py-16 md:py-24 shadow-sm relative overflow-hidden transition-all duration-500 hover:shadow-md hover:border-primary/10"
+        >
+          {/* Background Accents */}
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/4 group-hover:bg-primary/10 transition-colors duration-700" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-100/20 blur-[100px] rounded-full pointer-events-none translate-y-1/2 -translate-x-1/4" />
+
+          <Container className="relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+              <div className="lg:col-span-5">
+                <motion.div
+                  variants={fadeUp}
+                  className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8"
+                >
+                  <MapPin className="h-3.5 w-3.5 fill-primary/20" />
+                  <span>Where we are</span>
+                </motion.div>
+
+                <motion.div
+                  variants={fadeUp}
+                  className="mt-8 font-[var(--font-display)] text-slate-900"
+                >
+                  <h2 className="h2-scale">
+                    Growing across campuses.
+                  </h2>
+                </motion.div>
+
+                <motion.div variants={fadeUp} className="mt-8 h-1 w-20 bg-primary/20" />
+              </div>
+
+              <motion.div variants={fadeUp} className="lg:col-span-7 space-y-8">
+                <p className="body-scale text-slate-600 leading-relaxed text-lg max-w-2xl">
+                  We grow through pilots: partner hubs, real desk operations, and reader adoption before we chase a noisy national launch.
+                  Metrics vary by campus; we publish what we can stand behind.
+                </p>
+
+                <ul className="grid grid-cols-1 gap-6">
+                  {[
+                    "Rolling onboarding with institutions that fit our ops bar.",
+                    "Marketplace and hub flows in active iteration with early readers.",
+                    "Room to collaborate if you are a student body, library lead, or administrator."
+                  ].map((text, i) => (
+                    <motion.li
+                      key={i}
+                      className="flex items-start gap-4 group/item"
+                    >
+                      <div className="mt-1.5 h-1.5 w-1.5 rounded-none bg-primary shrink-0 group-hover/item:scale-[2.5] transition-transform duration-300 ring-4 ring-primary/5" />
+                      <span className="small-scale text-slate-600 leading-snug">
+                        {text}
+                      </span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.div>
+            </div>
+          </Container>
+        </motion.div>
       </section>
 
       {/* PREMIUM PRICING SECTION */}
@@ -1105,34 +922,19 @@ export default function Home() {
               variants={fadeUp}
               className="max-w-4xl mx-auto text-center mb-16"
             >
-              <div className="
-          inline-flex
-          items-center
-          gap-2
-          rounded-none
-          border
-          border-primary/10
-          bg-primary/5
-          px-4
-          py-1.5
-          caption-scale
-          font-semibold
-          uppercase
-          tracking-widest
-          text-primary
-          mb-6
-        ">
+              <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
                 <div className="h-2 w-2 rounded-none bg-primary" />
                 Pricing
               </div>
 
-              <h2 className="
-          font-[var(--font-display)]
-          h1-scale
-          text-slate-900
-        ">
-                Membership and purchase paths
-              </h2>
+              <motion.div
+                variants={fadeUp}
+                className="mt-8 font-[var(--font-display)] text-slate-900"
+              >
+                <h2 className="h2-scale">
+                  Flexible plans for students
+                </h2>
+              </motion.div>
 
               <p className="
           mt-8
@@ -1268,9 +1070,8 @@ export default function Home() {
                     items-center
                     justify-center
                     rounded-none
-                    bg-primary/10
                   ">
-                          <CheckCircle2 className="h-4 w-4 text-primary" />
+                          <Check className="h-4 w-4 text-primary" />
                         </div>
 
                         <span className="text-slate-600 small-scale font-medium">
@@ -1282,7 +1083,7 @@ export default function Home() {
 
                   {/* CTA */}
                   <Link
-                    href="/sign-in"
+                    href="/login"
                     className="
                 mt-10
                 inline-flex
@@ -1293,7 +1094,7 @@ export default function Home() {
                 px-6
                 py-3
                 small-scale
-                font-semibold
+                font-bold
                 text-white
                 shadow-md
                 transition-all
@@ -1328,14 +1129,14 @@ export default function Home() {
                   <div className="
               inline-flex
               rounded-none
-              bg-orange-50
+              bg-primary
               px-3
               py-1
               caption-scale
               font-bold
               uppercase
               tracking-widest
-              text-orange-600
+              text-white
             ">
                     Retail & Peer-to-Peer
                   </div>
@@ -1430,7 +1231,7 @@ export default function Home() {
                 px-6
                 py-3
                 small-scale
-                font-semibold
+                font-bold
                 text-slate-900
                 transition-all
                 duration-300
@@ -1461,14 +1262,15 @@ export default function Home() {
           {/* Heading */}
           <motion.div
             variants={fadeUp}
-            className="max-w-5xl mx-auto text-center mb-16"
+            className="mb-8 font-[var(--font-display)] text-slate-900 text-center"
           >
-            <h2 className="
-          font-[var(--font-display)]
-          h1-scale
-          text-slate-900
-        ">
-              Frequently Asked Questions
+            <motion.div variants={fadeUp}>
+              <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
+                <span>FAQ</span>
+              </div>
+            </motion.div>
+            <h2 className="h2-scale">
+              Common questions
             </h2>
 
             <p
@@ -1477,7 +1279,7 @@ export default function Home() {
       body-scale text-slate-500
     "
             >
-              Everything you need to know about the Neeve ecosystem,
+              Everything you need to know about the Neev ecosystem,
               campus hubs, premium memberships, and smart discovery.
             </p>
           </motion.div>
@@ -1494,8 +1296,8 @@ export default function Home() {
             >
               {[
                 {
-                  q: "Is Neeve a college or a university?",
-                  a: "Neeve is a technology and logistics ecosystem designed to modernize access to books and knowledge through connected campus hubs.",
+                  q: "Is Neev a college or a university?",
+                  a: "Neev is a technology and logistics ecosystem designed to modernize access to books and knowledge through connected campus hubs.",
                 },
                 {
                   q: "What happens if a book isn't available nearby?",
@@ -1507,7 +1309,7 @@ export default function Home() {
                 },
                 {
                   q: "Can students exchange books directly?",
-                  a: "Yes. Neeve supports secure peer-to-peer exchanges through verified campus networks and managed handoff systems.",
+                  a: "Yes. Neev supports secure peer-to-peer exchanges through verified campus networks and managed handoff systems.",
                 },
                 {
                   q: "What does Premium membership include?",
@@ -1529,17 +1331,14 @@ export default function Home() {
           "
                   >
                     <div className="flex w-full items-center justify-between gap-4">
-                      <h3
-                        className="
-                text-left
-                h3-scale
-                text-slate-900
-                transition-colors duration-300
-                group-hover:text-primary
-              "
+                      <motion.div
+                        variants={fadeUp}
+                        className="text-slate-900"
                       >
-                        {item.q}
-                      </h3>
+                        <h4 className="h3-scale">
+                          {item.q}
+                        </h4>
+                      </motion.div>
                     </div>
                   </AccordionTrigger>
 
@@ -1566,7 +1365,7 @@ export default function Home() {
         <div className="
     absolute
     inset-0
-    bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.22)_0%,transparent_45%)]
+    bg-primary
   " />
 
         <div className="
@@ -1604,7 +1403,6 @@ export default function Home() {
   " />
 
         <Container className="relative z-10">
-
           <motion.div
             variants={stagger}
             initial="hidden"
@@ -1612,45 +1410,17 @@ export default function Home() {
             viewport={viewportOnce}
             className="max-w-6xl mx-auto text-center"
           >
-
-            {/* Eyebrow */}
-            <motion.div
-              variants={fadeUp}
-              className="
-          inline-flex
-          items-center
-          gap-2
-          rounded-none
-          border
-          border-white/10
-          bg-white/5
-          backdrop-blur-xl
-          px-4
-          py-1.5
-          small-scale
-          font-semibold
-          tracking-wide
-          text-blue-100
-          mb-8
-        "
-            >
-              <div className="h-2 w-2 rounded-none bg-blue-400 animate-pulse" />
-              Trusted by modern student communities
-            </motion.div>
-            {/* Heading */}
             <motion.h2
               variants={fadeUp}
               className="
     mx-auto
     max-w-4xl
     font-[var(--font-display)]
-    hero-title
+    h1-scale
     text-white
   "
             >
-              Upgrade the way students
-              <br className="hidden md:block" />
-              discover and share books.
+              Join the student textbook network.
             </motion.h2>
 
             {/* Subtext */}
@@ -1686,7 +1456,7 @@ export default function Home() {
               {/* Primary */}
               <motion.div variants={fadeUp}>
                 <Link
-                  href="/sign-in"
+                  href="/login"
                   className="
               group
               inline-flex
@@ -1715,8 +1485,7 @@ export default function Home() {
               items-center
               justify-center
               rounded-none
-              bg-slate-900
-              text-white
+              text-slate-900
               transition-transform
               duration-300
               group-hover:translate-x-1
@@ -1742,7 +1511,7 @@ export default function Home() {
               px-6
               py-3
               small-scale
-              font-semibold
+              font-bold
               text-white
               transition-all
               duration-300
