@@ -1,14 +1,21 @@
 import React from "react"
 import { useAuth } from "@/context/auth-context"
 import { useLocation, Link } from "wouter"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
 import { ApiError } from "@/lib/api"
 import { afterAuthPath } from "@/lib/sign-in-return"
-import { Loader2, ArrowLeft } from "lucide-react"
+import { Loader2, ArrowLeft, ChevronDown } from "lucide-react"
 import { HUB_KIND_OPTIONS, type HubKindValue } from "@/lib/hub-display"
 import { motion, AnimatePresence } from "framer-motion"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AnimatedAuthPage() {
+    const { toast } = useToast()
     const [, setLocation] = useLocation()
     const { login, register, logout } = useAuth()
     const [mode, setMode] = React.useState<'login' | 'register'>('login')
@@ -29,7 +36,11 @@ export default function AnimatedAuthPage() {
         if (busy) return
 
         if (mode === 'register' && password !== confirmPassword) {
-            toast.error("Passwords do not match")
+            toast({
+                title: "Error",
+                description: "Passwords do not match",
+                variant: "destructive"
+            })
             return
         }
 
@@ -47,17 +58,28 @@ export default function AnimatedAuthPage() {
 
                 if (isStudentUI && !isUserRole) {
                     logout()
-                    toast.error("This is a Hub Owner account. Please select 'Hub Owner' to log in.")
+                    toast({
+                        title: "Access Denied",
+                        description: "The provided credentials do not belong to a student account.",
+                        variant: "destructive"
+                    })
                     return
                 }
 
                 if (isHubOwnerUI && !isHubRole) {
                     logout()
-                    toast.error("This is a Student account. Please select 'Student' to log in.")
+                    toast({
+                        title: "Access Denied",
+                        description: "The provided credentials do not belong to a hub owner account.",
+                        variant: "destructive"
+                    })
                     return
                 }
 
-                toast.success(`Welcome back, ${user.name}!`)
+                toast({
+                    title: "Welcome back",
+                    description: `Welcome back, ${user.name}!`,
+                })
                 setLocation(afterAuthPath(user))
             } else {
                 if (role === 'student') {
@@ -67,7 +89,10 @@ export default function AnimatedAuthPage() {
                         password,
                         accountType: "user"
                     })
-                    toast.success("Account created successfully!")
+                    toast({
+                        title: "Success",
+                        description: "Account created successfully!",
+                    })
                     setLocation(afterAuthPath(user))
                 } else {
                     const user = await register({
@@ -79,12 +104,19 @@ export default function AnimatedAuthPage() {
                         hubLocation: hubLocation.trim(),
                         hubKind
                     })
-                    toast.success("Hub account created successfully!")
+                    toast({
+                        title: "Success",
+                        description: "Hub account created successfully!",
+                    })
                     setLocation(afterAuthPath(user))
                 }
             }
         } catch (err) {
-            toast.error(err instanceof ApiError ? err.message : "Authentication failed")
+            toast({
+                title: "Authentication Failed",
+                description: err instanceof ApiError ? err.message : "We couldn't verify your credentials. Please try again.",
+                variant: "destructive"
+            })
         } finally {
             setBusy(false)
         }
@@ -92,29 +124,30 @@ export default function AnimatedAuthPage() {
 
     return (
         <div className="min-h-screen bg-white flex items-center justify-center overflow-hidden selection:bg-primary/30">
-            <div className={`relative w-full min-h-screen lg:h-screen overflow-hidden bg-primary flex flex-col lg:flex-row ${mode === 'login' ? '' : 'lg:flex-row-reverse'}`}>
+            <div className={`relative w-full min-h-screen lg:h-screen overflow-hidden flex flex-col lg:flex-row ${mode === 'login' ? '' : 'lg:flex-row-reverse'}`}>
+                {/* Global Gradient Overlay - Subtle */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary via-blue-600 to-white opacity-[0.01] pointer-events-none" />
+                
                 <Link href="/">
-                    <button className="absolute top-6 left-6 z-50 flex items-center gap-2 text-white hover:opacity-80 transition-opacity">
+                    <button className="absolute top-6 left-6 z-50 flex items-center gap-2 text-primary hover:opacity-80 transition-opacity backdrop-blur-sm px-4 py-2 ">
                         <ArrowLeft className="h-5 w-5" />
-                        <span className="font-bold">Back</span>
+                        <span className="font-bold uppercase tracking-wider text-xs">Back to Hub</span>
                     </button>
                 </Link>
-                {/* Floating Background Circles */}
-                <div className="absolute top-10 left-10 w-40 h-40 bg-primary/10 rounded-none blur-3xl animate-pulse" />
-                <div className="absolute bottom-10 right-10 w-52 h-52 bg-primary/10 rounded-none blur-3xl animate-pulse" />
 
-                {/* Login/Register Section */}
+                {/* Left: Form Section */}
                 <motion.div
                     layout
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="relative z-10 flex-1 flex flex-col items-center py-12 px-8 lg:px-20 lg:py-16 lg:h-screen lg:overflow-y-auto bg-primary transition-colors duration-500"
+                    className="relative z-10 flex-1 flex flex-col items-center py-12 px-8 lg:px-20 lg:py-16 lg:h-screen lg:overflow-y-auto bg-white"
                 >
-                    <div className="w-full max-w-md text-white my-auto">
-                        <div className="mb-8">
-                            <h1 className="text-4xl font-bold tracking-tight text-white">
+                    <div className="w-full max-w-md my-auto relative">
+                        {/* Header Section */}
+                        <div className="mb-10 relative text-center lg:text-left">
+                            <h1 className="text-4xl font-bold tracking-tighter text-slate-900 mb-3">
                                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
                             </h1>
-                            <p className="text-blue-100 mt-3 text-sm">
+                            <p className="text-slate-500 font-medium text-[15px]">
                                 {mode === 'login'
                                     ? 'Login to continue your learning journey.'
                                     : 'Register to access your hub dashboard.'}
@@ -122,36 +155,44 @@ export default function AnimatedAuthPage() {
                         </div>
 
                         {/* Role Selector */}
-                        <div className="mb-6">
-                            <label className="text-sm text-blue-100 block mb-3 font-medium">
-                                Select Role
-                            </label>
+                        <div className="mb-8 relative p-1 bg-slate-50 border border-slate-100 flex gap-1">
+                            <button
+                                onClick={() => setRole('student')}
+                                className={`relative flex-1 py-3.5 text-sm font-bold transition-all duration-300 z-10 ${role === 'student'
+                                    ? 'text-white'
+                                    : 'text-slate-400 hover:text-slate-600'
+                                    }`}
+                            >
+                                {role === 'student' && (
+                                    <motion.div
+                                        layoutId="role-bg"
+                                        className="absolute inset-0 bg-primary shadow-sm"
+                                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                                    />
+                                )}
+                                <span className="relative z-20">Student</span>
+                            </button>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => setRole('student')}
-                                    className={`rounded-none py-3 font-semibold transition-all duration-300 ${role === 'student'
-                                        ? 'bg-white text-primary shadow-lg shadow-black/10 scale-105'
-                                        : 'bg-white/10 text-white hover:bg-white/20'
-                                        }`}
-                                >
-                                    Student
-                                </button>
-
-                                <button
-                                    onClick={() => setRole('hubOwner')}
-                                    className={`rounded-none py-3 font-semibold transition-all duration-300 ${role === 'hubOwner'
-                                        ? 'bg-white text-primary shadow-lg shadow-black/10 scale-105'
-                                        : 'bg-white/10 text-white hover:bg-white/20'
-                                        }`}
-                                >
-                                    Hub Owner
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => setRole('hubOwner')}
+                                className={`relative flex-1 py-3.5 text-sm font-bold transition-all duration-300 z-10 ${role === 'hubOwner'
+                                    ? 'text-white'
+                                    : 'text-slate-400 hover:text-slate-600'
+                                    }`}
+                            >
+                                {role === 'hubOwner' && (
+                                    <motion.div
+                                        layoutId="role-bg"
+                                        className="absolute inset-0 bg-primary shadow-sm"
+                                        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                                    />
+                                )}
+                                <span className="relative z-20">Hub Owner</span>
+                            </button>
                         </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Form - White borders by default, blue on hover/focus */}
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <AnimatePresence mode="wait">
                                 {mode === 'register' && (
                                     <motion.div
@@ -159,8 +200,9 @@ export default function AnimatedAuthPage() {
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                                        className="space-y-2"
                                     >
-                                        <label className="text-sm text-blue-100 block mb-2 font-medium">
+                                        <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                             Full Name
                                         </label>
                                         <input
@@ -169,14 +211,14 @@ export default function AnimatedAuthPage() {
                                             onChange={(e) => setName(e.target.value)}
                                             placeholder="Enter your full name"
                                             required
-                                            className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                            className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                         />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
-                            <div>
-                                <label className="text-sm text-blue-100 block mb-2 font-medium">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                     Email Address
                                 </label>
                                 <input
@@ -185,7 +227,7 @@ export default function AnimatedAuthPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
                                     required
-                                    className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                    className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                 />
                             </div>
 
@@ -196,10 +238,10 @@ export default function AnimatedAuthPage() {
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                                        className="space-y-5"
+                                        className="space-y-6"
                                     >
-                                        <div>
-                                            <label className="text-sm text-blue-100 block mb-2 font-medium">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                                 Hub Name
                                             </label>
                                             <input
@@ -208,11 +250,11 @@ export default function AnimatedAuthPage() {
                                                 onChange={(e) => setHubName(e.target.value)}
                                                 placeholder="e.g. Central Library"
                                                 required
-                                                className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                                className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-sm text-blue-100 block mb-2 font-medium">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                                 Hub Location
                                             </label>
                                             <input
@@ -221,32 +263,42 @@ export default function AnimatedAuthPage() {
                                                 onChange={(e) => setHubLocation(e.target.value)}
                                                 placeholder="City or Campus"
                                                 required
-                                                className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                                className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-sm text-blue-100 block mb-2 font-medium">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                                 Hub Type
                                             </label>
-                                            <select
-                                                value={hubKind}
-                                                onChange={(e) => setHubKind(e.target.value as HubKindValue)}
-                                                required
-                                                className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900 appearance-none cursor-pointer"
-                                            >
-                                                {HUB_KIND_OPTIONS.map((opt) => (
-                                                    <option key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className="w-full flex items-center justify-between rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 text-left font-bold shadow-sm"
+                                                    >
+                                                        {HUB_KIND_OPTIONS.find(opt => opt.value === hubKind)?.label || "Select hub type"}
+                                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-white rounded-none border border-slate-100 shadow-xl p-1">
+                                                    {HUB_KIND_OPTIONS.map((opt) => (
+                                                        <DropdownMenuItem
+                                                            key={opt.value}
+                                                            onSelect={() => setHubKind(opt.value as HubKindValue)}
+                                                            className="px-5 py-3 focus:bg-primary/5 focus:text-primary cursor-pointer font-bold rounded-none"
+                                                        >
+                                                            {opt.label}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
-                            <div>
-                                <label className="text-sm text-blue-100 block mb-2 font-medium">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                     Password
                                 </label>
                                 <input
@@ -255,7 +307,7 @@ export default function AnimatedAuthPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
                                     required
-                                    className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                    className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                 />
                             </div>
 
@@ -266,8 +318,9 @@ export default function AnimatedAuthPage() {
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                                        className="space-y-2"
                                     >
-                                        <label className="text-sm text-blue-100 block mb-2 font-medium">
+                                        <label className="text-[11px] font-bold uppercase tracking-widest text-primary ml-1">
                                             Confirm Password
                                         </label>
                                         <input
@@ -276,7 +329,7 @@ export default function AnimatedAuthPage() {
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Confirm password"
                                             required
-                                            className="w-full rounded-none bg-white border-none px-5 py-4 outline-none focus:ring-4 focus:ring-white/20 transition-all text-slate-900"
+                                            className="w-full rounded-none bg-slate-50/50 border-2 border-white hover:border-primary/50 focus:border-primary focus:bg-white px-5 py-4 outline-none transition-all text-slate-900 font-bold shadow-sm"
                                         />
                                     </motion.div>
                                 )}
@@ -285,50 +338,63 @@ export default function AnimatedAuthPage() {
                             <button
                                 type="submit"
                                 disabled={busy}
-                                className="w-full flex items-center justify-center gap-2 rounded-none py-4 font-bold bg-white text-primary hover:bg-blue-50 hover:scale-[1.02] transition-all duration-300 shadow-xl shadow-black/10 disabled:opacity-50 disabled:hover:scale-100"
+                                className="w-full flex items-center justify-center gap-3 rounded-none py-5 font-black uppercase tracking-widest text-xs bg-primary text-white hover:bg-blue-700 transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden group shadow-lg"
                             >
-                                {busy && <Loader2 className="h-5 w-5 animate-spin" />}
-                                {mode === 'login' ? 'Login' : 'Create Account'}
+                                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <span className="relative z-10">{mode === 'login' ? 'Login' : 'Create Account'}</span>
                             </button>
                         </form>
 
-                        {/* Toggle */}
-                        <div className="mt-8 text-center text-sm text-blue-100">
-                            {mode === 'login'
-                                ? "Don't have an account?"
-                                : 'Already have an account?'}
+                        <div className="mt-10 text-center">
+                            <p className="text-sm font-bold text-slate-400">
+                                {mode === 'login'
+                                    ? "New to the network?"
+                                    : 'Already have an account?'}
 
-                            <button
-                                onClick={() =>
-                                    setMode(mode === 'login' ? 'register' : 'login')
-                                }
-                                className="ml-2 text-white hover:underline font-bold"
-                            >
-                                {mode === 'login' ? 'Register' : 'Login'}
-                            </button>
+                                <button
+                                    onClick={() =>
+                                        setMode(mode === 'login' ? 'register' : 'login')
+                                    }
+                                    className="ml-2 text-primary hover:underline font-black uppercase tracking-tight"
+                                >
+                                    {mode === 'login' ? 'Register' : 'Sign In'}
+                                </button>
+                            </p>
                         </div>
+                    </div>
+                    
+                    <div className="mt-12 text-center opacity-30">
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+                            Neev Phygital System &copy; 2026
+                        </p>
                     </div>
                 </motion.div>
 
-                {/* Illustration Section */}
+                {/* Right: Illustration Section */}
                 <motion.div
                     layout
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="relative flex-1 overflow-hidden hidden lg:flex items-center justify-center lg:h-screen bg-white transition-colors duration-500"
+                    className="relative flex-1 overflow-hidden hidden lg:flex items-center justify-center lg:h-screen bg-slate-50 transition-colors duration-500"
                 >
-                    {/* Decorative Shapes */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-none -mr-32 -mt-32" />
                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-none -ml-48 -mb-48" />
 
-                    {/* Main Illustration */}
-                    <div className="relative z-10 flex flex-col items-center text-center px-10">
-                        {/* New Illustration Container */}
-                        <div className="relative w-full max-w-[480px] mb-8">
+                    <div className="relative z-10 flex flex-col items-center text-center px-20">
+                        <div className="relative w-full max-w-[480px] mb-12">
                             <img
-                                src="/images/Login-rafiki.png"
-                                alt="Login Illustration"
-                                className="w-full h-auto drop-shadow-2xl"
+                                src={mode === 'login' ? "/images/Login-rafiki.png" : "/images/Sign up-rafiki.png"}
+                                alt={mode === 'login' ? "Login Illustration" : "Sign Up Illustration"}
+                                className="w-full h-auto drop-shadow-2xl relative z-10"
                             />
+                        </div>
+                        
+                        <div className="max-w-md space-y-4">
+                            <h2 className="text-2xl font-bold tracking-tight text-primary leading-tight">
+                                Connecting students to physical assets digitally.
+                            </h2>
+                            <p className="text-slate-400 font-medium text-sm">
+                                The largest network of campus hubs ensuring every student has access to the resources they need.
+                            </p>
                         </div>
                     </div>
                 </motion.div>
