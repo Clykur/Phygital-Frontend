@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
-  ArrowRight, BookOpen, Zap, Sparkles, Network, ShieldCheck, CheckCircle2, MapPin, ChevronDown,
+  ArrowRight, BookOpen, Network, ShieldCheck, ChevronDown,
   Check
 } from "lucide-react";
 import { Container } from "@/components/home/Container";
@@ -30,7 +30,7 @@ const SHOWCASE_BOOKS = [
   "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop",
 ];
-const titleWords = ["Your", "textbook", "network,"];
+const titleWords = ["Your", "phygital", "network,"];
 const highlightWords = ["upgraded."];
 
 const wordAnimation = {
@@ -89,11 +89,6 @@ export default function Home() {
   const centerScale = useTransform(lotusProgress, [0.1, 0.45], [0.8, 1]);
   const centerOpacity = useTransform(lotusProgress, [0.1, 0.3], [0, 1]);
   const outerOpacity = useTransform(lotusProgress, [0.1, 0.35], [0, 1]);
-  const mobileY = useTransform(lotusProgress, [0.1, 0.4], [60, 0]);
-  const mobileOpacity = useTransform(lotusProgress, [0.1, 0.3], [0, 1]);
-
-  const yParallax = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const opacityParallax = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   // HERO_BG_IMAGES removed in favor of video hero
 
@@ -114,7 +109,7 @@ export default function Home() {
     <div className="w-full bg-[#FAFAFA] font-sans selection:bg-primary/20 selection:text-primary">
 
       {/* 1. HERO SECTION */}
-      <section id="hero" ref={heroRef} className="relative min-h-[100dvh] flex flex-col justify-center overflow-hidden bg-primary">
+      <section id="hero" ref={heroRef} className="relative min-h-[100dvh] flex flex-col justify-center items-center overflow-hidden bg-slate-900">
         {/* Background Video */}
         <div className="absolute inset-0 z-0">
           <video
@@ -126,8 +121,47 @@ export default function Home() {
           >
             <source src="/14543425-uhd_3840_2160_24fps.mp4" type="video/mp4" />
           </video>
+          {/* Overlay for contrast */}
+          <div className="absolute inset-0 bg-slate-950/40" />
         </div>
 
+        <Container className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center text-center"
+          >
+            <h1 className="flex flex-col items-center">
+              <motion.span
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="text-[120px] md:text-[220px] font-black leading-none tracking-tighter text-primary drop-shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]"
+              >
+                Neev
+              </motion.span>
+              <motion.span
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="mt-[-10px] md:mt-[-30px] text-2xl md:text-5xl font-[var(--font-display)] italic tracking-[0.2em] md:tracking-[0.3em] text-white uppercase"
+              >
+                Phygital Library
+              </motion.span>
+            </h1>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-20 flex flex-col items-center gap-6"
+            >
+              <div className="h-px w-24 bg-white/20" />
+              <p className="text-white/60 uppercase tracking-[0.4em] text-[10px] font-bold">Bridging Physical & Digital</p>
+            </motion.div>
+          </motion.div>
+        </Container>
 
         {/* Scroll Indicator */}
         <motion.div
@@ -146,7 +180,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* INTRO SECTION - Moved from Hero */}
+      {/* INTRO SECTION */}
       <section className="relative bg-white pt-20 pb-12 md:pt-32 md:pb-24">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
@@ -158,12 +192,6 @@ export default function Home() {
               viewport={viewportOnce}
               className="max-w-2xl"
             >
-              <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                  <span>The Futuristic Reading Platform</span>
-                </div>
-              </motion.div>
-
               <motion.h1
                 className="mt-4 hero-title text-slate-900 font-bold"
                 initial="hidden"
@@ -282,8 +310,8 @@ export default function Home() {
                   className="relative w-[280px] h-[380px] rounded-none shadow-xl overflow-visible border border-slate-100 bg-white"
                 >
                   <img
-                    src={SHOWCASE_BOOKS[0]}
-                    alt="Book Cover"
+                    src="/literary_poet_portrait.png"
+                    alt="Poet Portrait"
                     className="w-full h-full object-cover opacity-95"
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />
@@ -347,20 +375,13 @@ export default function Home() {
               variants={fadeUp}
               className="flex flex-col items-center text-center"
             >
-              {/* Badge */}
-              <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center justify-center rounded-none border border-blue-100 bg-blue-50 px-4 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm">
-                  <span>Flexible Access</span>
-                </div>
-              </motion.div>
-
               {/* Title */}
               <motion.div
                 variants={fadeUp}
                 className="mb-8 mt-8 font-[var(--font-display)] text-slate-900 text-center"
               >
                 <h2 className="h2-scale">
-                  Borrow, buy, and exchange locally.
+                  Borrow, buy, and exchange <span className="text-primary">locally.</span>
                 </h2>
               </motion.div>
 
@@ -640,7 +661,7 @@ export default function Home() {
           className="mb-8 font-[var(--font-display)] text-slate-900 text-center"
         >
           <h2 className="h2-scale">
-            Trending at your hubs
+            Trending at your <span className="text-primary">hubs</span>
           </h2>
         </motion.div>
 
@@ -688,13 +709,8 @@ export default function Home() {
               variants={fadeUp}
               className="text-center mb-16 font-[var(--font-display)] text-slate-900"
             >
-              <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                  <span>Smart Discovery</span>
-                </div>
-              </motion.div>
               <h2 className="h2-scale">
-                A smarter way to access books.
+                A smarter way to <span className="text-primary">access books.</span>
               </h2>
             </motion.div>
 
@@ -707,14 +723,8 @@ export default function Home() {
                 className="space-y-6"
               >
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-[2px] w-12 bg-primary" />
-                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
-                      Smart Discovery
-                    </span>
-                  </div>
 
-                  <h3 className="h3-scale text-slate-900 mb-6">
+                  <h3 className="h3-scale text-primary mb-6">
                     Smart Discovery
                   </h3>
 
@@ -734,7 +744,7 @@ export default function Home() {
             "
                 >
                   <img
-                    src="/images/Library-rafiki.png"
+                    src="/images/college_project-rafiki.png"
                     alt=""
                     className="w-full h-[240px] md:h-[320px] object-contain"
                   />
@@ -744,7 +754,7 @@ export default function Home() {
               {/* CENTER COLUMN */}
               <motion.div
                 variants={fadeUp}
-                className="flex flex-col space-y-6 lg:pt-16"
+                className="flex flex-col space-y-6 lg:pt-5"
               >
                 <motion.div
                   whileHover={{ y: -5 }}
@@ -757,21 +767,16 @@ export default function Home() {
             "
                 >
                   <img
-                    src="/images/college_project-rafiki.png"
+                    src="/images/Collabration.png"
+
                     alt=""
                     className="w-full h-[220px] md:h-[280px] object-contain"
                   />
                 </motion.div>
 
                 <div className="order-1 lg:order-2">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-[2px] w-12 bg-primary" />
-                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
-                      Community Driven
-                    </span>
-                  </div>
 
-                  <h3 className="h3-scale text-slate-900 mb-6">
+                  <h3 className="h3-scale text-primary mb-6">
                     Collaborative Knowledge
                   </h3>
 
@@ -789,14 +794,7 @@ export default function Home() {
                 className="space-y-6"
               >
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-[2px] w-12 bg-primary" />
-                    <span className="small-scale font-bold uppercase tracking-[0.2em] text-primary">
-                      Physical + Digital
-                    </span>
-                  </div>
-
-                  <h3 className="h3-scale text-slate-900 mb-6">
+                  <h3 className="h3-scale text-primary mb-6">
                     Real Campus Experience
                   </h3>
 
@@ -816,7 +814,7 @@ export default function Home() {
             "
                 >
                   <img
-                    src="/images/Team work-amico.png"
+                    src="/images/Library-rafiki.png"
                     alt=""
                     className="w-full h-[240px] md:h-[320px] object-contain"
                   />
@@ -844,22 +842,12 @@ export default function Home() {
               <div className="lg:col-span-5">
                 <motion.div
                   variants={fadeUp}
-                  className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8"
-                >
-                  <MapPin className="h-3.5 w-3.5 fill-primary/20" />
-                  <span>Where we are</span>
-                </motion.div>
-
-                <motion.div
-                  variants={fadeUp}
-                  className="mt-8 font-[var(--font-display)] text-slate-900"
+                  className="font-[var(--font-display)] text-slate-900"
                 >
                   <h2 className="h2-scale">
-                    Growing across campuses.
+                    Growing across <span className="text-primary">campuses.</span>
                   </h2>
                 </motion.div>
-
-                <motion.div variants={fadeUp} className="mt-8 h-1 w-20 bg-primary/20" />
               </div>
 
               <motion.div variants={fadeUp} className="lg:col-span-7 space-y-8">
@@ -878,7 +866,7 @@ export default function Home() {
                       key={i}
                       className="flex items-start gap-4 group/item"
                     >
-                      <div className="mt-1.5 h-1.5 w-1.5 rounded-none bg-primary shrink-0 group-hover/item:scale-[2.5] transition-transform duration-300 ring-4 ring-primary/5" />
+                      <div className="mt-1.5 h-1.5 w-1.5 bg-primary shrink-0 transition-transform duration-300" />
                       <span className="small-scale text-slate-600 leading-snug">
                         {text}
                       </span>
@@ -920,19 +908,14 @@ export default function Home() {
             {/* Heading */}
             <motion.div
               variants={fadeUp}
-              className="max-w-4xl mx-auto text-center mb-16"
+              className="max-w-4xl mx-auto text-center mb-1"
             >
-              <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                <div className="h-2 w-2 rounded-none bg-primary" />
-                Pricing
-              </div>
-
               <motion.div
                 variants={fadeUp}
-                className="mt-8 font-[var(--font-display)] text-slate-900"
+                className="font-[var(--font-display)] text-slate-900"
               >
                 <h2 className="h2-scale">
-                  Flexible plans for students
+                  Flexible plans for <span className="text-primary">students</span>
                 </h2>
               </motion.div>
 
@@ -1264,11 +1247,6 @@ export default function Home() {
             variants={fadeUp}
             className="mb-8 font-[var(--font-display)] text-slate-900 text-center"
           >
-            <motion.div variants={fadeUp}>
-              <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                <span>FAQ</span>
-              </div>
-            </motion.div>
             <h2 className="h2-scale">
               Common questions
             </h2>
@@ -1335,9 +1313,9 @@ export default function Home() {
                         variants={fadeUp}
                         className="text-slate-900"
                       >
-                        <h4 className="h3-scale">
+                        <h3 className="text-2xl">
                           {item.q}
-                        </h4>
+                        </h3>
                       </motion.div>
                     </div>
                   </AccordionTrigger>
@@ -1420,7 +1398,7 @@ export default function Home() {
     text-white
   "
             >
-              Join the student textbook network.
+              Join the phygital network.
             </motion.h2>
 
             {/* Subtext */}

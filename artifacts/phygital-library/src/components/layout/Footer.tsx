@@ -29,11 +29,11 @@ export function Footer() {
               <img
                 src="/images/neev.png"
                 alt="Neev Logo"
-                className="h-16 w-auto"
+                className="h-16 w-auto mix-blend-multiply"
               />
             </Link>
 
-            <p className="mt-6 text-[15px] leading-8 text-[#64748B]">
+            <p className="mt-6 pl-[28px] text-[15px] leading-8 text-[#64748B]">
               The modern student library network for
               quick access, reduced costs, and better reuse
               across hubs.
@@ -43,7 +43,7 @@ export function Footer() {
           {/* NAVIGATION */}
           <div>
             <p className="text-sm font-semibold tracking-wide text-slate-900">
-              Navigation
+              NAVIGATION
             </p>
 
             <ul className="mt-6 space-y-4">
@@ -88,7 +88,7 @@ export function Footer() {
           {/* TRUST */}
           <div>
             <p className="text-sm font-semibold tracking-wide text-slate-900">
-              Trust
+              TRUST
             </p>
 
             <ul className="mt-6 space-y-4">
@@ -134,15 +134,15 @@ export function Footer() {
 
             {[
               {
-                icon: Youtube,
-                href: "#",
-              },
-              {
                 icon: Instagram,
                 href: "#",
               },
               {
                 icon: Linkedin,
+                href: "#",
+              },
+              {
+                icon: Youtube,
                 href: "#",
               },
               {
@@ -181,7 +181,7 @@ export function Footer() {
                     hover:shadow-primary/20
                   "
                 >
-                  <Icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                  <Icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                 </a>
               );
             })}

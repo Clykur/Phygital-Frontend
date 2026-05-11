@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight, BookOpen, MapPin, MessageSquare, Network, Users, Sparkles, Zap, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/home/Container";
@@ -17,24 +17,24 @@ const PAGE_DESCRIPTION =
 
 const viewportOnce = { once: true, margin: "-20px", amount: 0.1 } as const;
 
-const CORE_STEPS: { icon: LucideIcon; title: string; body: string }[] = [
+const CORE_STEPS = [
   {
-    icon: BookOpen,
+    icon: "https://cdn-icons-gif.flaticon.com/17569/17569494.gif",
     title: "Discovery",
     body: "Search titles, nearby hubs, and peer listings from one connected system.",
   },
   {
-    icon: Network,
+    icon: "https://cdn-icons-gif.flaticon.com/9820/9820043.gif",
     title: "Routing",
     body: "Find the nearest available copy before expanding fulfillment paths.",
   },
   {
-    icon: MapPin,
+    icon: "https://cdn-icons-gif.flaticon.com/10606/10606583.gif",
     title: "Pickup Hubs",
     body: "Collect books through trusted staffed campus desks and study hubs.",
   },
   {
-    icon: Users,
+    icon: "https://cdn-icons-gif.flaticon.com/19026/19026390.gif",
     title: "Peer & Retail",
     body: "Exchange or purchase books with traceable desk-assisted handoff.",
   },
@@ -42,28 +42,24 @@ const CORE_STEPS: { icon: LucideIcon; title: string; body: string }[] = [
 
 const VALUES = [
   {
-    accent: "bg-primary",
     title: "Access over ownership",
     body: "Borrowing and reuse should be viable for a semester without forcing a full retail purchase every time.",
-    color: "bg-primary"
+    image: "/images/access-ownership.png"
   },
   {
-    accent: "bg-primary",
     title: "Reuse, not waste",
     body: "Longer book life across readers cuts spend and clutter versus single-use buying patterns.",
-    color: "bg-primary"
+    image: "/images/reuse-waste.png"
   },
   {
-    accent: "bg-primary",
     title: "Fast, reliable desk paths",
     body: "Search to pickup should feel obvious: clear status, predictable hours, and staff-visible handoffs.",
-    color: "bg-primary"
+    image: "/images/reliable-paths.png"
   },
   {
-    accent: "bg-primary",
     title: "Peers with guardrails",
     body: "Student listings work best when the hub helps verify pickup and settle fees responsibly.",
-    color: "bg-primary"
+    image: "/images/peers-guardrails.png"
   },
 ];
 
@@ -144,7 +140,13 @@ export default function About() {
     offset: ["start start", "end end"]
   });
 
-  const activeCardValue = useTransform(valuesScrollY, [0, 0.25, 0.5, 0.75, 1], [0, 1, 2, 3, 3]);
+  const smoothValuesScrollY = useSpring(valuesScrollY, {
+    stiffness: 70,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  const activeCardValue = useTransform(smoothValuesScrollY, [0, 0.25, 0.5, 0.75, 1], [0, 1, 2, 3, 3]);
 
   useEffect(() => {
     return activeCardValue.on("change", (latest) => {
@@ -243,8 +245,8 @@ export default function About() {
       </Dialog>
 
       <div className="w-full bg-[#FAFAFA] font-sans selection:bg-primary/20 selection:text-primary">
-        {/* 1. HERO VIDEO SECTION */}
-        <section id="hero-video" className="relative h-[100dvh] w-full overflow-hidden bg-slate-900">
+        {/* 1. HERO SECTION WITH VIDEO BACKGROUND */}
+        <section id="hero" ref={heroRef} className="relative h-[100dvh] w-full overflow-hidden bg-slate-900">
           <video
             autoPlay
             muted
@@ -254,6 +256,85 @@ export default function About() {
           >
             <source src="/12993317-hd_1920_1080_30fps.mp4" type="video/mp4" />
           </video>
+
+          {/* Dark Overlay for Readability */}
+          <div className="absolute inset-0 bg-slate-950/40 z-0" />
+
+          <motion.div style={{ opacity: opacityParallax }} className="relative z-10 w-full h-full">
+            <Container className="flex h-full items-center justify-center">
+              <div className="max-w-4xl mx-auto text-center">
+                <motion.div variants={stagger} initial="hidden" animate="visible">
+                  <motion.h1
+                    variants={fadeUp}
+                    className="text-balance font-[var(--font-display)] hero-title font-bold text-white"
+                  >
+                    {"Affordable textbooks through ".split(" ").map((word, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{
+                          opacity: 1,
+                          y: [40, -15, 0],
+                        }}
+                        transition={{
+                          duration: 0.8,
+                          delay: i * 0.08,
+                          ease: [0.22, 1, 0.36, 1]
+                        }}
+                        className="inline-block mr-[0.25em]"
+                      >
+                        {word}
+                      </motion.span>
+                    ))}
+                    {"partner study hubs.".split(" ").map((word, i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{
+                          opacity: 1,
+                          y: [40, -15, 0],
+                        }}
+                        transition={{
+                          duration: 0.8,
+                          delay: 0.32 + (i * 0.08),
+                          ease: [0.22, 1, 0.36, 1]
+                        }}
+                        className="text-blue-400 italic inline-block mr-[0.25em]"
+                      >
+                        {word}
+                      </motion.span>
+                    ))}
+                  </motion.h1>
+
+                  <motion.p
+                    variants={fadeUp}
+                    className="mt-8 body-scale text-white/90 max-w-2xl mx-auto leading-relaxed font-medium"
+                  >
+                    Neev builds the physical and software layer so borrowing, peer exchanges, and retail pickup stay local, traceable, and grounded in campus life.
+                  </motion.p>
+
+                  <motion.div variants={stagger} className="mt-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-6">
+                    <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                      <Link href="/marketplace" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none bg-primary px-12 h-16 text-base md:text-lg font-bold text-white shadow-2xl transition-all hover:bg-blue-600 hover:-translate-y-1">
+                        Browse Marketplace <ArrowRight className="h-5 w-5" />
+                      </Link>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        onClick={() => setContactDialogOpen(true)}
+                        className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none border-2 border-white/20 bg-white/10 backdrop-blur-md px-12 h-16 text-base md:text-lg font-bold text-white transition-all hover:bg-white/20 hover:-translate-y-1"
+                      >
+                        <MessageSquare className="h-5 w-5" />
+                        Contact Us
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </Container>
+          </motion.div>
+
           {/* Scroll Indicator */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -264,99 +345,11 @@ export default function About() {
               repeatType: "reverse",
               ease: "easeInOut"
             }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50"
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/70"
           >
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Scroll to explore</span>
             <ChevronDown className="h-6 w-6" />
           </motion.div>
-        </section>
-
-        {/* 2. HERO CONTENT SECTION */}
-        <section id="hero-content" ref={heroRef} className="relative py-20 md:py-36 bg-white overflow-hidden">
-          {/* Subtle Background Elements */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-6xl pointer-events-none opacity-40">
-            <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-primary/5 blur-[100px] rounded-full" />
-            <div className="absolute bottom-[10%] right-[5%] w-80 h-80 bg-primary/10 blur-[120px] rounded-full" />
-          </div>
-
-          <Container className="relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              <motion.div variants={stagger} initial="hidden" animate="visible">
-                <motion.div variants={fadeUp}>
-                  <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                    <span>Redefining Campus Libraries</span>
-                  </div>
-                </motion.div>
-
-                <motion.h1
-                  variants={fadeUp}
-                  className="text-balance font-[var(--font-display)] hero-title font-bold text-slate-900"
-                >
-                  {"Affordable textbooks through ".split(" ").map((word, i) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, y: 40 }}
-                      animate={{
-                        opacity: 1,
-                        y: [40, -15, 0],
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        delay: i * 0.08,
-                        ease: [0.22, 1, 0.36, 1]
-                      }}
-                      className="inline-block mr-[0.25em]"
-                    >
-                      {word}
-                    </motion.span>
-                  ))}
-                  {"partner study hubs.".split(" ").map((word, i) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, y: 40 }}
-                      animate={{
-                        opacity: 1,
-                        y: [40, -15, 0],
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        delay: 0.32 + (i * 0.08),
-                        ease: [0.22, 1, 0.36, 1]
-                      }}
-                      className="text-primary italic inline-block mr-[0.25em]"
-                    >
-                      {word}
-                    </motion.span>
-                  ))}
-                </motion.h1>
-
-                <motion.p
-                  variants={fadeUp}
-                  className="mt-8 body-scale text-slate-600 max-w-2xl mx-auto leading-relaxed"
-                >
-                  Neev builds the physical and software layer so borrowing, peer exchanges, and retail pickup stay local, traceable, and grounded in campus life.
-                </motion.p>
-
-                <motion.div variants={stagger} className="mt-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-6">
-                  <motion.div variants={fadeUp} className="w-full sm:w-auto">
-                    <Link href="/marketplace" className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none bg-primary px-12 h-16 text-base md:text-lg font-bold text-white shadow-xl transition-all hover:bg-blue-700 hover:-translate-y-1">
-                      Browse Marketplace <ArrowRight className="h-5 w-5" />
-                    </Link>
-                  </motion.div>
-                  <motion.div variants={fadeUp} className="w-full sm:w-auto">
-                    <Button
-                      variant="outline"
-                      onClick={() => setContactDialogOpen(true)}
-                      className="magnetic-btn flex w-full items-center justify-center gap-2 rounded-none border-2 border-slate-200 bg-transparent px-12 h-16 text-base md:text-lg font-bold text-slate-900 transition-all hover:bg-slate-50 hover:-translate-y-1"
-                    >
-                      <MessageSquare className="h-5 w-5" />
-                      Contact Us
-                    </Button>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
-            </div>
-          </Container>
         </section>
 
         <section className="overflow-hidden border-y border-slate-100 bg-white py-24">
@@ -374,17 +367,17 @@ export default function About() {
                   variants={fadeUp}
                   className="mt-2"
                 >
-                  <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                    Our Mission
-                  </div>
-
                   <motion.div
                     variants={fadeUp}
-                    className="mt-8 font-[var(--font-display)] text-slate-900"
+                    className="mt-2 font-[var(--font-display)] text-slate-900"
                   >
                     <h2 className="h2-scale">
-                      Lower out of pocket spend, longer book life.
+                      Our Mission
                     </h2>
+                    <p className="ml-1 mt-4 text-1xl md:text-2xl leading-[1.9] text-slate-600">
+                      Lower out of pocket spend, longer book life.
+                    </p>
+
                   </motion.div>
                 </motion.div>
 
@@ -421,17 +414,11 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={viewportOnce}
               >
-                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                  Core Infrastructure
-                </div>
-
                 <motion.div
                   variants={fadeUp}
-                  className="mt-6 font-[var(--font-display)] text-slate-900"
+                  className="font-[var(--font-display)] text-slate-900"
                 >
-                  <h2 className="h2-scale">
-                    Hubs, routing, and peer flows in one network.
-                  </h2>
+                  <h2 className="h2-scale">Core Infrastructure</h2>
                 </motion.div>
 
                 <p className="mx-auto mt-6 max-w-2xl text-base md:text-lg leading-8 text-slate-600">
@@ -445,15 +432,15 @@ export default function About() {
             <div className="relative mx-auto max-w-5xl">
 
               {/* background line */}
-              <div className="absolute left-5 top-0 h-full w-px bg-slate-200 md:left-1/2 md:-translate-x-1/2" />
+              <div className="absolute left-5 top-[80px] bottom-[200px] w-px bg-slate-200 md:left-1/2 md:-translate-x-1/2" />
 
               {/* progress line */}
               <motion.div
-                className="absolute left-5 top-0 z-10 w-[2px] bg-primary md:left-1/2 md:-translate-x-1/2"
+                className="absolute left-5 top-[80px] z-10 w-[2px] bg-primary md:left-1/2 md:-translate-x-1/2"
                 style={{
                   scaleY: infraProgress,
                   originY: 0,
-                  height: "100%",
+                  height: "calc(100% - 280px)",
                 }}
               />
 
@@ -477,7 +464,7 @@ export default function About() {
                   >
 
                     {/* node */}
-                    <div className="absolute left-5 top-8 z-20 hidden h-4 w-4 -translate-x-1/2 rounded-full border-4 border-white bg-primary shadow-md md:block md:left-1/2" />
+                    <div className="absolute left-5 top-[80px] z-20 hidden h-4 w-4 -translate-x-1/2 rounded-full border-4 border-white bg-primary shadow-md md:block md:left-1/2" />
 
                     {/* CARD */}
                     <div
@@ -508,8 +495,12 @@ export default function About() {
                       <div className="relative z-10">
 
                         {/* icon */}
-                        <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-none">
-                          <step.icon className="h-7 w-7 text-primary" />
+                        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-none overflow-hidden">
+                          <img
+                            src={step.icon}
+                            alt={step.title}
+                            className="h-14 w-14 object-contain transition-transform duration-500 group-hover:scale-110"
+                          />
                         </div>
 
                         {/* title */}
@@ -532,70 +523,76 @@ export default function About() {
 
         <section ref={valuesRef} className="relative h-[400vh] bg-white">
           <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-            {/* Blurred Radial Backgrounds */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+            {/* Background Accent */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent pointer-events-none" />
 
-            <div className="relative w-full max-w-4xl px-6">
-              <div className="text-center mb-16">
+            <div className="relative w-full max-w-7xl px-6 lg:px-12">
+              <div className="mt-2 md:mt-2 text-center">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={viewportOnce}
                 >
-                  <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                    Our Values
-                  </div>
-                  <motion.div
-                    variants={fadeUp}
-                    className="mt-8 font-[var(--font-display)] text-slate-900"
-                  >
-                    <h2 className="h2-scale">
-                      What guides the product.
-                    </h2>
-                  </motion.div>
+                  <h2 className="font-[var(--font-display)] h2-scale text-slate-900 font-bold">
+                    What guides the product.
+                  </h2>
                 </motion.div>
               </div>
 
-              <div className="relative h-[380px] w-full max-w-2xl mx-auto">
+              <div className="relative h-[500px] md:h-[600px] w-full">
                 {VALUES.map((card, index) => (
                   <motion.div
                     key={card.title}
-                    className="absolute inset-0 bg-white rounded-none border border-slate-100 p-8 md:p-14 shadow-2xl flex flex-col justify-center"
+                    className="absolute inset-0 flex items-center"
                     initial={false}
                     animate={{
-                      scale: activeValueIndex === index ? 1 : 0.94,
+                      y: activeValueIndex === index ? 0 : activeValueIndex > index ? -100 : 100,
                       opacity: activeValueIndex === index ? 1 : 0,
-                      y: activeValueIndex === index ? 0 : 40,
-                      rotateX: activeValueIndex === index ? 0 : -5,
+                      scale: activeValueIndex === index ? 1 : 0.95,
                     }}
                     style={{
                       zIndex: activeValueIndex === index ? 20 : 10,
                       pointerEvents: activeValueIndex === index ? "auto" : "none",
                     }}
                     transition={{
-                      duration: 0.6,
+                      duration: 0.8,
                       ease: [0.22, 1, 0.36, 1]
                     }}
                   >
-                    <div className={`w-20 h-1.5 rounded-full mb-10 ${card.color}`} />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
+                      {/* Text Content */}
+                      <div className="order-2 lg:order-1">
+                        <div className="flex items-center gap-4 mb-6">
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary">0{index + 1}</span>
+                        </div>
+                        <h3 className="font-[var(--font-display)] text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-8 leading-[1.1]">
+                          {card.title}
+                        </h3>
+                        <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
+                          {card.body}
+                        </p>
 
-                    <h3 className="font-[var(--font-display)] text-xl md:text-2xl font-bold text-slate-900 tracking-tight mb-6">
-                      {card.title}
-                    </h3>
+                        {/* Pagination Indicator */}
+                        <div className="mt-12 flex gap-3">
+                          {VALUES.map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-1.5 transition-all duration-500 rounded-none ${activeValueIndex === i ? "w-12 bg-primary" : "w-4 bg-slate-100"
+                                }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
 
-                    <p className="text-base md:text-lg text-slate-600 leading-relaxed">
-                      {card.body}
-                    </p>
-
-                    {/* Progress Indicator inside card */}
-                    <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-10 flex gap-2">
-                      {VALUES.map((_, i) => (
-                        <div
-                          key={i}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${activeValueIndex === i ? "w-8 bg-primary" : "w-1.5 bg-slate-200"
-                            }`}
+                      {/* Illustration */}
+                      <div className="order-1 lg:order-2 relative aspect-square lg:aspect-auto lg:h-[500px] overflow-hidden rounded-none">
+                        <img
+                          src={card.image}
+                          alt={card.title}
+                          className="w-full h-full object-contain mix-blend-multiply transform scale-100 hover:scale-105 transition-transform duration-1000"
                         />
-                      ))}
+
+                      </div>
                     </div>
                   </motion.div>
                 ))}

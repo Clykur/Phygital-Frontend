@@ -57,7 +57,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-6">
         <Link href="/" onClick={handleLogoClick} className="flex items-center gap-3">
-          <img src="/images/neev.png" alt="Neev Logo" className="h-15 w-30" />
+          <img src="/images/neev.png" alt="Neev Logo" className="h-15 w-30 mix-blend-multiply" />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">

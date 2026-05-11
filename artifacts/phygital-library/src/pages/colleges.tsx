@@ -16,24 +16,36 @@ const PAGE_DESCRIPTION =
 
 const viewportOnce = { once: true, margin: "-20px", amount: 0.1 } as const;
 
-const PILOT_STEPS: { icon: LucideIcon; title: string; body: string }[] = [
+const PILOT_STEPS = [
   {
-    icon: Handshake,
+    icon: {
+      static: "https://cdn-icons-png.flaticon.com/512/5977/5977590.png",
+      animated: "https://cdn-icons-gif.flaticon.com/19018/19018030.gif",
+    },
     title: "MoU and success criteria",
     body: "Single-hub pilot, roles, data handling, and what a green light means before adding capacity.",
   },
   {
-    icon: Building2,
+    icon: {
+      static: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+      animated: "https://cdn-icons-gif.flaticon.com/8722/8722412.gif",
+    },
     title: "Space upgrade and desk design",
     body: "Shelving, signage, and handoff zone co-built with facilities and library leadership.",
   },
   {
-    icon: MapPin,
+    icon: {
+      static: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+      animated: "https://cdn-icons-gif.flaticon.com/19021/19021674.gif",
+    },
     title: "Go live in the app",
     body: "Your hub appears in routing. Students see stock, membership, and pickup slots like at other nodes.",
   },
   {
-    icon: ScanLine,
+    icon: {
+      static: "https://cdn-icons-png.flaticon.com/512/2991/2991112.png",
+      animated: "https://cdn-icons-gif.flaticon.com/17626/17626904.gif",
+    },
     title: "Operate and review",
     body: "Staff workflows for intake, pickup, and exceptions, then a joint review before expanding the footprint.",
   },
@@ -230,8 +242,9 @@ export default function Colleges() {
       </Dialog>
 
       <div className="w-full bg-[#FAFAFA] font-sans selection:bg-primary/20 selection:text-primary">
-        {/* 1. HERO VIDEO SECTION */}
-        <section id="hero-video" className="relative h-[100dvh] w-full overflow-hidden bg-slate-900">
+        {/* 1. HERO SECTION WITH VIDEO BACKGROUND */}
+        <section id="hero" ref={heroRef} className="relative h-[100dvh] w-full overflow-hidden bg-slate-900">
+          {/* Video Background */}
           <video
             autoPlay
             muted
@@ -239,46 +252,35 @@ export default function Colleges() {
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src="/90933-629483642.mp4" type="video/mp4" />
+            <source src="/6344218-hd_2048_1080_25fps.mp4" type="video/mp4" />
           </video>
-          {/* Scroll Indicator */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 10 }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50"
-          >
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Scroll to explore</span>
-            <ChevronDown className="h-6 w-6" />
-          </motion.div>
-        </section>
 
-        {/* 2. HERO CONTENT SECTION */}
-        <section id="hero-content" ref={heroRef} className="relative py-20 md:py-32 bg-white">
-          <Container className="relative z-10 px-4 md:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-slate-950/40 z-10" />
 
+          <Container className="relative z-20 h-full flex items-center px-4 md:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center w-full">
               {/* Left Column: Typography & CTA */}
-              <motion.div variants={stagger} initial="hidden" animate="visible" className="max-w-2xl">
-                <motion.div variants={fadeUp}>
-                  <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                    <span>Institutional Partnerships</span>
-                  </div>
-                </motion.div>
-
+              <motion.div
+                variants={stagger}
+                initial="hidden"
+                animate="visible"
+                className="max-w-2xl"
+              >
                 <motion.h1
                   variants={fadeUp}
-                  className="mt-4 text-balance font-[var(--font-display)] hero-title font-bold text-slate-900"
+                  className="mt-4 text-balance font-[var(--font-display)] hero-title font-bold text-white"
                 >
-                  Upgrade library space into a <span className="text-primary">Neev study hub.</span>
-                </motion.h1>
+                  Upgrade library space into a <br />
 
-                <motion.p variants={fadeUp} className="mt-6 body-scale text-slate-600 max-w-xl">
+                  <span className="mt-4 inline-block bg-white p-2 text-primary">
+                    Neev study hub.
+                  </span>
+                </motion.h1>
+                <motion.p
+                  variants={fadeUp}
+                  className="mt-6 body-scale text-white/90 max-w-xl"
+                >
                   Start with zero upfront capex. We align on space, traffic, and operations, then scale when your institution is ready.
                 </motion.p>
 
@@ -294,33 +296,24 @@ export default function Colleges() {
                   </motion.div>
                 </motion.div>
               </motion.div>
-
-              <motion.div
-                className="relative block mt-12 lg:mt-0 h-[450px] sm:h-[550px] w-full perspective-1000"
-                style={{ y: yParallax, opacity: opacityParallax }}
-              >
-                <div className="absolute top-[10%] right-[10%] left-[10%] lg:left-auto w-auto lg:w-[380px] h-auto lg:h-[450px] overflow-hidden rounded-none border border-slate-200 bg-white shadow-2xl">
-                  <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pilot Checklist</p>
-                    <p className="mt-1 h3-scale font-bold text-slate-900">Go-live alignment</p>
-                  </div>
-                  <ul className="divide-y divide-slate-100 bg-white">
-                    {[
-                      "Space audit: shelving & flow",
-                      "Traffic & term calendar",
-                      "Inventory & handoff rules",
-                      "MoU scope & success gates",
-                    ].map((line, i) => (
-                      <li key={i} className="flex gap-4 px-6 py-4 items-center">
-                        <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                        <span className="small-scale text-slate-600 font-medium">{line}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </motion.div>
             </div>
           </Container>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 10 }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }}
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Scroll to explore</span>
+            <ChevronDown className="h-6 w-6" />
+          </motion.div>
         </section>
 
         <section className="py-24 bg-white border-y border-slate-100 overflow-hidden">
@@ -343,11 +336,6 @@ export default function Colleges() {
                 variants={fadeUp}
                 className="max-w-4xl mx-auto text-center mb-20"
               >
-                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                  Why Partner
-                </div>
-
-
                 <motion.h2
                   variants={fadeUp}
                   className="mt-8 font-[var(--font-display)] text-slate-900"
@@ -368,19 +356,19 @@ export default function Colleges() {
                 {[
                   {
                     accent: "bg-primary",
-                    icon: StarIcon,
+                    icon: "https://cdn-icons-gif.flaticon.com/6454/6454149.gif",
                     title: "Physical experience",
                     body: "Refresh underused stacks and desk workflows so the library feels current.",
                   },
                   {
                     accent: "bg-primary",
-                    icon: Users,
+                    icon: "https://cdn-icons-gif.flaticon.com/19026/19026390.gif",
                     title: "Modern student flow",
                     body: "App-based discovery and desk handoff match retail expectations.",
                   },
                   {
                     accent: "bg-primary",
-                    icon: ShieldCheck,
+                    icon: "https://cdn-icons-gif.flaticon.com/7920/7920927.gif",
                     title: "Traceable handoffs",
                     body: "Desk-assisted pickup ensures condition and accountability stay visible.",
                   },
@@ -407,24 +395,24 @@ export default function Colleges() {
                     {/* Glow */}
                     <div className="absolute inset-0 bg-gradient-to-b from-blue-50/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                    {/* Accent */}
-                    <div
-                      className={`mb-8 h-[3px] w-14 ${item.accent}`}
-                      aria-hidden
-                    />
+                    <div className="flex items-center gap-5 mb-8">
+                      {/* Icon */}
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-none">
+                        <img
+                          src={item.icon}
+                          alt={item.title}
+                          className="h-12 w-12 object-contain transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
 
-                    {/* Icon */}
-                    <div className="mb-6 flex h-12 w-12 items-center justify-center text-slate-700">
-                      <item.icon className="h-5 w-5" strokeWidth={1.6} />
+                      {/* Title */}
+                      <h3 className="text-[1.25rem] md:text-[1.35rem] font-bold tracking-[-0.03em] text-slate-900 leading-tight group-hover:text-primary transition-colors duration-500">
+                        {item.title}
+                      </h3>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-[1.2rem] md:text-[1.3rem] font-bold tracking-[-0.03em] text-slate-900 mb-5 leading-snug">
-                      {item.title}
-                    </h3>
-
                     {/* Body */}
-                    <p className="text-[0.93rem] md:text-[0.98rem] uppercase tracking-[0.12em] leading-[1.9] text-slate-500">
+                    <p className="text-[0.93rem] md:text-[0.98rem] uppercase tracking-[0.12em] leading-[1.8] text-slate-500 group-hover:text-slate-600 transition-colors duration-500">
                       {item.body}
                     </p>
                   </motion.article>
@@ -434,231 +422,159 @@ export default function Colleges() {
           </Container>
         </section>
 
-        <section className="relative overflow-hidden bg-[#FAFAFA] py-20 md:py-32">
+        <section className="relative overflow-hidden bg-white py-24 md:py-32">
           <Container>
-            {/* TOP HEADER */}
+            {/* HEADER */}
             <motion.div
               variants={stagger}
               initial="hidden"
               whileInView="visible"
               viewport={viewportOnce}
-              className="mx-auto max-w-5xl text-center"
+              className="mx-auto mb-20 md:mb-32 max-w-4xl text-center"
             >
-              <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center gap-2 rounded-none border border-blue-100 bg-blue-50 px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
-                  Pilot Process
-                </div>
-              </motion.div>
-
               <motion.div
                 variants={fadeUp}
-                className="mt-8 font-[var(--font-display)] text-slate-900"
+                className="font-[var(--font-display)] text-slate-900"
               >
-                <h2 className="h2-scale"> From MoU to first desk day.</h2>
+                <h2 className="h2-scale">From MoU to first desk day.</h2>
               </motion.div>
 
               <motion.p
                 variants={fadeUp}
-                className="mx-auto mt-8 max-w-3xl body-scale text-slate-600"
+                className="mx-auto mt-6 max-w-3xl body-scale text-slate-600"
               >
-                Legal scope, physical upgrade, training,
-                and launch operations aligned into one
-                structured institutional rollout.
+                Legal scope, infrastructure setup, onboarding,
+                and launch operations aligned into one structured rollout.
               </motion.p>
             </motion.div>
 
-            {/* FLOW SECTION */}
-            <div ref={flowRef} className="relative mx-auto mt-20 md:mt-28 max-w-7xl">
-              {/* Mobile background line */}
-              <div className="absolute left-[60px] top-0 h-full w-px bg-slate-100 lg:hidden" />
-
-              {/* Mobile progress line */}
-              <motion.div
-                className="absolute left-[60px] top-0 h-full w-px bg-primary lg:hidden z-10"
-                style={{
-                  scaleY: flowProgress,
-                  originY: 0
-                }}
-              />
-
-              {/* FLOW LINES CONTAINER */}
-              <div className="absolute left-0 top-[60px] hidden w-full lg:block">
-                {/* BG LINE */}
-                <div className="h-[2px] w-full bg-slate-200" />
-
-                {/* ANIMATED FLOW LINE */}
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{
-                    scaleX: hoveredIdx !== null ? (hoveredIdx * 0.25 + 0.125) : 1
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    ease: [0.22, 1, 0.36, 1]
-                  }}
-                  className="absolute left-0 top-0 h-[2px] w-full origin-left bg-primary"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-4">
+            {/* FLOW */}
+            <div className="relative mx-auto max-w-5xl">
+              <div className="relative flex flex-col gap-6 md:gap-10">
 
                 {PILOT_STEPS.map((step, idx) => {
-                  const Icon = step.icon;
+                  const isEven = idx % 2 === 0;
                   const isHovered = hoveredIdx === idx;
-                  const isPast = hoveredIdx !== null && idx < hoveredIdx;
 
                   return (
                     <motion.div
                       key={step.title}
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        duration: 0.7,
-                        delay: idx * 0.08,
-                      }}
+                      initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, margin: "-100px" }}
+                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                       onMouseEnter={() => setHoveredIdx(idx)}
                       onMouseLeave={() => setHoveredIdx(null)}
-                      className="relative flex flex-col lg:items-center"
+                      className={`relative flex w-full ${isEven ? 'justify-start' : 'justify-end'}`}
                     >
-
-                      {/* CONNECTOR DOT */}
-                      <motion.div
-                        animate={{
-                          backgroundColor: (isHovered || isPast || hoveredIdx === null) ? "var(--primary)" : "#E2E8F0",
-                          scale: isHovered ? 1.2 : 1
-                        }}
-                        className="absolute left-1/2 top-[52px] z-20 hidden h-4 w-4 -translate-x-1/2 rounded-none border-2 border-white bg-slate-200 shadow-md lg:block"
-                      />
-
-                      {/* STEP NUMBER */}
-                      <motion.div
-                        animate={{
-                          borderColor:
-                            (isHovered || isPast || hoveredIdx === null)
-                              ? "var(--primary)"
-                              : "#E2E8F0",
-                          backgroundColor: isHovered ? "var(--primary)" : "#FFFFFF",
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
-                        className="
-    relative
-    z-30
-    mx-0
-    lg:mx-auto
-    flex
-    h-[70px]
-    w-[70px]
-    lg:h-[92px]
-    lg:w-[92px]
-    items-center
-    justify-center
-    rounded-none
-    border-[3px]
-    border-slate-200
-    bg-white
-    shadow-md
-    ml-[20px]
-    lg:ml-auto
-  "
-                      >
-                        <span
-                          className={`
-      text-[24px]
-      lg:text-[34px]
-      font-black
-      tracking-[-0.05em]
-      transition-colors
-      duration-300
-      ${isHovered ? "text-white" : "text-primary"}
-    `}
-                        >
-                          {(idx + 1).toString().padStart(2, "0")}
-                        </span>
-                      </motion.div>
-
-                      {/* CARD */}
-                      <motion.div
-                        animate={{
-                          y: isHovered ? -12 : 0,
-                          borderColor: isHovered ? "var(--primary)" : "#E2E8F0",
-                          backgroundColor: isHovered ? "var(--primary)" : "#FFFFFF"
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 260,
-                          damping: 18,
-                        }}
-                        className={`
-                          group
-                          relative
-                          mt-6 lg:mt-10
-                          flex
-                          flex-1
-                          flex-col
-                          overflow-hidden
-                          rounded-none
-                          border
-                          p-8
-                          shadow-sm
-                          transition-shadow
-                          duration-500
-                          ml-[40px] lg:ml-0
-                          ${isHovered ? "shadow-2xl" : "hover:shadow-md"}
-                        `}
-                      >
-
-                        {/* ICON */}
-                        <div
-                          className={`
-                            mb-6
-                            flex
-                            h-14
-                            w-14
-                            items-center
-                            justify-center
-                            rounded-none
-                            transition-all
-                            duration-500
-                          `}
-                        >
-                          <Icon className="h-7 w-7" strokeWidth={1.5} />
+                      {/* HAND-DRAWN ARROWS (Desktop only) */}
+                      {idx < PILOT_STEPS.length - 1 && (
+                        <div className={`absolute hidden md:block pointer-events-none z-0`}
+                          style={{
+                            top: '65%',
+                            left: isEven ? '45%' : 'auto',
+                            right: !isEven ? '45%' : 'auto',
+                            width: '300px',
+                            height: '140px'
+                          }}>
+                          <svg width="100%" height="100%" viewBox="0 0 300 140" fill="none">
+                            <defs>
+                              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                              </filter>
+                            </defs>
+                            <motion.path
+                              d={isEven
+                                ? "M 10 20 C 150 20, 150 120, 290 120" // Left to Right
+                                : "M 290 20 C 150 20, 150 120, 10 120" // Right to Left
+                              }
+                              stroke="var(--primary)"
+                              strokeWidth={hoveredIdx !== null && idx < hoveredIdx ? "3.5" : "2.5"}
+                              strokeDasharray="6 4"
+                              strokeLinecap="round"
+                              animate={{
+                                pathLength: 1,
+                                opacity: hoveredIdx !== null && idx < hoveredIdx ? 1 : 0.25,
+                                strokeDashoffset: hoveredIdx !== null && idx < hoveredIdx ? [-20, 0] : 0,
+                                filter: hoveredIdx !== null && idx < hoveredIdx ? "url(#glow)" : "none"
+                              }}
+                              transition={{
+                                strokeDashoffset: { duration: 1, repeat: Infinity, ease: "linear" },
+                                opacity: { duration: 0.3 },
+                                strokeWidth: { duration: 0.3 }
+                              }}
+                              className="filter blur-[0.2px]"
+                            />
+                            {/* Scribble effect path */}
+                            <motion.path
+                              d={isEven
+                                ? "M 12 22 C 148 18, 152 122, 288 118"
+                                : "M 288 22 C 152 18, 148 122, 12 118"
+                              }
+                              stroke="var(--primary)"
+                              strokeWidth="1"
+                              strokeDasharray="3 7"
+                              strokeLinecap="round"
+                              animate={{
+                                pathLength: 1,
+                                opacity: hoveredIdx !== null && idx < hoveredIdx ? 0.6 : 0.15
+                              }}
+                            />
+                            {/* Arrowhead */}
+                            <motion.path
+                              d={isEven
+                                ? "M 280 110 L 290 120 L 280 130"
+                                : "M 20 110 L 10 120 L 20 130"
+                              }
+                              stroke="var(--primary)"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              animate={{
+                                opacity: hoveredIdx !== null && idx < hoveredIdx ? 1 : 0.3,
+                                scale: hoveredIdx !== null && idx < hoveredIdx ? 1.2 : 1
+                              }}
+                            />
+                          </svg>
                         </div>
-                        {/* TITLE */}
-                        <h3
-                          className={`
-                            mt-4
-                            h3-scale
-                            font-[var(--font-display)]
-                            font-bold
-                            transition-colors
-                            duration-500
-                            ${isHovered ? "text-white" : "text-slate-900"}
-                          `}
-                        >
-                          {step.title}
-                        </h3>
+                      )}
 
-                        {/* BODY */}
-                        <p
-                          className={`
-                            mt-5
-                            body-scale
-                            transition-colors
-                            duration-500
-                            ${isHovered ? "text-white/80" : "text-slate-600"}
-                          `}
-                        >
-                          {step.body}
-                        </p>
+                      {/* CARD CONTENT */}
+                      <div className="relative z-10 w-full md:w-[45%] group">
+                        <div className={`relative bg-white border p-6 md:p-8 transition-all duration-500 rounded-none overflow-hidden h-full
+                          ${isHovered ? 'shadow-2xl border-primary/30 -translate-y-1' : 'border-blue-50 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'}`}>
 
-                        {/* GLOW */}
-                        <div className={`absolute bottom-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-3xl opacity-0 transition-opacity duration-500 ${isHovered ? "opacity-100" : ""}`} />
-                      </motion.div>
+                          {/* Number Badge */}
+                          <div className={`absolute top-0 ${isEven ? 'right-0' : 'left-0'} flex h-14 w-14 items-center justify-center transition-colors duration-500
+                            ${isHovered ? 'bg-primary/10 text-primary/40' : 'bg-blue-50/50 text-primary/20'} text-3xl font-black leading-none`}>
+                            {idx + 1}
+                          </div>
+
+                          {/* Icon Container */}
+                          <div className="relative mb-6 flex h-16 w-16 items-center justify-center overflow-hidden">
+                            <img
+                              src={step.icon.animated}
+                              alt={step.title}
+                              className="h-14 w-14 object-contain transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+
+                          {/* Text Content */}
+                          <h3 className={`font-[var(--font-display)] text-lg font-bold mb-4 tracking-tight transition-colors duration-300
+                            ${isHovered ? 'text-primary' : 'text-slate-900'}`}>
+                            {step.title}
+                          </h3>
+                          <p className={`leading-relaxed text-[0.92rem] md:text-sm transition-colors duration-300
+                            ${isHovered ? 'text-slate-700' : 'text-slate-600'}`}>
+                            {step.body}
+                          </p>
+
+                          {/* Hover Accent */}
+                          <div className={`mt-8 h-1 bg-primary transition-all duration-500 
+                            ${isHovered ? 'w-24' : 'w-10 opacity-30'}`} />
+                        </div>
+                      </div>
                     </motion.div>
                   );
                 })}
